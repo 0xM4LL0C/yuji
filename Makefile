@@ -1,4 +1,4 @@
-SHELL := /bin/bash
+SHELL := /bin/sh
 
 CC = gcc
 CFLAGS = -Iinclude -std=gnu99 -Wall -Wextra -O2
