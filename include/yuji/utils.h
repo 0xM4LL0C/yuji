@@ -5,10 +5,13 @@
 #define ANSI_RESET "\x1b[0m"
 #define ANSI_BLUE "\x1b[34m"
 
-
+#ifndef NDEBUG
 #define LOG(...) \
   printf(ANSI_BLUE "LOG: " ANSI_RESET __VA_ARGS__); \
   printf("\n");
+#else
+#define LOG(...)
+#endif
 
 void panic(const char* message, ...) __attribute__((noreturn)) ;
 void check_memory_is_not_null(void* ptr);

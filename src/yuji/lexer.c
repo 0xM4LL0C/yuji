@@ -110,7 +110,7 @@ void lexer_error(const Lexer* lexer, char* message) {
   const char* input = lexer->input;
   size_t pos = lexer->pos;
   fprintf(stderr, ANSI_RED "\nLexer error: %s\n" ANSI_RESET, message);
-  fprintf(stderr, "%s\n", input);
+  fprintf(stderr, "%s", input);
 
   for (size_t i = 0; i < pos; i++) {
     fputc(input[i] == '\t' ? '\t' : '~', stderr);
