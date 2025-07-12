@@ -1,0 +1,34 @@
+SHELL := /bin/bash
+
+CC = gcc
+CFLAGS = -Iinclude -std=gnu99 -Wall -Wextra -O2
+LDFLAGS =
+
+SRC_DIR := src
+OBJ_DIR := .build/obj
+BUILD_DIR := .build
+BIN_NAME := yuji
+BIN_PATH := $(BUILD_DIR)/$(BIN_NAME)
+
+SOURCES := $(shell find $(SRC_DIR) -name '*.c')
+OBJECTS := $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SOURCES))
+
+.PHONY: all build clean run
+
+all: build
+
+build: $(BIN_PATH)
+
+$(BIN_PATH): $(OBJECTS)
+	@mkdir -p $(BUILD_DIR)
+	$(CC) $(LDFLAGS) $^ -o $@
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+clean:
+	rm -rf $(BUILD_DIR)
+
+run: build
+	$(BIN_PATH) $(ARGS)

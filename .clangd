@@ -1,0 +1,8 @@
+# yaml-language-server: $schema=https://json.schemastore.org/clangd.json
+CompileFlags:
+  CompilationDatabase: ./.build
+  Add:
+    - "-Iinclude/"
+    - "-std=c99"
+    - "-xc"
+    - "-D_POSIX_C_SOURCE=200809L"
