@@ -48,11 +48,26 @@ void parser_error(const Parser* parser, char* message) {
 }
 
 ASTNode* parser_parse_factor(Parser* parser) {
-  parser_expect(parser, TT_NUMBER);
-  ASTNode* node = ast_number_init(parser->current_token->value);
-  parser_advance(parser);
-  return node;
+  if (!parser->current_token) {
+    parser_error(parser, "Unexpected end of input");
+  }
+
+  if (parser->current_token->type == TT_NUMBER) {
+    ASTNode* node = ast_number_init(parser->current_token->value);
+    parser_advance(parser);
+    return node;
+  }
+
+  if (parser->current_token->type == TT_IDENTIFIER) {
+    ASTNode* node = ast_identifier_init(parser->current_token->value);
+    parser_advance(parser);
+    return node;
+  }
+
+  parser_error(parser, "Expected number or identifier");
+  return NULL;
 }
+
 
 ASTNode* parser_parse_term(Parser* parser) {
   ASTNode* node = parser_parse_factor(parser);
@@ -88,9 +103,46 @@ ASTNode* parser_parse_expr(Parser* parser) {
 
 DynArr* parser_parse(Parser* parser) {
   while (parser->current_token) {
-    ASTNode* expr = parser_parse_expr(parser);
-    dyn_array_append(parser->ast, expr);
+    ASTNode* node = NULL;
+
+    if (parser->current_token->type == TT_KEYWORD &&
+        strcmp(parser->current_token->value, "let") == 0) {
+      node = parser_parse_let(parser);
+    } else {
+      node = parser_parse_expr(parser);
+    }
+
+    dyn_array_append(parser->ast, node);
   }
 
   return parser->ast;
+}
+
+
+ASTNode* parser_parse_let(Parser* parser) {
+  parser_expect(parser, TT_KEYWORD);
+
+  if (strcmp(parser->current_token->value, "let") != 0) {
+    parser_error(parser, "Expected 'let' keyword");
+  }
+
+  parser_advance(parser);
+
+  parser_expect(parser, TT_IDENTIFIER);
+  ASTIdentifier* id = malloc(sizeof(ASTIdentifier));
+  check_memory_is_not_null(id);
+  id->value = strdup(parser->current_token->value);
+  parser_advance(parser);
+
+  parser_expect(parser, TT_OPERATOR);
+
+  if (strcmp(parser->current_token->value, "=") != 0) {
+    parser_error(parser, "Expected '=' after identifier in let statement");
+  }
+
+  parser_advance(parser);
+
+  ASTNode* value = parser_parse_expr(parser);
+
+  return ast_let_init(id, value);
 }

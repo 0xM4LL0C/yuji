@@ -10,6 +10,7 @@
 #include "yuji/lexer.h"
 #include "yuji/token.h"
 #include "yuji/utils.h"
+#include "yuji/keywords.h"
 
 Lexer* lexer_init(const char* input) {
   Lexer *lexer = malloc(sizeof(Lexer));
@@ -68,12 +69,21 @@ DynArr* lexer_tokenize(Lexer *lexer) {
     if (isdigit(c)) {
       lexer_parse_number(lexer, value);
       type = TT_NUMBER;
+    } else if (isalpha(c)) {
+      lexer_parse_keyword_or_identifier(lexer, value);
+
+      if (lexer_is_keyword(value)) {
+        type = TT_KEYWORD;
+      } else {
+        type = TT_IDENTIFIER;
+      }
     } else {
       switch (c) {
         case '+':
         case '-':
         case '*':
         case '/':
+        case '=':
           value[0] = c;
           value[1] = '\0';
           type = TT_OPERATOR;
@@ -94,7 +104,17 @@ DynArr* lexer_tokenize(Lexer *lexer) {
   return lexer->tokens;
 }
 
-char* lexer_parse_number(Lexer *lexer, char* value) {
+bool lexer_is_keyword(const char* keyword) {
+  for (size_t i = 0; KEYWORDS[i] != NULL; i++) {
+    if (strcmp(KEYWORDS[i], keyword) == 0) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+void lexer_parse_number(Lexer *lexer, char* value) {
   size_t index = 0;
   char c = lexer->current_char;
 
@@ -102,8 +122,16 @@ char* lexer_parse_number(Lexer *lexer, char* value) {
     value[index++] = c;
     c = lexer_advance(lexer);
   }
+}
 
-  return value;
+void lexer_parse_keyword_or_identifier(Lexer *lexer, char* value) {
+  size_t index = 0;
+  char c = lexer->current_char;
+
+  while (c != '\0' && isalpha(c)) {
+    value[index++] = c;
+    c = lexer_advance(lexer);
+  }
 }
 
 void lexer_error(const Lexer* lexer, char* message) {

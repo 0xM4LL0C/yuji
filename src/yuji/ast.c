@@ -18,6 +18,15 @@ void ast_free(ASTNode* node) {
       ast_free(node->bin_op.right);
       free(node->bin_op.op);
       break;
+
+    case AST_IDENTIFIER:
+      free(node->identifier.value);
+      break;
+
+    case AST_LET:
+      free(node->let.name);
+      free(node->let.value);
+      break;
   }
 
   free(node);
@@ -38,5 +47,22 @@ ASTNode* ast_binop_init(ASTNode* left, const char* op, ASTNode* right) {
   n->bin_op.left = left;
   n->bin_op.op = strdup(op);
   n->bin_op.right = right;
+  return n;
+}
+
+ASTNode* ast_identifier_init(const char* value) {
+  ASTNode* n = malloc(sizeof(ASTNode));
+  check_memory_is_not_null(n);
+  n->type = AST_IDENTIFIER;
+  n->identifier.value = strdup(value);
+  return n;
+}
+
+ASTNode* ast_let_init(ASTIdentifier* name, ASTNode* value) {
+  ASTNode* n = malloc(sizeof(ASTNode));
+  check_memory_is_not_null(n);
+  n->type = AST_LET;
+  n->let.name = name;
+  n->let.value = value;
   return n;
 }

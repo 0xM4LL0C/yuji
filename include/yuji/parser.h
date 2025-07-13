@@ -22,6 +22,8 @@ DynArr* parser_parse(Parser* parser);
 ASTNode* parser_parse_expr(Parser* parser);
 ASTNode* parser_parse_term(Parser* parser);
 ASTNode* parser_parse_factor(Parser* parser);
+ASTNode* parser_parse_let(Parser* parser);
+
 
 void parser_error(const Parser* parser,
                   char* message) __attribute__((noreturn));

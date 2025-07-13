@@ -7,6 +7,8 @@
 typedef enum {
   TT_NUMBER,
   TT_OPERATOR,
+  TT_IDENTIFIER,
+  TT_KEYWORD,
 } TokenType;
 
 typedef struct {
