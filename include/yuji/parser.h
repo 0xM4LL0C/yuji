@@ -16,7 +16,8 @@ Parser* parser_init(const DynArr* tokens);
 void parser_free(Parser* parser);
 
 Token* parser_advance(Parser* parser);
-bool parser_expect(Parser* parser, TokenType type);
+bool parser_match(Parser* parser, TokenType type);
+void parser_expect(Parser* parser, TokenType type);
 DynArr* parser_parse(Parser* parser);
 
 ASTNode* parser_parse_expr(Parser* parser);

@@ -73,26 +73,44 @@ DynArr* lexer_tokenize(Lexer *lexer) {
       lexer_parse_keyword_or_identifier(lexer, value);
 
       if (lexer_is_keyword(value)) {
-        type = TT_KEYWORD;
+        if (strcmp(value, "let") == 0) {
+          type = TT_LET;
+        } else {
+          panic("Unexpected keyword: %s", value);
+        }
       } else {
         type = TT_IDENTIFIER;
       }
     } else {
       switch (c) {
         case '+':
+          type = TT_PLUS;
+          break;
+
         case '-':
+          type = TT_MINUS;
+          break;
+
         case '*':
+          type = TT_MUL;
+          break;
+
         case '/':
+          type = TT_DIV;
+          break;
+
         case '=':
-          value[0] = c;
-          value[1] = '\0';
-          type = TT_OPERATOR;
+          type = TT_ASSIGN;
+          break;
           break;
 
         default: {
           lexer_error(lexer, "Unexpected character");
         }
       }
+
+      value[0] = c;
+      value[1] = '\0';
 
       c = lexer_advance(lexer);
     }

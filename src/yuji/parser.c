@@ -1,4 +1,5 @@
 #include "yuji/parser.h"
+#include "yuji/token.h"
 #include "yuji/utils.h"
 #include <string.h>
 
@@ -35,12 +36,14 @@ Token* parser_advance(Parser* parser) {
   return parser->current_token;
 }
 
-bool parser_expect(Parser* parser, TokenType type) {
-  if (!parser->current_token || parser->current_token->type != type) {
+bool parser_match(Parser* parser, TokenType type) {
+  return !parser->current_token || parser->current_token->type != type;
+}
+
+void parser_expect(Parser* parser, TokenType type) {
+  if (parser_match(parser, type)) {
     parser_error(parser, "Unexpected token");
   }
-
-  return true;
 }
 
 void parser_error(const Parser* parser, char* message) {
@@ -73,7 +76,8 @@ ASTNode* parser_parse_term(Parser* parser) {
   ASTNode* node = parser_parse_factor(parser);
 
   while (parser->current_token &&
-         parser->current_token->type == TT_OPERATOR &&
+         (parser->current_token->type == TT_MUL
+          || parser->current_token->type == TT_DIV) &&
          (strcmp(parser->current_token->value, "*") == 0 ||
           strcmp(parser->current_token->value, "/") == 0)) {
     const char* op = parser->current_token->value;
@@ -89,7 +93,8 @@ ASTNode* parser_parse_expr(Parser* parser) {
   ASTNode* node = parser_parse_term(parser);
 
   while (parser->current_token &&
-         parser->current_token->type == TT_OPERATOR &&
+         (parser->current_token->type == TT_PLUS ||
+          parser->current_token->type == TT_MINUS) &&
          (strcmp(parser->current_token->value, "+") == 0 ||
           strcmp(parser->current_token->value, "-") == 0)) {
     const char* op = parser->current_token->value;
@@ -105,7 +110,7 @@ DynArr* parser_parse(Parser* parser) {
   while (parser->current_token) {
     ASTNode* node = NULL;
 
-    if (parser->current_token->type == TT_KEYWORD &&
+    if (parser->current_token->type == TT_LET &&
         strcmp(parser->current_token->value, "let") == 0) {
       node = parser_parse_let(parser);
     } else {
@@ -120,7 +125,7 @@ DynArr* parser_parse(Parser* parser) {
 
 
 ASTNode* parser_parse_let(Parser* parser) {
-  parser_expect(parser, TT_KEYWORD);
+  parser_expect(parser, TT_LET);
 
   if (strcmp(parser->current_token->value, "let") != 0) {
     parser_error(parser, "Expected 'let' keyword");
@@ -134,7 +139,7 @@ ASTNode* parser_parse_let(Parser* parser) {
   id->value = strdup(parser->current_token->value);
   parser_advance(parser);
 
-  parser_expect(parser, TT_OPERATOR);
+  parser_expect(parser, TT_ASSIGN);
 
   if (strcmp(parser->current_token->value, "=") != 0) {
     parser_error(parser, "Expected '=' after identifier in let statement");
