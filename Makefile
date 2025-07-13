@@ -1,7 +1,7 @@
 SHELL := /bin/sh
 
 CC = gcc
-CFLAGS = -Iinclude -std=gnu99 -Wall -Wextra -O2
+CFLAGS = -Iinclude -std=gnu99 -Wall -Wextra -O2 -g3
 LDFLAGS =
 
 SRC_DIR := src

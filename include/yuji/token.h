@@ -26,3 +26,5 @@ typedef struct {
 
 Token* token_init(char* value, TokenType type);
 void token_free(Token* token);
+
+char* tt_to_string(TokenType type);

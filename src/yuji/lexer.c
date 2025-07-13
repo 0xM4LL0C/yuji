@@ -102,6 +102,13 @@ DynArr* lexer_tokenize(Lexer *lexer) {
         case '=':
           type = TT_ASSIGN;
           break;
+
+        case '(':
+          type = TT_LPAREN;
+          break;
+
+        case ')':
+          type = TT_RPAREN;
           break;
 
         default: {
@@ -140,6 +147,8 @@ void lexer_parse_number(Lexer *lexer, char* value) {
     value[index++] = c;
     c = lexer_advance(lexer);
   }
+
+  value[index] = '\0';
 }
 
 void lexer_parse_keyword_or_identifier(Lexer *lexer, char* value) {
@@ -150,6 +159,8 @@ void lexer_parse_keyword_or_identifier(Lexer *lexer, char* value) {
     value[index++] = c;
     c = lexer_advance(lexer);
   }
+
+  value[index] = '\0';
 }
 
 void lexer_error(const Lexer* lexer, char* message) {

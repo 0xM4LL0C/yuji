@@ -1,6 +1,8 @@
 #include "yuji/parser.h"
 #include "yuji/token.h"
 #include "yuji/utils.h"
+#include <assert.h>
+#include <stdio.h>
 #include <string.h>
 
 Parser* parser_init(const DynArr* tokens) {
@@ -33,21 +35,23 @@ Token* parser_advance(Parser* parser) {
     parser->current_token = NULL;
   }
 
+  LOG("current token type: %s",
+      parser->current_token ? tt_to_string(parser->current_token->type) : "NULL");
   return parser->current_token;
 }
 
 bool parser_match(Parser* parser, TokenType type) {
-  return !parser->current_token || parser->current_token->type != type;
+  return !parser->current_token || parser->current_token->type == type;
 }
 
 void parser_expect(Parser* parser, TokenType type) {
-  if (parser_match(parser, type)) {
+  if (!parser_match(parser, type)) {
     parser_error(parser, "Unexpected token");
   }
 }
 
 void parser_error(const Parser* parser, char* message) {
-  panic("Parser error at token %zu: %s", parser->pos, message);
+  panic("Parser error at position %zu: %s", parser->pos, message);
 }
 
 ASTNode* parser_parse_factor(Parser* parser) {
@@ -67,8 +71,16 @@ ASTNode* parser_parse_factor(Parser* parser) {
     return node;
   }
 
+  if (parser->current_token->type == TT_LPAREN) {
+    parser_advance(parser);
+    ASTNode* node = parser_parse_expr(parser);
+    parser_expect(parser, TT_RPAREN);
+    parser_advance(parser);
+    return node;
+  }
+
+  LOG("current token type: %s", tt_to_string(parser->current_token->type));
   parser_error(parser, "Expected number or identifier");
-  return NULL;
 }
 
 
