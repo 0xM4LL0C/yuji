@@ -22,11 +22,17 @@ typedef struct {
   ASTNode* value;
 } ASTLet;
 
+typedef struct {
+  ASTIdentifier* name;
+  ASTNode* value;
+} ASTAssign;
+
 typedef enum {
   AST_NUMBER,
   AST_BIN_OP,
   AST_LET,
   AST_IDENTIFIER,
+  AST_ASSIGN,
 } ASTNodeType;
 
 struct ASTNode {
@@ -36,6 +42,7 @@ struct ASTNode {
     ASTBinOp bin_op;
     ASTLet let;
     ASTIdentifier identifier;
+    ASTAssign assign;
   };
 };
 
@@ -45,3 +52,4 @@ ASTNode* ast_number_init(const char* value);
 ASTNode* ast_binop_init(ASTNode* left, const char* op, ASTNode* right);
 ASTNode* ast_identifier_init(const char* value);
 ASTNode* ast_let_init(ASTIdentifier* name, ASTNode* value);
+ASTNode* ast_assign_init(ASTIdentifier* name, ASTNode* value);

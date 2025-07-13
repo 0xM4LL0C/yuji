@@ -53,7 +53,9 @@ void map_free(Map* map) {
 }
 
 void map_insert(Map* map, const char* key, void* value) {
-  if (map_index_of(map, key) == (size_t) -1) {
+  size_t index = map_index_of(map, key);
+
+  if (index == (size_t) -1) {
     MapPair* pair = map_pair_init(key, value);
 
     if (!pair) {
@@ -64,7 +66,7 @@ void map_insert(Map* map, const char* key, void* value) {
     return;
   }
 
-  MapPair* pair = map_get(map, key);
+  MapPair* pair = dyn_array_get(map->pairs, index);
   pair->value = value;
 }
 

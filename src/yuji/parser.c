@@ -44,8 +44,23 @@ bool parser_match(Parser* parser, TokenType type) {
   return !parser->current_token || parser->current_token->type == type;
 }
 
+bool parser_match_next(Parser* parser, TokenType type) {
+  if (!parser->current_token || parser->pos >= parser->tokens->size - 1) {
+    return false;
+  }
+
+  Token* next_token = dyn_array_get(parser->tokens, parser->pos + 1);
+  return next_token && next_token->type == type;
+}
+
 void parser_expect(Parser* parser, TokenType type) {
   if (!parser_match(parser, type)) {
+    parser_error(parser, "Unexpected token");
+  }
+}
+
+void parser_expect_next(Parser* parser, TokenType type) {
+  if (!parser_match_next(parser, type)) {
     parser_error(parser, "Unexpected token");
   }
 }
@@ -122,9 +137,14 @@ DynArr* parser_parse(Parser* parser) {
   while (parser->current_token) {
     ASTNode* node = NULL;
 
-    if (parser->current_token->type == TT_LET &&
-        strcmp(parser->current_token->value, "let") == 0) {
+    if (parser->current_token->type == TT_LET) {
       node = parser_parse_let(parser);
+    } else if (parser->current_token->type == TT_IDENTIFIER) {
+      if (parser_match_next(parser, TT_ASSIGN)) {
+        node = parser_parse_assign(parser);
+      } else {
+        node = parser_parse_expr(parser);
+      }
     } else {
       node = parser_parse_expr(parser);
     }
@@ -162,4 +182,23 @@ ASTNode* parser_parse_let(Parser* parser) {
   ASTNode* value = parser_parse_expr(parser);
 
   return ast_let_init(id, value);
+}
+
+ASTNode* parser_parse_assign(Parser* parser) {
+  parser_expect(parser, TT_IDENTIFIER);
+  ASTIdentifier* id = malloc(sizeof(ASTIdentifier));
+  check_memory_is_not_null(id);
+  id->value = strdup(parser->current_token->value);
+  parser_advance(parser);
+
+  parser_expect(parser, TT_ASSIGN);
+
+  if (strcmp(parser->current_token->value, "=") != 0) {
+    parser_error(parser, "Expected '=' in assignment");
+  }
+
+  parser_advance(parser);
+
+  ASTNode* value = parser_parse_expr(parser);
+  return ast_assign_init(id, value);
 }

@@ -23,6 +23,7 @@ void ast_free(ASTNode* node) {
       free(node->identifier.value);
       break;
 
+    case AST_ASSIGN:
     case AST_LET:
       free(node->let.name);
       free(node->let.value);
@@ -64,5 +65,14 @@ ASTNode* ast_let_init(ASTIdentifier* name, ASTNode* value) {
   n->type = AST_LET;
   n->let.name = name;
   n->let.value = value;
+  return n;
+}
+
+ASTNode* ast_assign_init(ASTIdentifier* name, ASTNode* value) {
+  ASTNode* n = malloc(sizeof(ASTNode));
+  check_memory_is_not_null(n);
+  n->type = AST_ASSIGN;
+  n->assign.name = name;
+  n->assign.value = value;
   return n;
 }

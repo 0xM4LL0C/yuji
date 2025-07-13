@@ -51,6 +51,19 @@ int eval(ASTNode* node, Interpreter* interpreter) {
     return (int)(intptr_t)val;
   }
 
+  if (node->type == AST_ASSIGN) {
+    int result = eval(node->assign.value, interpreter);
+    void* existing_val = map_get(interpreter->variables, node->assign.name->value);
+
+    if (!existing_val) {
+      panic("Cannot assign to undefined variable: %s", node->assign.name->value);
+    }
+
+    map_insert(interpreter->variables, node->assign.name->value,
+               (void*)(intptr_t)result);
+    return result;
+  }
+
   panic("Unknown operator");
 }
 
