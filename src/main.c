@@ -3,7 +3,6 @@
 #include "yuji/interpreter.h"
 #include "yuji/lexer.h"
 #include "yuji/parser.h"
-#include "yuji/token.h"
 #include "yuji/utils.h"
 #include <stdint.h>
 #include <stdio.h>
@@ -117,6 +116,43 @@ void repl() {
   interpreter_free(interpreter);
 }
 
-int main() {
-  repl();
+void run_file(const char* file) {
+  FILE* fp = fopen(file, "r");
+
+  if (!fp) {
+    panic("Failed to open file: %s", file);
+  }
+
+  char* input = NULL;
+  size_t len = 0;
+
+  Interpreter* interpreter = interpreter_init();
+
+  while (getline(&input, &len, fp) != -1) {
+    Lexer* lexer = lexer_init(input);
+    DynArr* tokens = lexer_tokenize(lexer);
+
+    Parser* parser = parser_init(tokens);
+    DynArr* ast = parser_parse(parser);
+
+    for (size_t i = 0; i < ast->size; i++) {
+      ASTNode* node = dyn_array_get(ast, i);
+      int result = eval(node, interpreter);
+      printf("%d\n", result);
+    }
+
+    lexer_free(lexer);
+    parser_free(parser);
+  }
+
+  interpreter_free(interpreter);
+  fclose(fp);
+}
+
+int main(int argc, char** argv) {
+  if (argc < 2) {
+    repl();
+  } else {
+    run_file(argv[1]);
+  }
 }
