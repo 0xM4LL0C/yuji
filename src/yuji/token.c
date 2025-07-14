@@ -60,6 +60,15 @@ char* tt_to_string(TokenType type) {
     case TT_IF:
       return "TT_IF";
 
+    case TT_MOD:
+      return "TT_MOD";
+
+    case TT_LT:
+      return "TT_LT";
+
+    case TT_GT:
+      return "TT_GT";
+
     default:
       panic("unhandled token type: %d", type);
   }

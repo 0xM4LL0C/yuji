@@ -17,7 +17,7 @@ OBJECTS := $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SOURCES))
 
 all: build
 
-build: $(BIN_PATH)
+build: $(BIN_PATH) $(OBJECTS)
 
 $(BIN_PATH): $(OBJECTS)
 	@mkdir -p $(BUILD_DIR)

@@ -113,9 +113,8 @@ ASTNode* parser_parse_term(Parser* parser) {
 
   while (parser->current_token &&
          (parser->current_token->type == TT_MUL
-          || parser->current_token->type == TT_DIV) &&
-         (strcmp(parser->current_token->value, "*") == 0 ||
-          strcmp(parser->current_token->value, "/") == 0)) {
+          || parser->current_token->type == TT_DIV
+          || parser->current_token->type == TT_MOD)) {
     const char* op = parser->current_token->value;
     parser_advance(parser);
     ASTNode* right = parser_parse_factor(parser);
@@ -130,12 +129,19 @@ ASTNode* parser_parse_expr(Parser* parser) {
 
   while (parser->current_token &&
          (parser->current_token->type == TT_PLUS ||
-          parser->current_token->type == TT_MINUS) &&
-         (strcmp(parser->current_token->value, "+") == 0 ||
-          strcmp(parser->current_token->value, "-") == 0)) {
+          parser->current_token->type == TT_MINUS)) {
     const char* op = parser->current_token->value;
     parser_advance(parser);
     ASTNode* right = parser_parse_term(parser);
+    node = ast_binop_init(node, op, right);
+  }
+
+  if (parser->current_token &&
+      (parser->current_token->type == TT_LT ||
+       parser->current_token->type == TT_GT)) {
+    const char* op = parser->current_token->value;
+    parser_advance(parser);
+    ASTNode* right = parser_parse_expr(parser);
     node = ast_binop_init(node, op, right);
   }
 

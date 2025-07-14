@@ -1,3 +1,4 @@
+#include "yuji/value.h"
 #ifdef WIN32
 #warning "Windows is not officially supported"
 #endif
@@ -15,72 +16,85 @@
 #include <stdio.h>
 #include <string.h>
 
-int eval(ASTNode* node, Interpreter* interpreter) {
+YujiValue* eval(ASTNode* node, Interpreter* interpreter) {
   if (node->type == AST_NUMBER) {
-    return atoi(node->number.value);
+    return value_number_init(atoi(node->number.value));
   }
 
   if (node->type == AST_BIN_OP) {
-    int left = eval(node->bin_op.left, interpreter);
-    int right = eval(node->bin_op.right, interpreter);
+    YujiValue* left = eval(node->bin_op.left, interpreter);
+    YujiValue* right = eval(node->bin_op.right, interpreter);
 
     if (strcmp(node->bin_op.op, "+") == 0) {
-      return left + right;
+      return value_number_init(left->value.number + right->value.number);
     }
 
     if (strcmp(node->bin_op.op, "-") == 0) {
-      return left - right;
+      return value_number_init(left->value.number - right->value.number);
     }
 
     if (strcmp(node->bin_op.op, "*") == 0) {
-      return left * right;
+      return value_number_init(left->value.number * right->value.number);
     }
 
     if (strcmp(node->bin_op.op, "/") == 0) {
-      return left / right;
+      return value_number_init(left->value.number / right->value.number);
+    }
+
+    if (strcmp(node->bin_op.op, "%") == 0) {
+      return value_number_init(left->value.number % right->value.number);
+    }
+
+    if (strcmp(node->bin_op.op, "<") == 0) {
+      return value_number_init(left->value.number < right->value.number);
+    }
+
+    if (strcmp(node->bin_op.op, ">") == 0) {
+      return value_number_init(left->value.number > right->value.number);
     }
   }
 
   if (node->type == AST_LET) {
-    int result = eval(node->let.value, interpreter);
-    map_insert(interpreter->variables, node->let.name->value,
-               (void*)(intptr_t)result);
+    YujiValue* result = eval(node->let.value, interpreter);
+    map_insert(interpreter->variables, node->let.name->value, result);
     return result;
   }
 
   if (node->type == AST_IDENTIFIER) {
-    void* val = map_get(interpreter->variables, node->identifier.value);
+    YujiValue* val = map_get(interpreter->variables, node->identifier.value);
 
     if (!val) {
       panic("Undefined variable: %s", node->identifier.value);
     }
 
-    return (int)(intptr_t)val;
+    return val;
   }
 
   if (node->type == AST_ASSIGN) {
-    int result = eval(node->assign.value, interpreter);
-    void* existing_val = map_get(interpreter->variables, node->assign.name->value);
+    YujiValue* result = eval(node->assign.value, interpreter);
+    YujiValue* existing_val = map_get(interpreter->variables,
+                                      node->assign.name->value);
 
     if (!existing_val) {
       panic("Cannot assign to undefined variable: %s", node->assign.name->value);
     }
 
-    map_insert(interpreter->variables, node->assign.name->value,
-               (void*)(intptr_t)result);
+    map_insert(interpreter->variables, node->assign.name->value, result);
     return result;
   }
 
   if (node->type == AST_IF) {
-    int condition = eval(node->if_.condition, interpreter);
+    YujiValue* condition = eval(node->if_.condition, interpreter);
 
     if (condition) {
       return eval(node->if_.body, interpreter);
     }
+
+    return NULL;
   }
 
   if (node->type == AST_BLOCK) {
-    int result = 0;
+    YujiValue* result = NULL;
 
     for (size_t i = 0; i < node->block.expressions->size; ++i) {
       result = eval(dyn_array_get(node->block.expressions, i), interpreter);
@@ -112,8 +126,7 @@ void repl() {
 
     for (size_t i = 0; i < ast->size; i++) {
       ASTNode* node = dyn_array_get(ast, i);
-      int result = eval(node, interpreter);
-      printf("%d\n", result);
+      eval(node, interpreter);
     }
 
     lexer_free(lexer);
@@ -130,30 +143,38 @@ void run_file(const char* file) {
     panic("Failed to open file: %s", file);
   }
 
-  char* input = NULL;
-  size_t len = 0;
+  fseek(fp, 0, SEEK_END);
+  size_t size = ftell(fp);
+  fseek(fp, 0, SEEK_SET);
+
+  char* input = malloc(size + 1);
+
+  if (!input) {
+    panic("Memory allocation failed");
+  }
+
+  size_t read_size = fread(input, 1, size, fp);
+  input[read_size] = '\0';
+
+  fclose(fp);
 
   Interpreter* interpreter = interpreter_init();
 
-  while (getline(&input, &len, fp) != -1) {
-    Lexer* lexer = lexer_init(input);
-    DynArr* tokens = lexer_tokenize(lexer);
+  Lexer* lexer = lexer_init(input);
+  DynArr* tokens = lexer_tokenize(lexer);
 
-    Parser* parser = parser_init(tokens);
-    DynArr* ast = parser_parse(parser);
+  Parser* parser = parser_init(tokens);
+  DynArr* ast = parser_parse(parser);
 
-    for (size_t i = 0; i < ast->size; i++) {
-      ASTNode* node = dyn_array_get(ast, i);
-      int result = eval(node, interpreter);
-      printf("%d\n", result);
-    }
-
-    lexer_free(lexer);
-    parser_free(parser);
+  for (size_t i = 0; i < ast->size; i++) {
+    ASTNode* node = dyn_array_get(ast, i);
+    eval(node, interpreter);
   }
 
+  lexer_free(lexer);
+  parser_free(parser);
+  free(input);
   interpreter_free(interpreter);
-  fclose(fp);
 }
 
 int main(int argc, char** argv) {

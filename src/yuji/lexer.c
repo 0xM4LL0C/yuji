@@ -121,6 +121,14 @@ DynArr* lexer_tokenize(Lexer *lexer) {
           type = TT_RBRACE;
           break;
 
+        case '<':
+          type = TT_LT;
+          break;
+
+        case '>':
+          type = TT_GT;
+          break;
+
         default:
           lexer_error(lexer, "Unexpected character");
       }

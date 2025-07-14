@@ -20,7 +20,9 @@ typedef enum {
   TT_RPAREN, // )
   TT_LBRACE, // {
   TT_RBRACE, // }
-
+  TT_MOD, // %
+  TT_LT, // <
+  TT_GT, // >
 } TokenType;
 
 typedef struct {
