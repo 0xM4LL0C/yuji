@@ -1,6 +1,7 @@
-name: build-yuji
+name: build
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
 
