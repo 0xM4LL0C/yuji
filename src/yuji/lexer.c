@@ -89,6 +89,9 @@ DynArr* lexer_tokenize(Lexer *lexer) {
       } else {
         type = TT_IDENTIFIER;
       }
+    } else if (c == '"') {
+      type = TT_QUOTE;
+      lexer_parse_string(lexer, value);
     } else {
       switch (c) {
         case '+':
@@ -206,4 +209,16 @@ void lexer_error(const Lexer* lexer, char* message) {
 
   fprintf(stderr, ANSI_RED "^\n" ANSI_RESET);
   exit(1);
+}
+
+void lexer_parse_string(Lexer* lexer, char* value) {
+  size_t index = 0;
+  char c = lexer_advance(lexer);
+
+  while (c != '\0' && c != '"') {
+    value[index++] = c;
+    c = lexer_advance(lexer);
+  }
+
+  value[index] = '\0';
 }

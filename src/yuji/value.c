@@ -2,6 +2,7 @@
 #include "yuji/ast.h"
 #include "yuji/utils.h"
 #include <stdlib.h>
+#include <string.h>
 
 void value_free(YujiValue* value) {
   switch (value->type) {
@@ -9,7 +10,9 @@ void value_free(YujiValue* value) {
     case VT_FUNCTION:
       break;
 
-
+    case VT_STRING:
+      free(value->value.string);
+      break;
   }
 
   free(value);
@@ -28,5 +31,13 @@ YujiValue* value_function_init(ASTNode* node) {
   check_memory_is_not_null(value);
   value->type = VT_FUNCTION;
   value->value.function.node = node;
+  return value;
+}
+
+YujiValue* value_string_init(const char* string) {
+  YujiValue* value = malloc(sizeof(YujiValue));
+  check_memory_is_not_null(value);
+  value->type = VT_STRING;
+  value->value.string = strdup(string);
   return value;
 }

@@ -150,6 +150,10 @@ YujiValue* eval(ASTNode* node, Interpreter* interpreter) {
     return result;
   }
 
+  if (node->type == AST_STRING) {
+    return value_string_init(node->string.value);
+  }
+
   LOG("unhandled token type: %d", node->type);
   panic("Unknown operator");
 }

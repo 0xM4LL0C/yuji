@@ -72,6 +72,10 @@ void ast_free(ASTNode* node) {
 
       dyn_array_free(node->call.args);
       break;
+
+    case AST_STRING:
+      free(node->string.value);
+      break;
   }
 
   free(node);
@@ -179,5 +183,15 @@ ASTNode* ast_call_init(ASTIdentifier* name, DynArr* args) {
   node->type = AST_CALL;
   node->call.name = name;
   node->call.args = args;
+  return node;
+}
+
+ASTNode* ast_string_init(const char* value) {
+  ASTNode* node = malloc(sizeof(ASTNode));
+  check_memory_is_not_null(node);
+
+  node->type = AST_STRING;
+  node->string.value = strdup(value);
+
   return node;
 }

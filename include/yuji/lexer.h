@@ -21,6 +21,7 @@ DynArr* lexer_tokenize(Lexer* lexer);
 
 void lexer_parse_number(Lexer* lexer, char* value);
 void lexer_parse_keyword_or_identifier(Lexer* lexer, char* value);
+void lexer_parse_string(Lexer* lexer, char* value);
 
 bool lexer_is_keyword(const char* keyword);
 

@@ -119,6 +119,10 @@ ASTNode* parser_parse_factor(Parser* parser) {
     return parser_parse_fn(parser);
   }
 
+  if (parser->current_token->type == TT_QUOTE) {
+    return parser_parse_string(parser);
+  }
+
   LOG("current token type: %s", tt_to_string(parser->current_token->type));
   parser_error(parser, "Expected number or identifier");
 }
@@ -368,4 +372,14 @@ ASTNode* parser_parse_call(Parser* parser) {
   parser_advance(parser);
 
   return ast_call_init(name, args);
+}
+
+ASTNode* parser_parse_string(Parser* parser) {
+  parser_expect(parser, TT_QUOTE);
+  ASTString* string = malloc(sizeof(ASTString));
+  check_memory_is_not_null(string);
+  string->value = strdup(parser->current_token->value);
+  parser_advance(parser);
+
+  return ast_string_init(string->value);
 }

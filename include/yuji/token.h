@@ -27,6 +27,7 @@ typedef enum {
   TT_LT, // <
   TT_GT, // >
   TT_COMMA, // ,
+  TT_QUOTE, // "
 } TokenType;
 
 typedef struct {
