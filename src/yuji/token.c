@@ -50,5 +50,17 @@ char* tt_to_string(TokenType type) {
 
     case TT_RPAREN:
       return "TT_RPAREN";
+
+    case TT_LBRACE:
+      return "TT_LBRACE";
+
+    case TT_RBRACE:
+      return "TT_RBRACE";
+
+    case TT_IF:
+      return "TT_IF";
+
+    default:
+      panic("unhandled token type: %d", type);
   }
 }

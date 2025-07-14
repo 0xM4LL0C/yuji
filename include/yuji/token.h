@@ -9,6 +9,7 @@ typedef enum {
   TT_IDENTIFIER,
 
   TT_LET,
+  TT_IF,
 
   TT_ASSIGN, // =
   TT_PLUS, // +
@@ -17,6 +18,9 @@ typedef enum {
   TT_DIV, // /
   TT_LPAREN, // (
   TT_RPAREN, // )
+  TT_LBRACE, // {
+  TT_RBRACE, // }
+
 } TokenType;
 
 typedef struct {

@@ -1,4 +1,5 @@
 #include "yuji/ast.h"
+#include "yuji/dyn_array.h"
 #include "yuji/utils.h"
 #include <stdlib.h>
 #include <string.h>
@@ -28,6 +29,18 @@ void ast_free(ASTNode* node) {
       free(node->let.name);
       free(node->let.value);
       break;
+
+    case AST_BLOCK:
+      for (size_t i = 0; i < node->block.expressions->size; ++i) {
+        ast_free(dyn_array_get(node->block.expressions, i));
+      }
+
+      dyn_array_free(node->block.expressions);
+      break;
+
+    case AST_IF:
+      ast_free(node->if_.condition);
+      ast_free(node->if_.body);
   }
 
   free(node);
@@ -75,4 +88,23 @@ ASTNode* ast_assign_init(ASTIdentifier* name, ASTNode* value) {
   n->assign.name = name;
   n->assign.value = value;
   return n;
+}
+
+ASTNode* ast_block_init(DynArr* expressions) {
+  ASTNode* n = malloc(sizeof(ASTNode));
+  check_memory_is_not_null(n);
+  n->type = AST_BLOCK;
+  n->block.expressions = expressions;
+  return n;
+}
+
+ASTNode* ast_if_init(ASTNode* condition, ASTNode* body) {
+  ASTNode* node = malloc(sizeof(ASTNode));
+  check_memory_is_not_null(node);
+
+  node->type = AST_IF;
+  node->if_.condition = condition;
+  node->if_.body = body;
+
+  return node;
 }

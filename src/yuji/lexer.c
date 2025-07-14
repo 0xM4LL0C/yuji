@@ -75,6 +75,8 @@ DynArr* lexer_tokenize(Lexer *lexer) {
       if (lexer_is_keyword(value)) {
         if (strcmp(value, "let") == 0) {
           type = TT_LET;
+        } else if (strcmp(value, "if") == 0) {
+          type = TT_IF;
         } else {
           panic("Unexpected keyword: %s", value);
         }
@@ -111,9 +113,16 @@ DynArr* lexer_tokenize(Lexer *lexer) {
           type = TT_RPAREN;
           break;
 
-        default: {
+        case '{':
+          type = TT_LBRACE;
+          break;
+
+        case '}':
+          type = TT_RBRACE;
+          break;
+
+        default:
           lexer_error(lexer, "Unexpected character");
-        }
       }
 
       value[0] = c;

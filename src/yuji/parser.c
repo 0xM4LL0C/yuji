@@ -1,4 +1,5 @@
 #include "yuji/parser.h"
+#include "yuji/ast.h"
 #include "yuji/token.h"
 #include "yuji/utils.h"
 #include <assert.h>
@@ -55,12 +56,16 @@ bool parser_match_next(Parser* parser, TokenType type) {
 
 void parser_expect(Parser* parser, TokenType type) {
   if (!parser_match(parser, type)) {
+    LOG("Excepted '%s', got '%s'", tt_to_string(parser->current_token->type),
+        tt_to_string(type));
     parser_error(parser, "Unexpected token");
   }
 }
 
 void parser_expect_next(Parser* parser, TokenType type) {
   if (!parser_match_next(parser, type)) {
+    LOG("Excepted '%s', got '%s'", tt_to_string(parser->current_token->type),
+        tt_to_string(type));
     parser_error(parser, "Unexpected token");
   }
 }
@@ -92,6 +97,10 @@ ASTNode* parser_parse_factor(Parser* parser) {
     parser_expect(parser, TT_RPAREN);
     parser_advance(parser);
     return node;
+  }
+
+  if (parser->current_token->type == TT_IF) {
+    return parser_parse_if(parser);
   }
 
   LOG("current token type: %s", tt_to_string(parser->current_token->type));
@@ -145,6 +154,8 @@ DynArr* parser_parse(Parser* parser) {
       } else {
         node = parser_parse_expr(parser);
       }
+    } else if (parser->current_token->type == TT_IF) {
+      node = parser_parse_if(parser);
     } else {
       node = parser_parse_expr(parser);
     }
@@ -201,4 +212,45 @@ ASTNode* parser_parse_assign(Parser* parser) {
 
   ASTNode* value = parser_parse_expr(parser);
   return ast_assign_init(id, value);
+}
+
+ASTNode* parser_parse_block(Parser* parser) {
+  parser_expect(parser, TT_LBRACE);
+  parser_advance(parser);
+
+  DynArr* expressions = dyn_array_init();
+
+  while (parser->current_token && parser->current_token->type != TT_RBRACE) {
+    ASTNode* expr = NULL;
+
+    if (parser->current_token->type == TT_LET) {
+      expr = parser_parse_let(parser);
+    } else if (parser->current_token->type == TT_IDENTIFIER &&
+               parser_match_next(parser, TT_ASSIGN)) {
+      expr = parser_parse_assign(parser);
+    } else if (parser->current_token->type == TT_IF) {
+      expr = parser_parse_if(parser);
+    } else {
+      expr = parser_parse_expr(parser);
+    }
+
+    dyn_array_append(expressions, expr);
+  }
+
+  parser_expect(parser, TT_RBRACE);
+  parser_advance(parser);
+
+  return ast_block_init(expressions);
+}
+
+
+ASTNode* parser_parse_if(Parser* parser) {
+  parser_expect(parser, TT_IF);
+  parser_advance(parser);
+
+  ASTNode* condition = parser_parse_expr(parser);
+
+  ASTNode* body = parser_parse_block(parser);
+
+  return ast_if_init(condition, body);
 }

@@ -3,6 +3,7 @@
 #include "yuji/interpreter.h"
 #include "yuji/lexer.h"
 #include "yuji/parser.h"
+#include "yuji/token.h"
 #include "yuji/utils.h"
 #include <stdint.h>
 #include <stdio.h>
@@ -64,6 +65,25 @@ int eval(ASTNode* node, Interpreter* interpreter) {
     return result;
   }
 
+  if (node->type == AST_IF) {
+    int condition = eval(node->if_.condition, interpreter);
+
+    if (condition) {
+      return eval(node->if_.body, interpreter);
+    }
+  }
+
+  if (node->type == AST_BLOCK) {
+    int result = 0;
+
+    for (size_t i = 0; i < node->block.expressions->size; ++i) {
+      result = eval(dyn_array_get(node->block.expressions, i), interpreter);
+    }
+
+    return result;
+  }
+
+  LOG("unhandled token type: %d", node->type);
   panic("Unknown operator");
 }
 

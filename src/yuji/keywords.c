@@ -2,5 +2,6 @@
 
 const char* KEYWORDS[] = {
   "let",
+  "if",
   NULL,
 };
