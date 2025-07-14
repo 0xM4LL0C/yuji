@@ -86,6 +86,10 @@ ASTNode* parser_parse_factor(Parser* parser) {
   }
 
   if (parser->current_token->type == TT_IDENTIFIER) {
+    if (parser_match_next(parser, TT_LPAREN)) {
+      return parser_parse_call(parser);
+    }
+
     ASTNode* node = ast_identifier_init(parser->current_token->value);
     parser_advance(parser);
     return node;
@@ -109,6 +113,10 @@ ASTNode* parser_parse_factor(Parser* parser) {
 
   if (parser->current_token->type == TT_ELSE) {
     return parser_parse_else(parser);
+  }
+
+  if (parser->current_token->type == TT_FN) {
+    return parser_parse_fn(parser);
   }
 
   LOG("current token type: %s", tt_to_string(parser->current_token->type));
@@ -174,6 +182,8 @@ DynArr* parser_parse(Parser* parser) {
       node = parser_parse_elif(parser);
     } else if (parser->current_token->type == TT_ELSE) {
       node = parser_parse_else(parser);
+    } else if (parser->current_token->type == TT_FN) {
+      node = parser_parse_fn(parser);
     } else {
       node = parser_parse_expr(parser);
     }
@@ -295,4 +305,67 @@ ASTNode* parser_parse_else(Parser* parser) {
   ASTNode* body = parser_parse_block(parser);
 
   return ast_else_init(body);
+}
+
+ASTNode* parser_parse_fn(Parser* parser) {
+  parser_expect(parser, TT_FN);
+  parser_advance(parser);
+
+  parser_expect(parser, TT_IDENTIFIER);
+  ASTIdentifier* name = malloc(sizeof(ASTIdentifier));
+  check_memory_is_not_null(name);
+  name->value = strdup(parser->current_token->value);
+  parser_advance(parser);
+
+  parser_expect(parser, TT_LPAREN);
+  parser_advance(parser);
+
+  DynArr* params = dyn_array_init();
+
+  while (parser->current_token && parser->current_token->type != TT_RPAREN) {
+    parser_expect(parser, TT_IDENTIFIER);
+    ASTIdentifier* param = malloc(sizeof(ASTIdentifier));
+    check_memory_is_not_null(param);
+    param->value = strdup(parser->current_token->value);
+    dyn_array_append(params, param);
+    parser_advance(parser);
+
+    if (parser->current_token && parser->current_token->type == TT_COMMA) {
+      parser_advance(parser);
+    }
+  }
+
+  parser_expect(parser, TT_RPAREN);
+  parser_advance(parser);
+
+  ASTNode* body = parser_parse_block(parser);
+
+  return ast_function_init(name, params, body);
+}
+
+ASTNode* parser_parse_call(Parser* parser) {
+  parser_expect(parser, TT_IDENTIFIER);
+  ASTIdentifier* name = malloc(sizeof(ASTIdentifier));
+  check_memory_is_not_null(name);
+  name->value = strdup(parser->current_token->value);
+  parser_advance(parser);
+
+  parser_expect(parser, TT_LPAREN);
+  parser_advance(parser);
+
+  DynArr* args = dyn_array_init();
+
+  while (parser->current_token && parser->current_token->type != TT_RPAREN) {
+    ASTNode* arg = parser_parse_expr(parser);
+    dyn_array_append(args, arg);
+
+    if (parser->current_token && parser->current_token->type == TT_COMMA) {
+      parser_advance(parser);
+    }
+  }
+
+  parser_expect(parser, TT_RPAREN);
+  parser_advance(parser);
+
+  return ast_call_init(name, args);
 }

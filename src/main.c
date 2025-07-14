@@ -117,6 +117,39 @@ YujiValue* eval(ASTNode* node, Interpreter* interpreter) {
     return result;
   }
 
+  if (node->type == AST_FUNCTION) {
+    // Сохраняем функцию в переменных интерпретатора
+    YujiValue* func_value = value_function_init(node);
+    map_insert(interpreter->variables, node->function.name->value, func_value);
+    return func_value;
+  }
+
+  if (node->type == AST_CALL) {
+    YujiValue* func_value = map_get(interpreter->variables, node->call.name->value);
+
+    if (!func_value || func_value->type != VT_FUNCTION) {
+      panic("Undefined or invalid function: %s", node->call.name->value);
+    }
+
+    ASTNode* func_node = func_value->value.function.node;
+
+    if (func_node->function.params->size != node->call.args->size) {
+      panic("Incorrect number of arguments for function %s", node->call.name->value);
+    }
+
+    Interpreter* local_interpreter = interpreter_init();
+
+    for (size_t i = 0; i < func_node->function.params->size; ++i) {
+      ASTIdentifier* param = dyn_array_get(func_node->function.params, i);
+      YujiValue* arg_value = eval(dyn_array_get(node->call.args, i), interpreter);
+      map_insert(local_interpreter->variables, param->value, arg_value);
+    }
+
+    YujiValue* result = eval(func_node->function.body, local_interpreter);
+    interpreter_free(local_interpreter);
+    return result;
+  }
+
   LOG("unhandled token type: %d", node->type);
   panic("Unknown operator");
 }

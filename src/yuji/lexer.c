@@ -81,6 +81,8 @@ DynArr* lexer_tokenize(Lexer *lexer) {
           type = TT_ELIF;
         } else if (strcmp(value, "else") == 0) {
           type = TT_ELSE;
+        } else if (strcmp(value, "fn") == 0) {
+          type = TT_FN;
         } else {
           panic("Unexpected keyword: %s", value);
         }
@@ -135,6 +137,10 @@ DynArr* lexer_tokenize(Lexer *lexer) {
 
         case '%':
           type = TT_MOD;
+          break;
+
+        case ',':
+          type = TT_COMMA;
           break;
 
         default:

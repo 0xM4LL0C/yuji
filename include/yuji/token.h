@@ -12,6 +12,7 @@ typedef enum {
   TT_IF,
   TT_ELIF,
   TT_ELSE,
+  TT_FN,
 
   TT_ASSIGN, // =
   TT_PLUS, // +
@@ -25,6 +26,7 @@ typedef enum {
   TT_MOD, // %
   TT_LT, // <
   TT_GT, // >
+  TT_COMMA, // ,
 } TokenType;
 
 typedef struct {

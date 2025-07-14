@@ -51,6 +51,27 @@ void ast_free(ASTNode* node) {
     case AST_ELSE:
       ast_free(node->else_.body);
       break;
+
+    case AST_FUNCTION:
+      free(node->function.name);
+
+      for (size_t i = 0; i < node->function.params->size; ++i) {
+        ast_free(dyn_array_get(node->function.params, i));
+      }
+
+      dyn_array_free(node->function.params);
+      ast_free(node->function.body);
+      break;
+
+    case AST_CALL:
+      free(node->call.name);
+
+      for (size_t i = 0; i < node->call.args->size; ++i) {
+        ast_free(dyn_array_get(node->call.args, i));
+      }
+
+      dyn_array_free(node->call.args);
+      break;
   }
 
   free(node);
@@ -137,5 +158,26 @@ ASTNode* ast_else_init(ASTNode* body) {
   node->type = AST_ELSE;
   node->else_.body = body;
 
+  return node;
+}
+
+ASTNode* ast_function_init(ASTIdentifier* name, DynArr* params, ASTNode* body) {
+  ASTNode* node = malloc(sizeof(ASTNode));
+  check_memory_is_not_null(node);
+
+  node->type = AST_FUNCTION;
+  node->function.name = name;
+  node->function.params = params;
+  node->function.body = body;
+
+  return node;
+}
+
+ASTNode* ast_call_init(ASTIdentifier* name, DynArr* args) {
+  ASTNode* node = malloc(sizeof(ASTNode));
+  check_memory_is_not_null(node);
+  node->type = AST_CALL;
+  node->call.name = name;
+  node->call.args = args;
   return node;
 }

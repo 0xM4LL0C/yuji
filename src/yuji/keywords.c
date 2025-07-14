@@ -5,5 +5,6 @@ const char* KEYWORDS[] = {
   "if",
   "elif",
   "else",
+  "fn",
   NULL,
 };
