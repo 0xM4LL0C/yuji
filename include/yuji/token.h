@@ -10,6 +10,8 @@ typedef enum {
 
   TT_LET,
   TT_IF,
+  TT_ELIF,
+  TT_ELSE,
 
   TT_ASSIGN, // =
   TT_PLUS, // +

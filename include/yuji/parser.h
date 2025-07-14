@@ -29,6 +29,8 @@ ASTNode* parser_parse_let(Parser* parser);
 ASTNode* parser_parse_assign(Parser* parser);
 ASTNode* parser_parse_block(Parser* parser);
 ASTNode* parser_parse_if(Parser* parser);
+ASTNode* parser_parse_elif(Parser* parser);
+ASTNode* parser_parse_else(Parser* parser);
 
 void parser_error(const Parser* parser,
                   char* message) __attribute__((noreturn));

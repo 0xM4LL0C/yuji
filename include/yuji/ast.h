@@ -37,6 +37,16 @@ typedef struct {
   ASTNode* body;
 } ASTIf;
 
+typedef struct {
+  ASTNode* condition;
+  ASTNode* body;
+} ASTElif;
+
+typedef struct {
+  ASTNode* condition;
+  ASTNode* body;
+} ASTElse;
+
 typedef enum {
   AST_NUMBER,
   AST_BIN_OP,
@@ -45,6 +55,8 @@ typedef enum {
   AST_ASSIGN,
   AST_BLOCK,
   AST_IF,
+  AST_ELIF,
+  AST_ELSE,
 } ASTNodeType;
 
 struct ASTNode {
@@ -57,6 +69,8 @@ struct ASTNode {
     ASTAssign assign;
     ASTBlock block;
     ASTIf if_;
+    ASTElif elif;
+    ASTElse else_;
   };
 };
 
@@ -69,3 +83,5 @@ ASTNode* ast_let_init(ASTIdentifier* name, ASTNode* value);
 ASTNode* ast_assign_init(ASTIdentifier* name, ASTNode* value);
 ASTNode* ast_block_init(DynArr* expressions);
 ASTNode* ast_if_init(ASTNode* condition, ASTNode* body);
+ASTNode* ast_elif_init(ASTNode* condition, ASTNode* body);
+ASTNode* ast_else_init(ASTNode* body);

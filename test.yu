@@ -4,6 +4,8 @@ let b = 2
 
 let c = a + b
 
-let d = if c {
+let d = if c < 5 {
     c + a + b
+} else {
+    90
 }

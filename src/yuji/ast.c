@@ -41,6 +41,16 @@ void ast_free(ASTNode* node) {
     case AST_IF:
       ast_free(node->if_.condition);
       ast_free(node->if_.body);
+      break;
+
+    case AST_ELIF:
+      ast_free(node->elif.condition);
+      ast_free(node->elif.body);
+      break;
+
+    case AST_ELSE:
+      ast_free(node->else_.body);
+      break;
   }
 
   free(node);
@@ -105,6 +115,27 @@ ASTNode* ast_if_init(ASTNode* condition, ASTNode* body) {
   node->type = AST_IF;
   node->if_.condition = condition;
   node->if_.body = body;
+
+  return node;
+}
+
+ASTNode* ast_elif_init(ASTNode* condition, ASTNode* body) {
+  ASTNode* node = malloc(sizeof(ASTNode));
+  check_memory_is_not_null(node);
+
+  node->type = AST_ELIF;
+  node->elif.condition = condition;
+  node->elif.body = body;
+
+  return node;
+}
+
+ASTNode* ast_else_init(ASTNode* body) {
+  ASTNode* node = malloc(sizeof(ASTNode));
+  check_memory_is_not_null(node);
+
+  node->type = AST_ELSE;
+  node->else_.body = body;
 
   return node;
 }

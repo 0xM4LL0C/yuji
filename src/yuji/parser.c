@@ -103,6 +103,14 @@ ASTNode* parser_parse_factor(Parser* parser) {
     return parser_parse_if(parser);
   }
 
+  if (parser->current_token->type == TT_ELIF) {
+    return parser_parse_elif(parser);
+  }
+
+  if (parser->current_token->type == TT_ELSE) {
+    return parser_parse_else(parser);
+  }
+
   LOG("current token type: %s", tt_to_string(parser->current_token->type));
   parser_error(parser, "Expected number or identifier");
 }
@@ -162,6 +170,10 @@ DynArr* parser_parse(Parser* parser) {
       }
     } else if (parser->current_token->type == TT_IF) {
       node = parser_parse_if(parser);
+    } else if (parser->current_token->type == TT_ELIF) {
+      node = parser_parse_elif(parser);
+    } else if (parser->current_token->type == TT_ELSE) {
+      node = parser_parse_else(parser);
     } else {
       node = parser_parse_expr(parser);
     }
@@ -236,6 +248,10 @@ ASTNode* parser_parse_block(Parser* parser) {
       expr = parser_parse_assign(parser);
     } else if (parser->current_token->type == TT_IF) {
       expr = parser_parse_if(parser);
+    } else if (parser->current_token->type == TT_ELIF) {
+      expr = parser_parse_elif(parser);
+    } else if (parser->current_token->type == TT_ELSE) {
+      expr = parser_parse_else(parser);
     } else {
       expr = parser_parse_expr(parser);
     }
@@ -259,4 +275,24 @@ ASTNode* parser_parse_if(Parser* parser) {
   ASTNode* body = parser_parse_block(parser);
 
   return ast_if_init(condition, body);
+}
+
+ASTNode* parser_parse_elif(Parser* parser) {
+  parser_expect(parser, TT_ELIF);
+  parser_advance(parser);
+
+  ASTNode* condition = parser_parse_expr(parser);
+
+  ASTNode* body = parser_parse_block(parser);
+
+  return ast_elif_init(condition, body);
+}
+
+ASTNode* parser_parse_else(Parser* parser) {
+  parser_expect(parser, TT_ELSE);
+  parser_advance(parser);
+
+  ASTNode* body = parser_parse_block(parser);
+
+  return ast_else_init(body);
 }

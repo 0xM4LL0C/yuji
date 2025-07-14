@@ -93,6 +93,20 @@ YujiValue* eval(ASTNode* node, Interpreter* interpreter) {
     return NULL;
   }
 
+  if (node->type == AST_ELIF) {
+    YujiValue* condition = eval(node->elif.condition, interpreter);
+
+    if (condition) {
+      return eval(node->elif.body, interpreter);
+    }
+
+    return NULL;
+  }
+
+  if (node->type == AST_ELSE) {
+    return eval(node->else_.body, interpreter);
+  }
+
   if (node->type == AST_BLOCK) {
     YujiValue* result = NULL;
 

@@ -77,6 +77,10 @@ DynArr* lexer_tokenize(Lexer *lexer) {
           type = TT_LET;
         } else if (strcmp(value, "if") == 0) {
           type = TT_IF;
+        } else if (strcmp(value, "elif") == 0) {
+          type = TT_ELIF;
+        } else if (strcmp(value, "else") == 0) {
+          type = TT_ELSE;
         } else {
           panic("Unexpected keyword: %s", value);
         }
