@@ -1,3 +1,10 @@
+#ifdef WIN32
+#warning "Windows is not officially supported"
+#endif
+#ifndef __unix__
+#warning "Non Unix OS is not officially supported"
+#endif
+
 #include "yuji/ast.h"
 #include "yuji/dyn_array.h"
 #include "yuji/interpreter.h"
