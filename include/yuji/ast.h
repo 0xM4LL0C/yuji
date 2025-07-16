@@ -62,6 +62,10 @@ typedef struct {
   char* value;
 } ASTString;
 
+typedef struct {
+  char* value;
+} ASTUse;
+
 typedef enum {
   AST_NUMBER,
   AST_BIN_OP,
@@ -75,6 +79,7 @@ typedef enum {
   AST_FUNCTION,
   AST_CALL,
   AST_STRING,
+  AST_USE,
 } ASTNodeType;
 
 struct ASTNode {
@@ -92,6 +97,7 @@ struct ASTNode {
     ASTFunction function;
     ASTCall call;
     ASTString string;
+    ASTUse use;
   };
 };
 
@@ -109,3 +115,4 @@ ASTNode* ast_else_init(ASTNode* body);
 ASTNode* ast_function_init(ASTIdentifier* name, DynArr* params, ASTNode* body);
 ASTNode* ast_call_init(ASTIdentifier* name, DynArr* args);
 ASTNode* ast_string_init(const char* value);
+ASTNode* ast_use_init(const char* value);

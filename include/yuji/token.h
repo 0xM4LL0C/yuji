@@ -6,6 +6,7 @@
 
 typedef enum {
   TT_NUMBER,
+  TT_STRING,
   TT_IDENTIFIER,
 
   TT_LET,
@@ -13,6 +14,7 @@ typedef enum {
   TT_ELIF,
   TT_ELSE,
   TT_FN,
+  TT_USE,
 
   TT_ASSIGN, // =
   TT_PLUS, // +

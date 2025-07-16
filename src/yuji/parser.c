@@ -4,6 +4,7 @@
 #include "yuji/utils.h"
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 Parser* parser_init(const DynArr* tokens) {
@@ -85,6 +86,12 @@ ASTNode* parser_parse_factor(Parser* parser) {
     return node;
   }
 
+  if (parser->current_token->type == TT_STRING) {
+    ASTNode* node = ast_string_init(parser->current_token->value);
+    parser_advance(parser);
+    return node;
+  }
+
   if (parser->current_token->type == TT_IDENTIFIER) {
     if (parser_match_next(parser, TT_LPAREN)) {
       return parser_parse_call(parser);
@@ -119,12 +126,13 @@ ASTNode* parser_parse_factor(Parser* parser) {
     return parser_parse_fn(parser);
   }
 
-  if (parser->current_token->type == TT_QUOTE) {
-    return parser_parse_string(parser);
+  if (parser->current_token->type == TT_USE) {
+    return parser_parse_use(parser);
   }
 
+
   LOG("current token type: %s", tt_to_string(parser->current_token->type));
-  parser_error(parser, "Expected number or identifier");
+  parser_error(parser, "Expected number, string, or identifier");
 }
 
 
@@ -374,12 +382,11 @@ ASTNode* parser_parse_call(Parser* parser) {
   return ast_call_init(name, args);
 }
 
-ASTNode* parser_parse_string(Parser* parser) {
-  parser_expect(parser, TT_QUOTE);
-  ASTString* string = malloc(sizeof(ASTString));
-  check_memory_is_not_null(string);
-  string->value = strdup(parser->current_token->value);
+ASTNode* parser_parse_use(Parser* parser) {
+  parser_expect(parser, TT_USE);
   parser_advance(parser);
-
-  return ast_string_init(string->value);
+  parser_expect(parser, TT_STRING);
+  ASTNode* node = ast_use_init(parser->current_token->value);
+  parser_advance(parser);
+  return node;
 }

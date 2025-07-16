@@ -33,7 +33,7 @@ ASTNode* parser_parse_elif(Parser* parser);
 ASTNode* parser_parse_else(Parser* parser);
 ASTNode* parser_parse_fn(Parser* parser);
 ASTNode* parser_parse_call(Parser* parser);
-ASTNode* parser_parse_string(Parser* parser);
+ASTNode* parser_parse_use(Parser* parser);
 
 void parser_error(const Parser* parser,
                   char* message) __attribute__((noreturn));

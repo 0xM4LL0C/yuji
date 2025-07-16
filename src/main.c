@@ -1,3 +1,4 @@
+#include "yuji/module.h"
 #include "yuji/value.h"
 #ifdef WIN32
 #warning "Windows is not officially supported"
@@ -56,12 +57,12 @@ YujiValue* eval(ASTNode* node, Interpreter* interpreter) {
 
   if (node->type == AST_LET) {
     YujiValue* result = eval(node->let.value, interpreter);
-    map_insert(interpreter->variables, node->let.name->value, result);
+    map_insert(interpreter->env, node->let.name->value, result);
     return result;
   }
 
   if (node->type == AST_IDENTIFIER) {
-    YujiValue* val = map_get(interpreter->variables, node->identifier.value);
+    YujiValue* val = map_get(interpreter->env, node->identifier.value);
 
     if (!val) {
       panic("Undefined variable: %s", node->identifier.value);
@@ -72,14 +73,14 @@ YujiValue* eval(ASTNode* node, Interpreter* interpreter) {
 
   if (node->type == AST_ASSIGN) {
     YujiValue* result = eval(node->assign.value, interpreter);
-    YujiValue* existing_val = map_get(interpreter->variables,
+    YujiValue* existing_val = map_get(interpreter->env,
                                       node->assign.name->value);
 
     if (!existing_val) {
       panic("Cannot assign to undefined variable: %s", node->assign.name->value);
     }
 
-    map_insert(interpreter->variables, node->assign.name->value, result);
+    map_insert(interpreter->env, node->assign.name->value, result);
     return result;
   }
 
@@ -118,17 +119,36 @@ YujiValue* eval(ASTNode* node, Interpreter* interpreter) {
   }
 
   if (node->type == AST_FUNCTION) {
-    // Сохраняем функцию в переменных интерпретатора
     YujiValue* func_value = value_function_init(node);
-    map_insert(interpreter->variables, node->function.name->value, func_value);
+    map_insert(interpreter->env, node->function.name->value, func_value);
     return func_value;
   }
 
   if (node->type == AST_CALL) {
-    YujiValue* func_value = map_get(interpreter->variables, node->call.name->value);
+    YujiValue* func_value = map_get(interpreter->env, node->call.name->value);
 
-    if (!func_value || func_value->type != VT_FUNCTION) {
-      panic("Undefined or invalid function: %s", node->call.name->value);
+    if (!func_value) {
+      panic("Undefined function: %s", node->call.name->value);
+    }
+
+    YujiModuleFunction module_func = map_get(interpreter->env,
+                                     node->call.name->value);
+
+    if (module_func && func_value->type != VT_FUNCTION) {
+      DynArr* args = dyn_array_init();
+
+      for (size_t i = 0; i < node->call.args->size; i++) {
+        YujiValue* arg_value = eval(dyn_array_get(node->call.args, i), interpreter);
+        dyn_array_append(args, arg_value);
+      }
+
+      YujiValue* result = module_func(args);
+      dyn_array_free(args);
+      return result;
+    }
+
+    if (func_value->type != VT_FUNCTION) {
+      panic("Invalid function: %s", node->call.name->value);
     }
 
     ASTNode* func_node = func_value->value.function.node;
@@ -138,11 +158,12 @@ YujiValue* eval(ASTNode* node, Interpreter* interpreter) {
     }
 
     Interpreter* local_interpreter = interpreter_init();
+    local_interpreter->env = map_init();
 
     for (size_t i = 0; i < func_node->function.params->size; ++i) {
       ASTIdentifier* param = dyn_array_get(func_node->function.params, i);
       YujiValue* arg_value = eval(dyn_array_get(node->call.args, i), interpreter);
-      map_insert(local_interpreter->variables, param->value, arg_value);
+      map_insert(local_interpreter->env, param->value, arg_value);
     }
 
     YujiValue* result = eval(func_node->function.body, local_interpreter);
@@ -152,6 +173,29 @@ YujiValue* eval(ASTNode* node, Interpreter* interpreter) {
 
   if (node->type == AST_STRING) {
     return value_string_init(node->string.value);
+  }
+
+  if (node->type == AST_USE) {
+    YujiModule* module = map_get(interpreter->loaded_modules, node->use.value);
+
+    if (!module) {
+      panic("Module not found: %s", node->use.value);
+    }
+
+    LOG("Loading module: %s, env size: %zu", node->use.value,
+        module->env->pairs->size);
+
+    for (size_t i = 0; i < module->env->pairs->size; i++) {
+      MapPair* pair = dyn_array_get(module->env->pairs, i);
+
+      if (pair->value) {
+        map_insert(interpreter->env, pair->key,
+                   pair->value);
+        LOG("Registered function: %s from module %s", pair->key, node->use.value);
+      }
+    }
+
+    return value_null_init();
   }
 
   LOG("unhandled token type: %d", node->type);

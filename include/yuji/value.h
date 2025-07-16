@@ -6,6 +6,7 @@ typedef enum {
   VT_NUMBER,
   VT_FUNCTION,
   VT_STRING,
+  VT_NULL,
 } ValueType;
 
 typedef struct {
@@ -26,3 +27,4 @@ void value_free(YujiValue* value);
 YujiValue* value_number_init(int number);
 YujiValue* value_function_init(ASTNode* node);
 YujiValue* value_string_init(const char* string);
+YujiValue* value_null_init();

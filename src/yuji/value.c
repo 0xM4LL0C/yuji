@@ -8,6 +8,7 @@ void value_free(YujiValue* value) {
   switch (value->type) {
     case VT_NUMBER:
     case VT_FUNCTION:
+    case VT_NULL:
       break;
 
     case VT_STRING:
@@ -39,5 +40,12 @@ YujiValue* value_string_init(const char* string) {
   check_memory_is_not_null(value);
   value->type = VT_STRING;
   value->value.string = strdup(string);
+  return value;
+}
+
+YujiValue* value_null_init() {
+  YujiValue* value = malloc(sizeof(YujiValue));
+  check_memory_is_not_null(value);
+  value->type = VT_NULL;
   return value;
 }

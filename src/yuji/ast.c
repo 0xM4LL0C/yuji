@@ -76,6 +76,9 @@ void ast_free(ASTNode* node) {
     case AST_STRING:
       free(node->string.value);
       break;
+
+    case AST_USE:
+      free(node->use.value);
   }
 
   free(node);
@@ -193,5 +196,14 @@ ASTNode* ast_string_init(const char* value) {
   node->type = AST_STRING;
   node->string.value = strdup(value);
 
+  return node;
+}
+
+ASTNode* ast_use_init(const char* value) {
+  ASTNode* node = malloc(sizeof(ASTNode));
+  check_memory_is_not_null(node);
+
+  node->type = AST_USE;
+  node->use.value = strdup(value);
   return node;
 }

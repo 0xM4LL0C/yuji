@@ -83,6 +83,8 @@ DynArr* lexer_tokenize(Lexer *lexer) {
           type = TT_ELSE;
         } else if (strcmp(value, "fn") == 0) {
           type = TT_FN;
+        } else if (strcmp(value, "use") == 0) {
+          type = TT_USE;
         } else {
           panic("Unexpected keyword: %s", value);
         }
@@ -90,7 +92,7 @@ DynArr* lexer_tokenize(Lexer *lexer) {
         type = TT_IDENTIFIER;
       }
     } else if (c == '"') {
-      type = TT_QUOTE;
+      type = TT_STRING;
       lexer_parse_string(lexer, value);
     } else {
       switch (c) {
@@ -156,6 +158,7 @@ DynArr* lexer_tokenize(Lexer *lexer) {
       c = lexer_advance(lexer);
     }
 
+    LOG("value: %s", value);
     Token *token = token_init(value, type);
     dyn_array_append(lexer->tokens, token);
   }
@@ -216,9 +219,44 @@ void lexer_parse_string(Lexer* lexer, char* value) {
   char c = lexer_advance(lexer);
 
   while (c != '\0' && c != '"') {
-    value[index++] = c;
+    if (c == '\\') {
+      c = lexer_advance(lexer);
+
+      if (c == '\0') {
+        lexer_error(lexer, "Unexpected end of string");
+      }
+
+      switch (c) {
+        case 'n':
+          value[index++] = '\n';
+          break;
+
+        case 't':
+          value[index++] = '\t';
+          break;
+
+        case '"':
+          value[index++] = '"';
+          break;
+
+        case '\\':
+          value[index++] = '\\';
+          break;
+
+        default:
+          lexer_error(lexer, "Invalid escape sequence");
+      }
+    } else {
+      value[index++] = c;
+    }
+
     c = lexer_advance(lexer);
   }
 
+  if (c != '"') {
+    lexer_error(lexer, "Unterminated string");
+  }
+
   value[index] = '\0';
+  lexer_advance(lexer);
 }

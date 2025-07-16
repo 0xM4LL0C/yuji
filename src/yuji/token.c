@@ -84,6 +84,12 @@ char* tt_to_string(TokenType type) {
     case TT_QUOTE:
       return "TT_QUOTE";
 
+    case TT_USE:
+      return "TT_USE";
+
+    case TT_STRING:
+      return "TT_STRING";
+
     default:
       panic("unhandled token type: %d", type);
   }
