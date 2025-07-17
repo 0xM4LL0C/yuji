@@ -1,10 +1,9 @@
 #include "yuji/interpreter.h"
-#include "yuji/dyn_array.h"
 #include "yuji/map.h"
 #include "yuji/module.h"
 #include "yuji/stdlib/io.h"
 #include "yuji/utils.h"
-#include <stdio.h>
+
 #include <stdlib.h>
 
 Interpreter* interpreter_init() {

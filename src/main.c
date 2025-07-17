@@ -91,7 +91,7 @@ YujiValue* eval(ASTNode* node, Interpreter* interpreter) {
       return eval(node->if_.body, interpreter);
     }
 
-    return NULL;
+    return value_null_init();
   }
 
   if (node->type == AST_ELIF) {
@@ -101,7 +101,7 @@ YujiValue* eval(ASTNode* node, Interpreter* interpreter) {
       return eval(node->elif.body, interpreter);
     }
 
-    return NULL;
+    return value_null_init();
   }
 
   if (node->type == AST_ELSE) {
@@ -109,7 +109,7 @@ YujiValue* eval(ASTNode* node, Interpreter* interpreter) {
   }
 
   if (node->type == AST_BLOCK) {
-    YujiValue* result = NULL;
+    YujiValue* result = value_null_init();
 
     for (size_t i = 0; i < node->block.expressions->size; ++i) {
       result = eval(dyn_array_get(node->block.expressions, i), interpreter);
@@ -158,7 +158,7 @@ YujiValue* eval(ASTNode* node, Interpreter* interpreter) {
     }
 
     Interpreter* local_interpreter = interpreter_init();
-    local_interpreter->env = map_init();
+    local_interpreter->env = interpreter->env;
 
     for (size_t i = 0; i < func_node->function.params->size; ++i) {
       ASTIdentifier* param = dyn_array_get(func_node->function.params, i);
@@ -167,6 +167,7 @@ YujiValue* eval(ASTNode* node, Interpreter* interpreter) {
     }
 
     YujiValue* result = eval(func_node->function.body, local_interpreter);
+    local_interpreter->env = NULL;
     interpreter_free(local_interpreter);
     return result;
   }
