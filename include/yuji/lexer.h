@@ -2,7 +2,7 @@
 
 #include <stddef.h>
 
-#include "dyn_array.h"
+#include "yuji/types/dyn_array.h"
 
 typedef struct {
   DynArr* tokens;

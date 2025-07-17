@@ -8,7 +8,7 @@
 #endif
 
 #include "yuji/ast.h"
-#include "yuji/dyn_array.h"
+#include "yuji/types/dyn_array.h"
 #include "yuji/interpreter.h"
 #include "yuji/lexer.h"
 #include "yuji/parser.h"

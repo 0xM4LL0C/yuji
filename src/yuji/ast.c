@@ -1,5 +1,5 @@
 #include "yuji/ast.h"
-#include "yuji/dyn_array.h"
+#include "yuji/types/dyn_array.h"
 #include "yuji/utils.h"
 #include <stdlib.h>
 #include <string.h>

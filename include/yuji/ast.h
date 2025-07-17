@@ -1,6 +1,6 @@
 #pragma once
 
-#include "yuji/dyn_array.h"
+#include "yuji/types/dyn_array.h"
 typedef struct ASTNode ASTNode;
 
 typedef struct {

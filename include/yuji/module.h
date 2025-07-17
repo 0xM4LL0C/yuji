@@ -1,7 +1,7 @@
 #pragma once
 
-#include "yuji/dyn_array.h"
-#include "yuji/map.h"
+#include "yuji/types/dyn_array.h"
+#include "yuji/types/map.h"
 #include "yuji/value.h"
 
 typedef struct YujiModule {

@@ -1,5 +1,5 @@
 #include "yuji/interpreter.h"
-#include "yuji/map.h"
+#include "yuji/types/map.h"
 #include "yuji/module.h"
 #include "yuji/stdlib/io.h"
 #include "yuji/utils.h"

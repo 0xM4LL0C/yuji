@@ -1,7 +1,7 @@
 #pragma once
 
 #include "yuji/ast.h"
-#include "yuji/dyn_array.h"
+#include "yuji/types/dyn_array.h"
 #include "yuji/token.h"
 #include <stdlib.h>
 

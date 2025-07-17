@@ -1,6 +1,6 @@
 #pragma once
 
-#include "yuji/map.h"
+#include "yuji/types/map.h"
 typedef struct {
   Map* env;
   Map* loaded_modules;

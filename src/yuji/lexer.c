@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "yuji/dyn_array.h"
+#include "yuji/types/dyn_array.h"
 #include "yuji/lexer.h"
 #include "yuji/token.h"
 #include "yuji/utils.h"
