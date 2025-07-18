@@ -1,6 +1,6 @@
 #include "yuji/module.h"
-#include "yuji/dyn_array.h"
-#include "yuji/map.h"
+#include "yuji/types/dyn_array.h"
+#include "yuji/types/map.h"
 #include "yuji/utils.h"
 #include <stdlib.h>
 #include <string.h>
