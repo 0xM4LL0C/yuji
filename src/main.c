@@ -211,8 +211,9 @@ void repl() {
   while (1) {
     printf(">> ");
 
-    if (getline(&input, &len, stdin) == -1)
+    if (getline(&input, &len, stdin) == -1){
       break;
+    }
 
     Lexer* lexer = lexer_init(input);
     DynArr* tokens = lexer_tokenize(lexer);
