@@ -25,6 +25,7 @@ DynArr* parser_parse(Parser* parser);
 ASTNode* parser_parse_expr(Parser* parser);
 ASTNode* parser_parse_term(Parser* parser);
 ASTNode* parser_parse_factor(Parser* parser);
+
 ASTNode* parser_parse_let(Parser* parser);
 ASTNode* parser_parse_assign(Parser* parser);
 ASTNode* parser_parse_block(Parser* parser);
@@ -34,6 +35,8 @@ ASTNode* parser_parse_else(Parser* parser);
 ASTNode* parser_parse_fn(Parser* parser);
 ASTNode* parser_parse_call(Parser* parser);
 ASTNode* parser_parse_use(Parser* parser);
+ASTNode* parser_parse_bool(Parser* parser);
+ASTNode* parser_parse_null(Parser* parser);
 
 void parser_error(const Parser* parser,
                   char* message) __attribute__((noreturn));

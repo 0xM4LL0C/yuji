@@ -118,6 +118,10 @@ DynArr* lexer_tokenize(Lexer *lexer) {
           type = TT_FN;
         } else if (strcmp(value, "use") == 0) {
           type = TT_USE;
+        } else if (strcmp(value, "true") == 0 || strcmp(value, "false") == 0) {
+          type = TT_BOOL;
+        } else if (strcmp(value, "null") == 0) {
+          type = TT_NULL;
         } else {
           panic("Unexpected keyword: %s", value);
         }

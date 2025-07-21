@@ -94,6 +94,12 @@ char* tt_to_string(TokenType type) {
     case TT_STRING:
       return "TT_STRING";
 
+    case TT_BOOL:
+      return "TT_BOOL";
+
+    case TT_NULL:
+      return "TT_NULL";
+
     default:
       panic("unhandled token type: %d", type);
   }

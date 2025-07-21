@@ -273,6 +273,15 @@ YujiValue* interpreter_eval(Interpreter* interpreter, ASTNode* node) {
         panic("'%s' is not a function", node->call.name->value);
       }
     }
+
+    case AST_BOOL: {
+      return value_bool_init(&node->bool_);
+    }
+
+    case AST_NULL: {
+      return value_null_init();
+    }
+
   }
 
   panic("Invalid node type");

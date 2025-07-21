@@ -1,4 +1,6 @@
 use "yuji/io"
 
-let a = input("test ")
-println(a)
+let a = true
+let b = null
+
+println(a, b)

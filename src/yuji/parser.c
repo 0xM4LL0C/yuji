@@ -130,6 +130,14 @@ ASTNode* parser_parse_factor(Parser* parser) {
     return parser_parse_use(parser);
   }
 
+  if (parser->current_token->type == TT_BOOL) {
+    return parser_parse_bool(parser);
+  }
+
+  if (parser->current_token->type == TT_NULL) {
+    return parser_parse_null(parser);
+  }
+
 
   LOG("current token type: %s", tt_to_string(parser->current_token->type));
   parser_error(parser, "Expected number, string, or identifier");
@@ -389,4 +397,17 @@ ASTNode* parser_parse_use(Parser* parser) {
   ASTNode* node = ast_use_init(parser->current_token->value);
   parser_advance(parser);
   return node;
+}
+
+ASTNode* parser_parse_bool(Parser* parser) {
+  parser_expect(parser, TT_BOOL);
+  ASTNode* node = ast_bool_init(parser->current_token->value);
+  parser_advance(parser);
+  return node;
+}
+
+ASTNode* parser_parse_null(Parser* parser) {
+  parser_expect(parser, TT_NULL);
+  parser_advance(parser);
+  return ast_null_init();
 }

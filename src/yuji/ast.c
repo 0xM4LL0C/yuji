@@ -10,6 +10,10 @@ void ast_free(ASTNode* node) {
   }
 
   switch (node->type) {
+    case AST_BOOL:
+    case AST_NULL:
+      break;
+
     case AST_NUMBER:
       free(node->number.value);
       break;
@@ -215,5 +219,31 @@ ASTNode* ast_use_init(const char* value) {
 
   node->type = AST_USE;
   node->use.value = strdup(value);
+  return node;
+}
+
+ASTNode* ast_bool_init(const char* value) {
+  ASTNode* node = malloc(sizeof(ASTNode));
+  check_memory_is_not_null(node);
+
+  node->type = AST_BOOL;
+
+  if (strcmp(value, "true")) {
+    node->bool_.value = true;
+  } else if (strcmp(value, "false")) {
+    node->bool_.value = false;
+  } else {
+    panic("invalue bool: %s", value);
+  }
+
+  return node;
+}
+
+ASTNode* ast_null_init() {
+  ASTNode* node = malloc(sizeof(ASTNode));
+  check_memory_is_not_null(node);
+
+  node->type = AST_NULL;
+
   return node;
 }

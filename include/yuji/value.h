@@ -8,6 +8,7 @@ typedef enum {
   VT_CFUNCTION,
   VT_STRING,
   VT_NULL,
+  VT_BOOL,
 } ValueType;
 
 typedef struct YujiValue YujiValue;
@@ -25,6 +26,7 @@ struct YujiValue {
     YujiFunction function;
     char* string;
     YujiCFunction cfunction;
+    bool value;
   } value;
 };
 
@@ -35,3 +37,4 @@ YujiValue* value_function_init(ASTNode* node);
 YujiValue* value_string_init(const char* string);
 YujiValue* value_null_init();
 YujiValue* value_cfunction_init(YujiCFunction func);
+YujiValue* value_bool_init(ASTBool* bool_);

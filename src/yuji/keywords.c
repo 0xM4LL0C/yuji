@@ -7,5 +7,8 @@ const char* KEYWORDS[] = {
   "else",
   "fn",
   "use",
+  "true",
+  "false",
+  "null",
   NULL,
 };
