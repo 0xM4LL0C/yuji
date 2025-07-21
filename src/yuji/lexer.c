@@ -6,20 +6,22 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "yuji/position.h"
 #include "yuji/types/dyn_array.h"
 #include "yuji/lexer.h"
 #include "yuji/token.h"
 #include "yuji/utils.h"
 #include "yuji/keywords.h"
 
-Lexer* lexer_init(const char* input) {
+Lexer* lexer_init(DynArr* input, const char* file_name) {
   Lexer *lexer = malloc(sizeof(Lexer));
   check_memory_is_not_null(lexer);
-  lexer->pos = 0;
+
+  lexer->position = position_init(0, 0, file_name);
   lexer->input = input;
-  lexer->current_char =
-    lexer->input[lexer->pos] ? lexer->input[lexer->pos] : '\0';
   lexer->tokens = dyn_array_init();
+  lexer->current_char = lexer_peek(lexer);
+
   return lexer;
 }
 
@@ -37,18 +39,49 @@ void lexer_free(Lexer *lexer) {
   free(lexer);
 }
 
+char lexer_peek(Lexer *lexer) {
+  char* line = dyn_array_get(lexer->input, lexer->position->line);
+
+  if (!line) {
+    return '\0';
+  }
+
+  if (lexer->position->column < strlen(line)) {
+    return line[lexer->position->column];
+  }
+
+  return '\0';
+}
+
 char lexer_advance(Lexer *lexer) {
-  lexer->pos++;
-  lexer->current_char =
-    lexer->pos < strlen(lexer->input) ? lexer->input[lexer->pos] : '\0';
+  char* line = dyn_array_get(lexer->input, lexer->position->line);
+
+  if (!line) {
+    lexer->current_char = '\0';
+    return '\0';
+  }
+
+  if (lexer->position->column < strlen(line)) {
+    lexer->position->column++;
+  } else {
+    lexer->position->line++;
+    lexer->position->column = 0;
+  }
+
+  lexer->current_char = lexer_peek(lexer);
   return lexer->current_char;
 }
 
 void lexer_skip_whitespace(Lexer *lexer) {
-  char c = lexer->current_char;
+  while (lexer->current_char != '\0' && isspace(lexer->current_char)) {
+    if (lexer->current_char == '\n') {
+      lexer->position->line++;
+      lexer->position->column = 0;
+    } else {
+      lexer->position->column++;
+    }
 
-  while (c != '\0' && isspace(c)) {
-    c = lexer_advance(lexer);
+    lexer->current_char = lexer_peek(lexer);
   }
 }
 
@@ -158,8 +191,7 @@ DynArr* lexer_tokenize(Lexer *lexer) {
       c = lexer_advance(lexer);
     }
 
-    LOG("value: %s", value);
-    Token *token = token_init(value, type);
+    Token *token = token_init(value, type, lexer->position);
     dyn_array_append(lexer->tokens, token);
   }
 
@@ -201,12 +233,13 @@ void lexer_parse_keyword_or_identifier(Lexer *lexer, char* value) {
 }
 
 void lexer_error(const Lexer* lexer, char* message) {
-  const char* input = lexer->input;
-  size_t pos = lexer->pos;
-  fprintf(stderr, ANSI_RED "\nLexer error: %s\n" ANSI_RESET, message);
+  const char* input = dyn_array_get(lexer->input, lexer->position->line);
+  size_t column = lexer->position->column;
+  fprintf(stderr, ANSI_RED "\nLexer error at line %zu column %zu: %s\n"
+          ANSI_RESET, lexer->position->line, lexer->position->column, message);
   fprintf(stderr, "%s", input);
 
-  for (size_t i = 0; i < pos; i++) {
+  for (size_t i = 0; i < column; i++) {
     fputc(input[i] == '\t' ? '\t' : '~', stderr);
   }
 

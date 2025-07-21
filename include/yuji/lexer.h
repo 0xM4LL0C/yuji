@@ -2,19 +2,22 @@
 
 #include <stddef.h>
 
+#include "yuji/position.h"
 #include "yuji/types/dyn_array.h"
 
 typedef struct {
   DynArr* tokens;
-  const char* input;
+  DynArr* input;
   char current_char;
-  size_t pos;
+  Position* position;
 } Lexer;
 
-Lexer* lexer_init(const char* input);
+Lexer* lexer_init(DynArr* input, const char* file_name);
 void lexer_free(Lexer* lexer);
 
 char lexer_advance(Lexer* lexer);
+char lexer_peek(Lexer* lexer);
+
 void lexer_skip_whitespace(Lexer* lexer);
 
 DynArr* lexer_tokenize(Lexer* lexer);

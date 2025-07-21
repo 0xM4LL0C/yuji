@@ -1,5 +1,4 @@
 use "io"
 
-print("Hello, World!\n")
-let a = input("Enter a number: ")
+let a = input("test ")
 println(a)

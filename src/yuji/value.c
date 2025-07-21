@@ -9,6 +9,7 @@ void value_free(YujiValue* value) {
     case VT_NUMBER:
     case VT_FUNCTION:
     case VT_NULL:
+    case VT_CFUNCTION:
       break;
 
     case VT_STRING:
@@ -47,5 +48,13 @@ YujiValue* value_null_init() {
   YujiValue* value = malloc(sizeof(YujiValue));
   check_memory_is_not_null(value);
   value->type = VT_NULL;
+  return value;
+}
+
+YujiValue* value_cfunction_init(YujiCFunction func) {
+  YujiValue* value = malloc(sizeof(YujiValue));
+  check_memory_is_not_null(value);
+  value->type = VT_CFUNCTION;
+  value->value.cfunction = func;
   return value;
 }

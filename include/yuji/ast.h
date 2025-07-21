@@ -43,7 +43,6 @@ typedef struct {
 } ASTElif;
 
 typedef struct {
-  ASTNode* condition;
   ASTNode* body;
 } ASTElse;
 

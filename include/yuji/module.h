@@ -10,11 +10,10 @@ typedef struct YujiModule {
   Map* env;
 } YujiModule;
 
-typedef YujiValue* (*YujiModuleFunction)(DynArr* args);
 
 YujiModule* module_init(const char* name);
 void module_free(YujiModule* module);
 
 void module_add_submodule(YujiModule* module, YujiModule* submodule);
 void module_register_function(YujiModule* module, const char* name,
-                              YujiModuleFunction func);
+                              YujiCFunction func);
