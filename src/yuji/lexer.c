@@ -193,6 +193,7 @@ DynArr* lexer_tokenize(Lexer *lexer) {
 
     Token *token = token_init(value, type, lexer->position);
     dyn_array_append(lexer->tokens, token);
+    free(value);
   }
 
   return lexer->tokens;

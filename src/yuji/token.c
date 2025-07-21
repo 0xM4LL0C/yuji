@@ -17,6 +17,7 @@ Token* token_init(char* value, TokenType type, const Position* position) {
 
 void token_free(Token *token) {
   if (token) {
+    position_free(token->position);
     free(token->value);
     free(token);
   }

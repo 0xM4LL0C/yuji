@@ -45,10 +45,8 @@ YujiValue* value_string_init(const char* string) {
 }
 
 YujiValue* value_null_init() {
-  YujiValue* value = malloc(sizeof(YujiValue));
-  check_memory_is_not_null(value);
-  value->type = VT_NULL;
-  return value;
+  static YujiValue null_value = { .type = VT_NULL };
+  return &null_value;
 }
 
 YujiValue* value_cfunction_init(YujiCFunction func) {

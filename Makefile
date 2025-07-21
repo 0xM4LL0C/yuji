@@ -1,7 +1,7 @@
 SHELL := /bin/sh
 
 CC = gcc
-CFLAGS = -Iinclude -std=gnu99 -Wall -Wextra -O2 -g3 -fsanitize=address,leak,undefined
+CFLAGS = -Iinclude -std=gnu99 -Wall -Wextra -O2 -g3
 LDFLAGS = -fsanitize=address,leak,undefined
 
 SRC_DIR := src

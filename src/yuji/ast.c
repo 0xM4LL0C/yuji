@@ -24,10 +24,16 @@ void ast_free(ASTNode* node) {
       free(node->identifier.value);
       break;
 
-    case AST_ASSIGN:
     case AST_LET:
+      free(node->let.name->value);
       free(node->let.name);
-      free(node->let.value);
+      ast_free(node->let.value);
+      break;
+
+    case AST_ASSIGN:
+      free(node->let.name->value);
+      free(node->let.name);
+      ast_free(node->let.value);
       break;
 
     case AST_BLOCK:
@@ -53,10 +59,13 @@ void ast_free(ASTNode* node) {
       break;
 
     case AST_FUNCTION:
+      free(node->function.name->value);
       free(node->function.name);
 
       for (size_t i = 0; i < node->function.params->size; ++i) {
-        ast_free(dyn_array_get(node->function.params, i));
+        ASTIdentifier* param = dyn_array_get(node->function.params, i);
+        free(param->value);
+        free(param);
       }
 
       dyn_array_free(node->function.params);
@@ -64,6 +73,7 @@ void ast_free(ASTNode* node) {
       break;
 
     case AST_CALL:
+      free(node->call.name->value);
       free(node->call.name);
 
       for (size_t i = 0; i < node->call.args->size; ++i) {

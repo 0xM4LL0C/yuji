@@ -5,6 +5,7 @@
 #include "yuji/types/dyn_array.h"
 #include "yuji/utils.h"
 
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -12,7 +13,8 @@ int run_file(const char* file_name) {
   FILE* file = fopen(file_name, "r");
 
   if (!file) {
-    panic("File no found: %s", file_name);
+    strerror(errno);
+    panic("can't read file '%s': %s", file_name, strerror(errno));
   }
 
   DynArr* lines = dyn_array_init();
@@ -24,6 +26,11 @@ int run_file(const char* file_name) {
     dyn_array_append(lines, strdup(line));
   }
 
+  if (line) {
+    free(line);
+  }
+
+  fclose(file);
 
   Lexer* lexer = lexer_init(lines, file_name);
   DynArr* tokens = lexer_tokenize(lexer);
@@ -35,9 +42,7 @@ int run_file(const char* file_name) {
   Interpreter* interpreter = interpreter_init();
 
   for (size_t i = 0; i < ast->size; i++) {
-    YujiValue* result = interpreter_eval(interpreter, dyn_array_get(ast, i));
-
-    value_free(result);
+    interpreter_eval(interpreter, dyn_array_get(ast, i));
   }
 
   interpreter_free(interpreter);
@@ -57,5 +62,6 @@ int main(int argc, char** argv) {
     return run_file(argv[1]);
   }
 
-  return 0;
+  fprintf(stderr, "Usage: %s <filename>\n", argv[0]);
+  return 1;
 }

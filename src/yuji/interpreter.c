@@ -25,9 +25,19 @@ Interpreter* interpreter_init() {
 }
 
 void interpreter_free(Interpreter* interpreter) {
-  map_free(interpreter->env);
-  map_free(interpreter->loaded_modules);
+  for (size_t i = 0; i < interpreter->env->pairs->size; i++) {
+    MapPair* pair = dyn_array_get(interpreter->env->pairs, i);
+    value_free(pair->value);
+  }
 
+  map_free(interpreter->env);
+
+  for (size_t i = 0; i < interpreter->loaded_modules->pairs->size; i++) {
+    MapPair* pair = dyn_array_get(interpreter->loaded_modules->pairs, i);
+    module_free(pair->value);
+  }
+
+  map_free(interpreter->loaded_modules);
   free(interpreter);
 }
 
@@ -95,8 +105,9 @@ YujiValue* interpreter_eval(Interpreter* interpreter, ASTNode* node) {
         panic("variable already declared: %s", node->let.name->value);
       }
 
-      map_insert(interpreter->env, node->let.name->value, node->let.value);
-      return value_null_init();
+      YujiValue* value = interpreter_eval(interpreter, node->let.value);
+      map_insert(interpreter->env, node->let.name->value, value);
+      return value;
     }
 
     case AST_ASSIGN: {
@@ -104,8 +115,9 @@ YujiValue* interpreter_eval(Interpreter* interpreter, ASTNode* node) {
         panic("undefined name: %s", node->assign.name->value);
       }
 
-      map_insert(interpreter->env, node->assign.name->value, node->assign.value);
-      return value_null_init();
+      YujiValue* value = interpreter_eval(interpreter, node->assign.value);
+      map_insert(interpreter->env, node->assign.name->value, value);
+      return value;
     }
 
     case AST_BLOCK: {
@@ -120,10 +132,10 @@ YujiValue* interpreter_eval(Interpreter* interpreter, ASTNode* node) {
     }
 
     case AST_IDENTIFIER: {
-      ASTNode* value = map_get(interpreter->env, node->identifier.value);
+      YujiValue* value = map_get(interpreter->env, node->identifier.value);
 
       if (value) {
-        return interpreter_eval(interpreter, value);
+        return value;
       }
 
       panic("undefined name: %s", node->identifier.value);
@@ -177,7 +189,6 @@ YujiValue* interpreter_eval(Interpreter* interpreter, ASTNode* node) {
       YujiValue* function = map_get(interpreter->env, node->call.name->value);
 
       if (!function) {
-        value_free(function);
         panic("undefined function: %s", node->call.name->value);
       }
 
@@ -191,10 +202,6 @@ YujiValue* interpreter_eval(Interpreter* interpreter, ASTNode* node) {
         }
 
         YujiValue* result = function->value.cfunction(evaluated_args);
-
-        for (size_t i = 0; i < evaluated_args->size; i++) {
-          value_free(dyn_array_get(evaluated_args, i));
-        }
 
         dyn_array_free(evaluated_args);
 
