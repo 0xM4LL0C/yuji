@@ -1,8 +1,8 @@
 SHELL := /bin/sh
 
 CC = gcc
-CFLAGS = -Iinclude -std=gnu99 -Wall -Wextra -O2 -g3
-LDFLAGS =
+CFLAGS = -Iinclude -std=gnu99 -Wall -Wextra -O2 -g3 -fsanitize=address,leak,undefined
+LDFLAGS = -fsanitize=address,leak,undefined
 
 SRC_DIR := src
 OBJ_DIR := .build/obj
