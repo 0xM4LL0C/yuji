@@ -1,4 +1,4 @@
-use "io"
+use "yuji/io"
 
 let a = input("test ")
 println(a)

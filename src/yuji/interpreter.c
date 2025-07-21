@@ -42,22 +42,58 @@ void interpreter_free(Interpreter* interpreter) {
 }
 
 void interpreter_init_stdlib(Interpreter* interpreter) {
+  YujiModule* yuji_module = module_init("yuji");
   YujiModule* io_module = yuji_module_io_init();
-  map_insert(interpreter->loaded_modules, io_module->name, io_module);
+  module_add_submodule(yuji_module, io_module);
+  map_insert(interpreter->loaded_modules, yuji_module->name, yuji_module);
 }
 
 void interpreter_load_module(Interpreter* interpreter,
-                             const char* module_name) {
-  YujiModule* module = map_get(interpreter->loaded_modules, module_name);
+                             const char* module_path) {
+  char* path = strdup(module_path);
+  char* module_name = strtok(path, "/");
+  char* submodule_name = strtok(NULL, "/");
 
-  if (!module) {
-    panic("Module not found: %s", module_name);
-  }
+  if (module_name && submodule_name) {
+    YujiModule* parent_module = map_get(interpreter->loaded_modules, module_name);
 
-  for (size_t i = 0; i < module->env->pairs->size; i++) {
-    MapPair* pair = dyn_array_get(module->env->pairs, i);
-    YujiValue* func_value = value_cfunction_init((YujiCFunction)pair->value);
-    map_insert(interpreter->env, pair->key, func_value);
+    if (!parent_module) {
+      free(path);
+      panic("Parent module not found: %s", module_name);
+    }
+
+    for (size_t i = 0; i < parent_module->submodules->size; i++) {
+      YujiModule* submodule = dyn_array_get(parent_module->submodules, i);
+
+      if (strcmp(submodule->name, submodule_name) == 0) {
+        for (size_t j = 0; j < submodule->env->pairs->size; j++) {
+          MapPair* pair = dyn_array_get(submodule->env->pairs, j);
+          YujiValue* func_value = value_cfunction_init((YujiCFunction)pair->value);
+          map_insert(interpreter->env, pair->key, func_value);
+        }
+
+        free(path);
+        return;
+      }
+    }
+
+    free(path);
+    panic("Submodule not found: %s", submodule_name);
+  } else {
+    YujiModule* module = map_get(interpreter->loaded_modules, module_path);
+
+    if (!module) {
+      free(path);
+      panic("Module not found: %s", module_path);
+    }
+
+    for (size_t i = 0; i < module->env->pairs->size; i++) {
+      MapPair* pair = dyn_array_get(module->env->pairs, i);
+      YujiValue* func_value = value_cfunction_init((YujiCFunction)pair->value);
+      map_insert(interpreter->env, pair->key, func_value);
+    }
+
+    free(path);
   }
 }
 
