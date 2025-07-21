@@ -36,4 +36,4 @@ rebuild:
 	$(MAKE) build
 
 run: build
-	$(BIN_PATH) test.yu
+	$(BIN_PATH) test.yuji
