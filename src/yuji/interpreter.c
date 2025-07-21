@@ -65,21 +65,25 @@ YujiValue* interpreter_eval(Interpreter* interpreter, ASTNode* node) {
       YujiValue* left = interpreter_eval(interpreter, node->bin_op.left);
       YujiValue* right = interpreter_eval(interpreter, node->bin_op.right);
 
+      int result;
 
       if (strcmp(node->bin_op.op, "+") == 0) {
-        return value_number_init(left->value.number + right->value.number);
+        result = left->value.number + right->value.number;
       } else if (strcmp(node->bin_op.op, "-") == 0) {
-        return value_number_init(left->value.number - right->value.number);
+        result = left->value.number - right->value.number;
       } else if (strcmp(node->bin_op.op, "*") == 0) {
-        return value_number_init(left->value.number * right->value.number);
+        result = left->value.number % right->value.number;
       } else if (strcmp(node->bin_op.op, "/") == 0) {
-        return value_number_init(left->value.number / right->value.number);
+        result = left->value.number / right->value.number;
       } else if (strcmp(node->bin_op.op, "%") == 0) {
-        return value_number_init(left->value.number % right->value.number);
+        result = left->value.number % right->value.number;
+      } else {
+        panic("invalid operator: %s", node->bin_op.op);
       }
 
-      panic("invalid operator: %s", node->bin_op.op);
-      break;
+      value_free(left);
+      value_free(right);
+      return value_number_init(result);
     }
 
     case AST_STRING: {
@@ -106,8 +110,10 @@ YujiValue* interpreter_eval(Interpreter* interpreter, ASTNode* node) {
 
     case AST_BLOCK: {
       for (size_t i = 0; i < node->block.expressions->size; i++) {
-        interpreter_eval(interpreter, (ASTNode*)dyn_array_get(node->block.expressions,
-                         i));
+        YujiValue* result = interpreter_eval(interpreter,
+                                             (ASTNode*)dyn_array_get(node->block.expressions,
+                                               i));
+        value_free(result);
       }
 
       return value_null_init();
@@ -127,9 +133,11 @@ YujiValue* interpreter_eval(Interpreter* interpreter, ASTNode* node) {
       YujiValue* condition = interpreter_eval(interpreter, node->if_.condition);
 
       if (condition) {
+        value_free(condition);
         return interpreter_eval(interpreter, node->if_.body);
       }
 
+      value_free(condition);
       return value_null_init();
     }
 
@@ -137,8 +145,11 @@ YujiValue* interpreter_eval(Interpreter* interpreter, ASTNode* node) {
       YujiValue* condition = interpreter_eval(interpreter, node->elif.condition);
 
       if (condition) {
+        value_free(condition);
         return interpreter_eval(interpreter, node->elif.body);
       }
+
+      value_free(condition);
 
       return value_null_init();
     }
@@ -166,20 +177,8 @@ YujiValue* interpreter_eval(Interpreter* interpreter, ASTNode* node) {
       YujiValue* function = map_get(interpreter->env, node->call.name->value);
 
       if (!function) {
-        for (size_t i = 0; i < interpreter->loaded_modules->pairs->size; i++) {
-          MapPair* pair = dyn_array_get(interpreter->loaded_modules->pairs, i);
-          YujiModule* module = pair->value;
-          YujiCFunction c_func = map_get(module->env, node->call.name->value);
-
-          if (c_func) {
-            function = value_cfunction_init(c_func);
-            break;
-          }
-        }
-
-        if (!function) {
-          panic("undefined function: %s", node->call.name->value);
-        }
+        value_free(function);
+        panic("undefined function: %s", node->call.name->value);
       }
 
       if (function->type == VT_CFUNCTION) {
@@ -213,14 +212,12 @@ YujiValue* interpreter_eval(Interpreter* interpreter, ASTNode* node) {
         Interpreter* local_interpreter = interpreter_init();
         local_interpreter->env = interpreter->env;
 
-
         for (size_t i = 0; i < node->call.args->size; i++) {
           ASTIdentifier* param = dyn_array_get(func_node->function.params, i);
           YujiValue* arg_value = interpreter_eval(local_interpreter,
                                                   dyn_array_get(node->call.args, i));
           map_insert(local_interpreter->env, param->value, arg_value);
         }
-
 
         YujiValue* result = interpreter_eval(local_interpreter,
                                              func_node->function.body);
