@@ -35,6 +35,6 @@ void module_add_submodule(YujiModule* module, YujiModule* submodule) {
 }
 
 void module_register_function(YujiModule* module, const char* name,
-                              YujiModuleFunction func) {
+                              YujiCFunction func) {
   map_insert(module->env, name, func);
 }

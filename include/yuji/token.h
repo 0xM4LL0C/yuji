@@ -1,5 +1,6 @@
 #pragma once
 
+#include "yuji/position.h"
 #ifndef YUJI_MIN_VALUE_LENGTH
 #define YUJI_MIN_VALUE_LENGTH 500
 #endif
@@ -35,9 +36,10 @@ typedef enum {
 typedef struct {
   char* value;
   TokenType type;
+  Position* position;
 } Token;
 
-Token* token_init(char* value, TokenType type);
+Token* token_init(char* value, TokenType type, const Position* position);
 void token_free(Token* token);
 
 char* tt_to_string(TokenType type);

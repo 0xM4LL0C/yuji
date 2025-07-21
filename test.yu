@@ -1,5 +1,0 @@
-use "io"
-
-print("Hello, World!\n")
-let a = input("Enter a number: ")
-println(a)

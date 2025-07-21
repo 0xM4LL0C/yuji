@@ -13,7 +13,7 @@ BIN_PATH := $(BUILD_DIR)/$(BIN_NAME)
 SOURCES := $(shell find $(SRC_DIR) -name '*.c')
 OBJECTS := $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SOURCES))
 
-.PHONY: all build clean run
+.PHONY: all build clean run rebuild
 
 all: build
 
@@ -30,5 +30,10 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 clean:
 	rm -rf $(BUILD_DIR)
 
+rebuild:
+	rm -f $(BIN_PATH)
+	rm -f $(OBJECTS)
+	$(MAKE) build
+
 run: build
-	$(BIN_PATH) $(ARGS)
+	$(BIN_PATH) test.yuji

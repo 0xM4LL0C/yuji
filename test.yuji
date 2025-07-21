@@ -1,0 +1,4 @@
+use "io"
+
+let a = input("test ")
+println(a)

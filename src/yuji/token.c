@@ -1,13 +1,17 @@
 #include "yuji/token.h"
+#include "yuji/position.h"
 #include "yuji/utils.h"
 #include <stdlib.h>
 #include <string.h>
 
-Token* token_init(char* value, TokenType type) {
+Token* token_init(char* value, TokenType type, const Position* position) {
   Token *token = malloc(sizeof(Token));
   check_memory_is_not_null(token);
+
   token->value = strdup(value);
   token->type = type;
+  token->position = position_copy(position);
+
   return token;
 }
 
@@ -20,7 +24,6 @@ void token_free(Token *token) {
 
 char* tt_to_string(TokenType type) {
   switch (type) {
-
     case TT_NUMBER:
       return "TT_NUMBER";
 
