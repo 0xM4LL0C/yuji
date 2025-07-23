@@ -35,14 +35,16 @@ typedef struct {
 typedef struct {
   ASTNode* condition;
   ASTNode* body;
-  DynArr* elifs;
-  ASTNode* else_;
 } ASTIf;
 
 typedef struct {
   ASTNode* condition;
   ASTNode* body;
 } ASTElif;
+
+typedef struct {
+  ASTNode* body;
+} ASTElse;
 
 typedef struct {
   ASTIdentifier* name;
@@ -78,6 +80,7 @@ typedef enum {
   AST_BLOCK,
   AST_IF,
   AST_ELIF,
+  AST_ELSE,
   AST_FUNCTION,
   AST_CALL,
   AST_STRING,
@@ -97,6 +100,7 @@ struct ASTNode {
     ASTBlock block;
     ASTIf if_;
     ASTElif elif;
+    ASTElse else_;
     ASTFunction function;
     ASTCall call;
     ASTString string;
@@ -113,9 +117,9 @@ ASTNode* ast_identifier_init(const char* value);
 ASTNode* ast_let_init(ASTIdentifier* name, ASTNode* value);
 ASTNode* ast_assign_init(ASTIdentifier* name, ASTNode* value);
 ASTNode* ast_block_init(DynArr* expressions);
-ASTNode* ast_if_init(ASTNode* condition, ASTNode* body, DynArr* elifs,
-                     ASTNode* else_);
+ASTNode* ast_if_init(ASTNode* condition, ASTNode* body);
 ASTNode* ast_elif_init(ASTNode* condition, ASTNode* body);
+ASTNode* ast_else_init(ASTNode* body);
 ASTNode* ast_function_init(ASTIdentifier* name, DynArr* params, ASTNode* body);
 ASTNode* ast_call_init(ASTIdentifier* name, DynArr* args);
 ASTNode* ast_string_init(const char* value);

@@ -1,15 +1,6 @@
 use "yuji/io"
 
 let a = true
-let b = false
-let c = null
+let b = null
 
-println(a, b, c)
-
-if (a) {
-  println("if block")
-} elif b {
-  println("elif block")
-} else {
-  println("else block")
-}
+println(a, b)

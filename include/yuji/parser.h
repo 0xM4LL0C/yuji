@@ -30,6 +30,8 @@ ASTNode* parser_parse_let(Parser* parser);
 ASTNode* parser_parse_assign(Parser* parser);
 ASTNode* parser_parse_block(Parser* parser);
 ASTNode* parser_parse_if(Parser* parser);
+ASTNode* parser_parse_elif(Parser* parser);
+ASTNode* parser_parse_else(Parser* parser);
 ASTNode* parser_parse_fn(Parser* parser);
 ASTNode* parser_parse_call(Parser* parser);
 ASTNode* parser_parse_use(Parser* parser);

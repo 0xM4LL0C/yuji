@@ -175,21 +175,11 @@ YujiValue* interpreter_eval(Interpreter* interpreter, ASTNode* node) {
       YujiValue* condition = interpreter_eval(interpreter, node->if_.condition);
 
       if (condition) {
+        value_free(condition);
         return interpreter_eval(interpreter, node->if_.body);
       }
 
-      DYN_ARR_ITER(node->if_.elifs, ASTNode, elif, {
-        YujiValue* elif_condition = interpreter_eval(interpreter, elif->elif.condition);
-
-        if (elif_condition) {
-          return interpreter_eval(interpreter, elif->elif.body);
-        }
-      })
-
-      if (node->if_.else_) {
-        return interpreter_eval(interpreter, node->if_.else_);
-      }
-
+      value_free(condition);
       return value_null_init();
     }
 
@@ -202,7 +192,12 @@ YujiValue* interpreter_eval(Interpreter* interpreter, ASTNode* node) {
       }
 
       value_free(condition);
+
       return value_null_init();
+    }
+
+    case AST_ELSE: {
+      return interpreter_eval(interpreter, node->else_.body);
     }
 
     case AST_USE: {
