@@ -66,7 +66,7 @@ YujiValue* value_bool_init(bool bool_) {
   check_memory_is_not_null(value);
 
   value->type = VT_BOOL;
-  value->value.value = bool_;
+  value->value.bool_ = bool_;
 
   return value;
 }

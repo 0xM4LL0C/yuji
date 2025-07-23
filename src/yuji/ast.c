@@ -224,9 +224,10 @@ ASTNode* ast_bool_init(const char* value) {
 
   node->type = AST_BOOL;
 
-  if (strcmp(value, "true")) {
+
+  if (strcmp(value, "true") == 0) {
     node->bool_.value = true;
-  } else if (strcmp(value, "false")) {
+  } else if (strcmp(value, "false") == 0) {
     node->bool_.value = false;
   } else {
     panic("invalue bool: %s", value);

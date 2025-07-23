@@ -22,6 +22,10 @@ YujiValue* io_print(DynArr* args) {
         printf("null");
         break;
 
+      case VT_BOOL:
+        printf("%s", value->value.bool_ ? "true" : "false");
+        break;
+
       default:
         printf("<unknown>");
         break;

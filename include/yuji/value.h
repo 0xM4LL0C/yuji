@@ -26,7 +26,7 @@ struct YujiValue {
     YujiFunction function;
     char* string;
     YujiCFunction cfunction;
-    bool value;
+    bool bool_;
   } value;
 };
 
