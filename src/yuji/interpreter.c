@@ -24,14 +24,14 @@ Interpreter* interpreter_init() {
 }
 
 void interpreter_free(Interpreter* interpreter) {
-  MAP_ITER(interpreter->env, YujiValue, key, value, {
-    value_free(value);
-  });
+  DYN_ARR_ITER(interpreter->env->pairs, MapPair, pair, {
+    value_free(pair->value);
+  })
 
   map_free(interpreter->env);
 
-  MAP_ITER(interpreter->loaded_modules, YujiModule, key, value, {
-    module_free(value);
+  DYN_ARR_ITER(interpreter->loaded_modules->pairs, MapPair, pair, {
+    module_free(pair->value);
   })
 
   map_free(interpreter->loaded_modules);
@@ -61,8 +61,8 @@ void interpreter_load_module(Interpreter* interpreter,
 
     DYN_ARR_ITER(parent_module->submodules, YujiModule, submodule, {
       if (strcmp(submodule->name, submodule_name) == 0) {
-        MAP_ITER(submodule->env, YujiCFunction, key, value, {
-          YujiValue* func_value = value_cfunction_init(*value);
+        DYN_ARR_ITER(submodule->env->pairs, MapPair, pair, {
+          YujiValue* func_value = value_cfunction_init((YujiCFunction)pair->value);
           map_insert(interpreter->env, pair->key, func_value);
         })
         free(path);
@@ -80,8 +80,8 @@ void interpreter_load_module(Interpreter* interpreter,
       panic("Module not found: %s", module_path);
     }
 
-    MAP_ITER(module->env, YujiCFunction, key, value, {
-      YujiValue* func_value = value_cfunction_init(*value);
+    DYN_ARR_ITER(module->env->pairs, MapPair, pair, {
+      YujiValue* func_value = value_cfunction_init((YujiCFunction)pair->value);
       map_insert(interpreter->env, pair->key, func_value);
     })
 
