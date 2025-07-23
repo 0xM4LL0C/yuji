@@ -5,13 +5,10 @@
 #include "yuji/utils.h"
 #include "yuji/value.h"
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 YujiValue* io_print(DynArr* args) {
-  for (size_t i = 0; i < args->size; i++) {
-    YujiValue* value = dyn_array_get(args, i);
-
+  DYN_ARR_ITER(args, YujiValue, value, {
     switch (value->type) {
       case VT_STRING:
         printf("%s", value->value.string);
@@ -29,7 +26,7 @@ YujiValue* io_print(DynArr* args) {
         printf("<unknown>");
         break;
     }
-  }
+  })
 
   return value_null_init();
 }

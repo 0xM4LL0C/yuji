@@ -19,3 +19,9 @@ bool dyn_array_append(DynArr* arr, void* value);
 void* dyn_array_get(const DynArr* arr, size_t index);
 bool dyn_array_set(DynArr* arr, size_t index, void* value);
 void dyn_array_remove(DynArr* arr, size_t index);
+
+#define DYN_ARR_ITER(arr, type, var, body) \
+  for (size_t i = 0; i < arr->size; i++) { \
+    type* var = (type*)dyn_array_get(arr, i); \
+    body;\
+  }

@@ -41,10 +41,9 @@ void ast_free(ASTNode* node) {
       break;
 
     case AST_BLOCK:
-      for (size_t i = 0; i < node->block.expressions->size; ++i) {
-        ast_free(dyn_array_get(node->block.expressions, i));
-      }
-
+      DYN_ARR_ITER(node->block.expressions, ASTNode, element, {
+        ast_free(element);
+      })
       dyn_array_free(node->block.expressions);
       break;
 
@@ -66,12 +65,10 @@ void ast_free(ASTNode* node) {
       free(node->function.name->value);
       free(node->function.name);
 
-      for (size_t i = 0; i < node->function.params->size; ++i) {
-        ASTIdentifier* param = dyn_array_get(node->function.params, i);
+      DYN_ARR_ITER(node->function.params, ASTIdentifier, param, {
         free(param->value);
         free(param);
-      }
-
+      })
       dyn_array_free(node->function.params);
       ast_free(node->function.body);
       break;
@@ -80,10 +77,9 @@ void ast_free(ASTNode* node) {
       free(node->call.name->value);
       free(node->call.name);
 
-      for (size_t i = 0; i < node->call.args->size; ++i) {
-        ast_free(dyn_array_get(node->call.args, i));
-      }
-
+      DYN_ARR_ITER(node->call.args, ASTNode, element, {
+        ast_free(element);
+      })
       dyn_array_free(node->call.args);
       break;
 

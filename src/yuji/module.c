@@ -20,10 +20,9 @@ YujiModule* module_init(const char* name) {
 void module_free(YujiModule* module) {
   free((void*)module->name);
 
-  for (size_t i = 0; i < module->submodules->size; i++) {
-    YujiModule* submodule = dyn_array_get(module->submodules, i);
+  DYN_ARR_ITER(module->submodules, YujiModule, submodule, {
     module_free(submodule);
-  }
+  })
 
   dyn_array_free(module->submodules);
   map_free(module->env);

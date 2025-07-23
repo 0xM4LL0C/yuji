@@ -1,6 +1,7 @@
 #include "yuji/parser.h"
 #include "yuji/ast.h"
 #include "yuji/token.h"
+#include "yuji/types/dyn_array.h"
 #include "yuji/utils.h"
 #include <assert.h>
 #include <stdio.h>
@@ -23,8 +24,9 @@ void parser_free(Parser* parser) {
     return;
   }
 
-  for (size_t i = 0; i < parser->ast->size; ++i)
-    ast_free(dyn_array_get(parser->ast, i));
+  DYN_ARR_ITER(parser->ast, ASTNode, node, {
+    ast_free(node);
+  });
 
   dyn_array_free(parser->ast);
   free(parser);

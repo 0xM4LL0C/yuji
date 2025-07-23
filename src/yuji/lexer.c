@@ -30,10 +30,9 @@ void lexer_free(Lexer *lexer) {
     return;
   }
 
-  for (size_t i = 0; i < lexer->tokens->size; i++) {
-    Token *token = (Token*)dyn_array_get(lexer->tokens, i);
+  DYN_ARR_ITER(lexer->tokens, Token, token, {
     token_free(token);
-  }
+  })
 
   dyn_array_free(lexer->tokens);
   free(lexer);

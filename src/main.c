@@ -4,6 +4,7 @@
 #include "yuji/parser.h"
 #include "yuji/types/dyn_array.h"
 #include "yuji/utils.h"
+#include "yuji/value.h"
 
 #include <errno.h>
 #include <stdio.h>
@@ -41,17 +42,18 @@ int run_file(const char* file_name) {
 
   Interpreter* interpreter = interpreter_init();
 
-  for (size_t i = 0; i < ast->size; i++) {
-    interpreter_eval(interpreter, dyn_array_get(ast, i));
-  }
+  DYN_ARR_ITER(ast, ASTNode, element, {
+    interpreter_eval(interpreter, element);
+  })
+
 
   interpreter_free(interpreter);
   parser_free(parser);
   lexer_free(lexer);
 
-  for (size_t i = 0; i < lines->size; i++) {
-    free(dyn_array_get(lines, i));
-  }
+  DYN_ARR_ITER(lines, char*, element, {
+    free(element);
+  })
 
   dyn_array_free(lines);
   return 0;
