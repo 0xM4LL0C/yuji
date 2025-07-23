@@ -37,4 +37,4 @@ YujiValue* value_function_init(ASTNode* node);
 YujiValue* value_string_init(const char* string);
 YujiValue* value_null_init();
 YujiValue* value_cfunction_init(YujiCFunction func);
-YujiValue* value_bool_init(ASTBool* bool_);
+YujiValue* value_bool_init(bool bool_);

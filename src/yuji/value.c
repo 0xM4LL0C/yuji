@@ -61,7 +61,7 @@ YujiValue* value_cfunction_init(YujiCFunction func) {
   return value;
 }
 
-YujiValue* value_bool_init(ASTBool* bool_) {
+YujiValue* value_bool_init(bool bool_) {
   YujiValue* value = malloc(sizeof(YujiValue));
   check_memory_is_not_null(value);
 

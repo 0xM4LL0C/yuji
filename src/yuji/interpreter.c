@@ -111,25 +111,29 @@ YujiValue* interpreter_eval(Interpreter* interpreter, ASTNode* node) {
       YujiValue* left = interpreter_eval(interpreter, node->bin_op.left);
       YujiValue* right = interpreter_eval(interpreter, node->bin_op.right);
 
-      int result;
+      YujiValue* result;
 
       if (strcmp(node->bin_op.op, "+") == 0) {
-        result = left->value.number + right->value.number;
+        result = value_number_init(left->value.number + right->value.number);
       } else if (strcmp(node->bin_op.op, "-") == 0) {
-        result = left->value.number - right->value.number;
+        result = value_number_init(left->value.number - right->value.number);
       } else if (strcmp(node->bin_op.op, "*") == 0) {
-        result = left->value.number % right->value.number;
+        result = value_number_init(left->value.number * right->value.number);
       } else if (strcmp(node->bin_op.op, "/") == 0) {
-        result = left->value.number / right->value.number;
+        result = value_number_init(left->value.number / right->value.number);
       } else if (strcmp(node->bin_op.op, "%") == 0) {
-        result = left->value.number % right->value.number;
+        result = value_number_init(left->value.number % right->value.number);
+      } else if (strcmp(node->bin_op.op, "<") == 0) {
+        result = value_bool_init(left->value.number < right->value.number);
+      } else if (strcmp(node->bin_op.op, ">") == 0) {
+        result = value_bool_init(left->value.number > right->value.number);
       } else {
         panic("invalid operator: %s", node->bin_op.op);
       }
 
       value_free(left);
       value_free(right);
-      return value_number_init(result);
+      return result;
     }
 
     case AST_STRING: {
@@ -275,7 +279,7 @@ YujiValue* interpreter_eval(Interpreter* interpreter, ASTNode* node) {
     }
 
     case AST_BOOL: {
-      return value_bool_init(&node->bool_);
+      return value_bool_init(node->bool_.value);
     }
 
     case AST_NULL: {
