@@ -116,14 +116,6 @@ ASTNode* parser_parse_factor(Parser* parser) {
     return parser_parse_if(parser);
   }
 
-  if (parser->current_token->type == TT_ELIF) {
-    return parser_parse_elif(parser);
-  }
-
-  if (parser->current_token->type == TT_ELSE) {
-    return parser_parse_else(parser);
-  }
-
   if (parser->current_token->type == TT_FN) {
     return parser_parse_fn(parser);
   }
@@ -200,10 +192,6 @@ DynArr* parser_parse(Parser* parser) {
       }
     } else if (parser->current_token->type == TT_IF) {
       node = parser_parse_if(parser);
-    } else if (parser->current_token->type == TT_ELIF) {
-      node = parser_parse_elif(parser);
-    } else if (parser->current_token->type == TT_ELSE) {
-      node = parser_parse_else(parser);
     } else if (parser->current_token->type == TT_FN) {
       node = parser_parse_fn(parser);
     } else {
@@ -280,10 +268,6 @@ ASTNode* parser_parse_block(Parser* parser) {
       expr = parser_parse_assign(parser);
     } else if (parser->current_token->type == TT_IF) {
       expr = parser_parse_if(parser);
-    } else if (parser->current_token->type == TT_ELIF) {
-      expr = parser_parse_elif(parser);
-    } else if (parser->current_token->type == TT_ELSE) {
-      expr = parser_parse_else(parser);
     } else {
       expr = parser_parse_expr(parser);
     }
@@ -303,30 +287,26 @@ ASTNode* parser_parse_if(Parser* parser) {
   parser_advance(parser);
 
   ASTNode* condition = parser_parse_expr(parser);
-
   ASTNode* body = parser_parse_block(parser);
 
-  return ast_if_init(condition, body);
-}
+  DynArr* elifs = dyn_array_init();
 
-ASTNode* parser_parse_elif(Parser* parser) {
-  parser_expect(parser, TT_ELIF);
-  parser_advance(parser);
+  while (parser->current_token && parser->current_token->type == TT_ELIF) {
+    parser_advance(parser);
+    ASTNode* elif_condition = parser_parse_expr(parser);
+    ASTNode* elif_body = parser_parse_block(parser);
+    ASTNode* elif_node = ast_elif_init(elif_condition, elif_body);
+    dyn_array_append(elifs, elif_node);
+  }
 
-  ASTNode* condition = parser_parse_expr(parser);
+  ASTNode* else_body = NULL;
 
-  ASTNode* body = parser_parse_block(parser);
+  if (parser->current_token && parser->current_token->type == TT_ELSE) {
+    parser_advance(parser);
+    else_body = parser_parse_block(parser);
+  }
 
-  return ast_elif_init(condition, body);
-}
-
-ASTNode* parser_parse_else(Parser* parser) {
-  parser_expect(parser, TT_ELSE);
-  parser_advance(parser);
-
-  ASTNode* body = parser_parse_block(parser);
-
-  return ast_else_init(body);
+  return ast_if_init(condition, body, elifs, else_body);
 }
 
 ASTNode* parser_parse_fn(Parser* parser) {

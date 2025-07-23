@@ -50,15 +50,23 @@ void ast_free(ASTNode* node) {
     case AST_IF:
       ast_free(node->if_.condition);
       ast_free(node->if_.body);
+
+      if (node->if_.elifs) {
+        DYN_ARR_ITER(node->if_.elifs, ASTNode, element, {
+          ast_free(element);
+        })
+        dyn_array_free(node->if_.elifs);
+      }
+
+      if (node->if_.else_) {
+        ast_free(node->if_.else_);
+      }
+
       break;
 
     case AST_ELIF:
       ast_free(node->elif.condition);
       ast_free(node->elif.body);
-      break;
-
-    case AST_ELSE:
-      ast_free(node->else_.body);
       break;
 
     case AST_FUNCTION:
@@ -146,13 +154,16 @@ ASTNode* ast_block_init(DynArr* expressions) {
   return n;
 }
 
-ASTNode* ast_if_init(ASTNode* condition, ASTNode* body) {
+ASTNode* ast_if_init(ASTNode* condition, ASTNode* body, DynArr* elifs,
+                     ASTNode* else_) {
   ASTNode* node = malloc(sizeof(ASTNode));
   check_memory_is_not_null(node);
 
   node->type = AST_IF;
   node->if_.condition = condition;
   node->if_.body = body;
+  node->if_.elifs = elifs;
+  node->if_.else_ = else_;
 
   return node;
 }
@@ -164,16 +175,6 @@ ASTNode* ast_elif_init(ASTNode* condition, ASTNode* body) {
   node->type = AST_ELIF;
   node->elif.condition = condition;
   node->elif.body = body;
-
-  return node;
-}
-
-ASTNode* ast_else_init(ASTNode* body) {
-  ASTNode* node = malloc(sizeof(ASTNode));
-  check_memory_is_not_null(node);
-
-  node->type = AST_ELSE;
-  node->else_.body = body;
 
   return node;
 }

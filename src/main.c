@@ -4,7 +4,6 @@
 #include "yuji/parser.h"
 #include "yuji/types/dyn_array.h"
 #include "yuji/utils.h"
-#include "yuji/value.h"
 
 #include <errno.h>
 #include <stdio.h>
