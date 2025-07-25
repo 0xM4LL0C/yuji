@@ -38,3 +38,5 @@ YujiValue* value_string_init(const char* string);
 YujiValue* value_null_init();
 YujiValue* value_cfunction_init(YujiCFunction func);
 YujiValue* value_bool_init(bool bool_);
+
+bool value_to_bool(YujiValue* value);

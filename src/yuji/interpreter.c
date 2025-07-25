@@ -174,7 +174,7 @@ YujiValue* interpreter_eval(Interpreter* interpreter, ASTNode* node) {
     case AST_IF: {
       YujiValue* condition = interpreter_eval(interpreter, node->if_.condition);
 
-      if (condition) {
+      if (value_to_bool(condition)) {
         value_free(condition);
         return interpreter_eval(interpreter, node->if_.body);
       }
@@ -186,7 +186,7 @@ YujiValue* interpreter_eval(Interpreter* interpreter, ASTNode* node) {
     case AST_ELIF: {
       YujiValue* condition = interpreter_eval(interpreter, node->elif.condition);
 
-      if (condition) {
+      if (value_to_bool(condition)) {
         value_free(condition);
         return interpreter_eval(interpreter, node->elif.body);
       }

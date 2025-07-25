@@ -70,3 +70,25 @@ YujiValue* value_bool_init(bool bool_) {
 
   return value;
 }
+
+bool value_to_bool(YujiValue* value) {
+  switch (value->type) {
+    case VT_BOOL:
+      return value->value.bool_;
+
+    case VT_CFUNCTION:
+    case VT_FUNCTION:
+      return true;
+
+    case VT_NUMBER:
+      return value->value.number != 0;
+
+    case VT_STRING:
+      return strlen(value->value.string) > 0;
+
+    case VT_NULL:
+      return false;
+  }
+
+  return false;
+}
