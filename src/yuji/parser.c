@@ -74,7 +74,10 @@ void parser_expect_next(Parser* parser, TokenType type) {
 }
 
 void parser_error(const Parser* parser, char* message) {
-  panic("Parser error at position %zu: %s", parser->pos, message);
+  panic("Parser error at token `%s` [%zu:%zu]: %s", parser->current_token->value,
+        parser->current_token->position->line + 1,
+        parser->current_token->position->column + 1,
+        message);
 }
 
 ASTNode* parser_parse_factor(Parser* parser) {
@@ -140,6 +143,9 @@ ASTNode* parser_parse_factor(Parser* parser) {
     return parser_parse_null(parser);
   }
 
+  if (parser->current_token->type == TT_WHILE) {
+    return parser_parse_while(parser);
+  }
 
   LOG("current token type: %s", tt_to_string(parser->current_token->type));
   parser_error(parser, "Expected number, string, or identifier");
@@ -206,6 +212,8 @@ DynArr* parser_parse(Parser* parser) {
       node = parser_parse_else(parser);
     } else if (parser->current_token->type == TT_FN) {
       node = parser_parse_fn(parser);
+    } else if (parser->current_token->type == TT_WHILE) {
+      node = parser_parse_while(parser);
     } else {
       node = parser_parse_expr(parser);
     }
@@ -412,4 +420,15 @@ ASTNode* parser_parse_null(Parser* parser) {
   parser_expect(parser, TT_NULL);
   parser_advance(parser);
   return ast_null_init();
+}
+
+ASTNode* parser_parse_while(Parser* parser) {
+  parser_expect(parser, TT_WHILE);
+  parser_advance(parser);
+
+  ASTNode* condition = parser_parse_expr(parser);
+
+  ASTNode* body = parser_parse_block(parser);
+
+  return ast_while_init(condition, body);
 }

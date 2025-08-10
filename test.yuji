@@ -1,6 +1,5 @@
 use "yuji/io"
 
-let a = true
-let b = null
-
-println(a, b)
+while true {
+  println("Hello, World!")
+}

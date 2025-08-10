@@ -10,5 +10,6 @@ const char* KEYWORDS[] = {
   "true",
   "false",
   "null",
+  "while",
   NULL,
 };

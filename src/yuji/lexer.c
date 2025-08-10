@@ -121,6 +121,8 @@ DynArr* lexer_tokenize(Lexer *lexer) {
           type = TT_BOOL;
         } else if (strcmp(value, "null") == 0) {
           type = TT_NULL;
+        } else if (strcmp(value, "while") == 0) {
+          type = TT_WHILE;
         } else {
           panic("Unexpected keyword: %s", value);
         }

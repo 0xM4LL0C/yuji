@@ -13,7 +13,6 @@ typedef struct {
   ASTNode* right;
 } ASTBinOp;
 
-
 typedef struct {
   char* value;
 } ASTIdentifier;
@@ -71,6 +70,11 @@ typedef struct {
 
 typedef struct ASTNull ASTNull;
 
+typedef struct {
+  ASTNode* condition;
+  ASTNode* body;
+} ASTWhile;
+
 typedef enum {
   AST_NUMBER,
   AST_BIN_OP,
@@ -87,6 +91,7 @@ typedef enum {
   AST_USE,
   AST_BOOL,
   AST_NULL,
+  AST_WHILE,
 } ASTNodeType;
 
 struct ASTNode {
@@ -106,6 +111,7 @@ struct ASTNode {
     ASTString string;
     ASTUse use;
     ASTBool bool_;
+    ASTWhile while_;
   };
 };
 
@@ -126,3 +132,4 @@ ASTNode* ast_string_init(const char* value);
 ASTNode* ast_use_init(const char* value);
 ASTNode* ast_bool_init(const char* value);
 ASTNode* ast_null_init();
+ASTNode* ast_while_init(ASTNode* condition, ASTNode* body);

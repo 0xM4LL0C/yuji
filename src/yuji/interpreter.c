@@ -274,6 +274,17 @@ YujiValue* interpreter_eval(Interpreter* interpreter, ASTNode* node) {
       return value_null_init();
     }
 
+    case AST_WHILE: {
+      ASTNode* condition = node->while_.condition;
+      ASTNode* body = node->while_.body;
+
+      while (value_to_bool(interpreter_eval(interpreter, condition))) {
+        interpreter_eval(interpreter, body);
+      }
+
+      return value_null_init();
+    }
+
   }
 
   panic("Invalid node type");

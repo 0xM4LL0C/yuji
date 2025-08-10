@@ -18,6 +18,7 @@ typedef enum {
   TT_USE,
   TT_BOOL,
   TT_NULL,
+  TT_WHILE,
 
   TT_ASSIGN, // =
   TT_PLUS, // +

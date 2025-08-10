@@ -89,6 +89,12 @@ void ast_free(ASTNode* node) {
 
     case AST_USE:
       free(node->use.value);
+      break;
+
+    case AST_WHILE:
+      ast_free(node->while_.condition);
+      ast_free(node->while_.body);
+      break;
   }
 
   free(node);
@@ -241,6 +247,17 @@ ASTNode* ast_null_init() {
   check_memory_is_not_null(node);
 
   node->type = AST_NULL;
+
+  return node;
+}
+
+ASTNode* ast_while_init(ASTNode* condition, ASTNode* body) {
+  ASTNode* node = malloc(sizeof(ASTNode));
+  check_memory_is_not_null(node);
+
+  node->type = AST_WHILE;
+  node->while_.condition = condition;
+  node->while_.body = body;
 
   return node;
 }
