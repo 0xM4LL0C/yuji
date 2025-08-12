@@ -1,5 +1,7 @@
 use "yuji/io"
 
-while true {
-  println("Hello, World!")
+let a = 0
+while a < 10 {
+    println("Hello, World!")
+    a = a + 1
 }

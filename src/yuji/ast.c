@@ -35,9 +35,9 @@ void ast_free(ASTNode* node) {
       break;
 
     case AST_ASSIGN:
-      free(node->let.name->value);
-      free(node->let.name);
-      ast_free(node->let.value);
+      free(node->assign.name->value);
+      free(node->assign.name);
+      ast_free(node->assign.value);
       break;
 
     case AST_BLOCK:

@@ -1,10 +1,16 @@
 #include "yuji/value.h"
 #include "yuji/ast.h"
 #include "yuji/utils.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 void value_free(YujiValue* value) {
+  if (!value) {
+    return;
+  }
+
+  LOG("value_free: type=%d, ptr=%p", value->type, value);
 
   switch (value->type) {
     case VT_NUMBER:
@@ -91,4 +97,29 @@ bool value_to_bool(YujiValue* value) {
   }
 
   return false;
+}
+
+YujiValue* value_copy(YujiValue* value) {
+  switch (value->type) {
+    case VT_BOOL:
+      return value_bool_init(value->value.bool_);
+
+    case VT_CFUNCTION:
+      return value_cfunction_init(value->value.cfunction);
+
+    case VT_FUNCTION:
+      return value_function_init(value->value.function.node);
+
+    case VT_NUMBER:
+      return value_number_init(value->value.number);
+
+    case VT_STRING:
+      return value_string_init(value->value.string);
+
+    case VT_NULL:
+      return value_null_init();
+  }
+
+  LOG("Unsupported value type for copying: %d", value->type);
+  panic("Unsupported value type for copying");
 }

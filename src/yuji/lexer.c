@@ -35,6 +35,7 @@ void lexer_free(Lexer *lexer) {
   })
 
   dyn_array_free(lexer->tokens);
+  position_free(lexer->position);
   free(lexer);
 }
 

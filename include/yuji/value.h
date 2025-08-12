@@ -39,4 +39,6 @@ YujiValue* value_null_init();
 YujiValue* value_cfunction_init(YujiCFunction func);
 YujiValue* value_bool_init(bool bool_);
 
+YujiValue* value_copy(YujiValue* value);
+
 bool value_to_bool(YujiValue* value);

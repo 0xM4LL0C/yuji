@@ -8,6 +8,7 @@
 #include "yuji/value.h"
 
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -139,7 +140,7 @@ YujiValue* interpreter_eval(Interpreter* interpreter, ASTNode* node) {
 
       YujiValue* value = interpreter_eval(interpreter, node->let.value);
       map_insert(interpreter->env, node->let.name->value, value);
-      return value;
+      return value_copy(value);;
     }
 
     case AST_ASSIGN: {
@@ -149,7 +150,7 @@ YujiValue* interpreter_eval(Interpreter* interpreter, ASTNode* node) {
 
       YujiValue* value = interpreter_eval(interpreter, node->assign.value);
       map_insert(interpreter->env, node->assign.name->value, value);
-      return value;
+      return value_copy(value);
     }
 
     case AST_BLOCK: {
@@ -157,7 +158,6 @@ YujiValue* interpreter_eval(Interpreter* interpreter, ASTNode* node) {
         YujiValue* result = interpreter_eval(interpreter, expr);
         value_free(result);
       })
-
       return value_null_init();
     }
 
@@ -165,7 +165,8 @@ YujiValue* interpreter_eval(Interpreter* interpreter, ASTNode* node) {
       YujiValue* value = map_get(interpreter->env, node->identifier.value);
 
       if (value) {
-        return value;
+        LOG("Found value for identifier: %s", node->identifier.value);
+        return value_copy(value);
       }
 
       panic("undefined name: %s", node->identifier.value);
@@ -173,25 +174,26 @@ YujiValue* interpreter_eval(Interpreter* interpreter, ASTNode* node) {
 
     case AST_IF: {
       YujiValue* condition = interpreter_eval(interpreter, node->if_.condition);
+      bool cond_result = value_to_bool(condition);
+      value_free(condition);
 
-      if (value_to_bool(condition)) {
-        value_free(condition);
-        return interpreter_eval(interpreter, node->if_.body);
+      if (cond_result) {
+        YujiValue* result = interpreter_eval(interpreter, node->if_.body);
+        return result;
       }
 
-      value_free(condition);
       return value_null_init();
     }
 
     case AST_ELIF: {
       YujiValue* condition = interpreter_eval(interpreter, node->elif.condition);
-
-      if (value_to_bool(condition)) {
-        value_free(condition);
-        return interpreter_eval(interpreter, node->elif.body);
-      }
-
+      bool cond_result = value_to_bool(condition);
       value_free(condition);
+
+      if (cond_result) {
+        YujiValue* result = interpreter_eval(interpreter, node->elif.body);
+        return result;
+      }
 
       return value_null_init();
     }
@@ -210,8 +212,8 @@ YujiValue* interpreter_eval(Interpreter* interpreter, ASTNode* node) {
         panic("name already defined: %s", node->function.name->value);
       }
 
-      map_insert(interpreter->env, node->function.name->value,
-                 value_function_init(node));
+      YujiValue* value = value_function_init(node);
+      map_insert(interpreter->env, node->function.name->value, value);
       return value_null_init();
     }
 
@@ -232,6 +234,9 @@ YujiValue* interpreter_eval(Interpreter* interpreter, ASTNode* node) {
 
         YujiValue* result = function->value.cfunction(evaluated_args);
 
+        DYN_ARR_ITER(evaluated_args, YujiValue, arg_value, {
+          value_free(arg_value);
+        })
         dyn_array_free(evaluated_args);
 
         return result ? result : value_null_init();
@@ -278,13 +283,21 @@ YujiValue* interpreter_eval(Interpreter* interpreter, ASTNode* node) {
       ASTNode* condition = node->while_.condition;
       ASTNode* body = node->while_.body;
 
-      while (value_to_bool(interpreter_eval(interpreter, condition))) {
-        interpreter_eval(interpreter, body);
+      while (true) {
+        YujiValue* cond_value = interpreter_eval(interpreter, condition);
+        bool cond_result = value_to_bool(cond_value);
+        value_free(cond_value);
+
+        if (!cond_result) {
+          break;
+        }
+
+        YujiValue* body_result = interpreter_eval(interpreter, body);
+        value_free(body_result);
       }
 
       return value_null_init();
     }
-
   }
 
   panic("Invalid node type");
