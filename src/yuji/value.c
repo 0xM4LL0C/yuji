@@ -31,25 +31,19 @@ void value_free(YujiValue* value) {
 }
 
 YujiValue* value_number_init(int number) {
-  YujiValue* value = malloc(sizeof(YujiValue));
-  check_memory_is_not_null(value);
-  value->type = VT_NUMBER;
+  _INIT_VALUE(VT_NUMBER);
   value->value.number = number;
   return value;
 }
 
 YujiValue* value_function_init(ASTNode* node) {
-  YujiValue* value = malloc(sizeof(YujiValue));
-  check_memory_is_not_null(value);
-  value->type = VT_FUNCTION;
+  _INIT_VALUE(VT_FUNCTION);
   value->value.function.node = node;
   return value;
 }
 
 YujiValue* value_string_init(const char* string) {
-  YujiValue* value = malloc(sizeof(YujiValue));
-  check_memory_is_not_null(value);
-  value->type = VT_STRING;
+  _INIT_VALUE(VT_STRING);
   value->value.string = strdup(string);
   return value;
 }
@@ -60,18 +54,13 @@ YujiValue* value_null_init() {
 }
 
 YujiValue* value_cfunction_init(YujiCFunction func) {
-  YujiValue* value = malloc(sizeof(YujiValue));
-  check_memory_is_not_null(value);
-  value->type = VT_CFUNCTION;
+  _INIT_VALUE(VT_CFUNCTION);
   value->value.cfunction = func;
   return value;
 }
 
 YujiValue* value_bool_init(bool bool_) {
-  YujiValue* value = malloc(sizeof(YujiValue));
-  check_memory_is_not_null(value);
-
-  value->type = VT_BOOL;
+  _INIT_VALUE(VT_BOOL);
   value->value.bool_ = bool_;
 
   return value;

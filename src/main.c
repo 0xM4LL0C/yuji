@@ -1,20 +1,18 @@
-
 #include "yuji/interpreter.h"
 #include "yuji/lexer.h"
 #include "yuji/parser.h"
 #include "yuji/types/dyn_array.h"
 #include "yuji/utils.h"
-#include "yuji/value.h"
 
 #include <errno.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 int run_file(const char* file_name) {
   FILE* file = fopen(file_name, "r");
 
   if (!file) {
-    strerror(errno);
     panic("can't read file '%s': %s", file_name, strerror(errno));
   }
 

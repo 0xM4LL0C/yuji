@@ -2,6 +2,11 @@
 
 #include "yuji/ast.h"
 
+#define _INIT_VALUE(TYPE) \
+  YujiValue* value = malloc(sizeof(YujiValue)); \
+  check_memory_is_not_null(value); \
+  value->type = TYPE
+
 typedef enum {
   VT_NUMBER,
   VT_FUNCTION,

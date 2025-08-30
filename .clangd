@@ -3,6 +3,5 @@ CompileFlags:
   CompilationDatabase: ./.build
   Add:
     - "-Iinclude/"
-    - "-std=c99"
+    - "-std=gnu99"
     - "-xc"
-    - "-D_POSIX_C_SOURCE=200809L"
