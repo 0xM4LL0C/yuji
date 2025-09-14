@@ -91,16 +91,17 @@ bool yuji_lexer_tokenize(YujiLexer* lexer, YujiDynArray* tokens) {
   while (lexer->current_char != '\0') {
     char c = lexer->current_char;
 
+    if (isspace(c)) {
+      yuji_lexer_skip_whitespace(lexer);
+      continue;
+    }
 
     LOG("current char: %c", c);
 
     YujiTokenType type;
     char* value;
 
-    if (isspace(c)) {
-      yuji_lexer_skip_whitespace(lexer);
-      continue;
-    } else if (isalpha(c)) {
+    if (isalpha(c)) {
       value = yuji_lexer_parse_identifier_or_keyword(lexer);
 
       if (strcmp(value, "let") == 0) {
