@@ -7,15 +7,17 @@
 
 typedef struct {
   YujiDynArray* tokens;
-  YujiPosition position;
+  size_t index;
   YujiToken* current_token;
 } YujiParser;
 
-YujiParser* yuji_parser_init(YujiDynArray* tokens, const char* filename);
+YujiParser* yuji_parser_init(YujiDynArray* tokens);
 void yuji_parser_free(YujiParser* parser);
 
-YujiToken* yuji_parser_peek(YujiParser* parser);
 YujiToken* yuji_parser_advance(YujiParser* parser);
 
 bool yuji_parser_match(YujiParser* parser, YujiTokenType type);
 bool yuji_parser_match_next(YujiParser* parser, YujiTokenType type);
+
+bool yuji_parser_expect(YujiParser* parser, YujiTokenType type);
+bool yuji_parser_expect_next(YujiParser* parser, YujiTokenType type);

@@ -23,7 +23,3 @@ char* yuji_lexer_parse_number(YujiLexer* lexer);
 char* yuji_lexer_parse_string(YujiLexer* lexer);
 char* yuji_lexer_parse_identifier_or_keyword(YujiLexer* lexer);
 
-#define _YUJI_LEXER_OPERATOR_CASE(VALUE, TYPE) \
-  case VALUE: \
-    type = TYPE; \
-    break;

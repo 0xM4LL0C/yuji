@@ -4,88 +4,41 @@
 #include <string.h>
 
 const char* yuji_token_type_to_string(const YujiTokenType type) {
+#define _YUJI_TOKEN_TYPE_CASE(type) case type: return #type
+
   switch (type) {
-    case TT_NUMBER:
-      return "NUMBER";
-
-    case TT_STRING:
-      return "STRING";
-
-    case TT_IDENTIFIER:
-      return "IDENTIFIER";
-
-    case TT_LET:
-      return "LET";
-
-    case TT_IF:
-      return "IF";
-
-    case TT_ELIF:
-      return "ELIF";
-
-    case TT_ELSE:
-      return "ELSE";
-
-    case TT_FN:
-      return "FN";
-
-    case TT_USE:
-      return "USE";
-
-    case TT_BOOL:
-      return "BOOL";
-
-    case TT_NULL:
-      return "NULL";
-
-    case TT_WHILE:
-      return "WHILE";
-
-    case TT_ASSIGN:
-      return "ASSIGN";
-
-    case TT_PLUS:
-      return "PLUS";
-
-    case TT_MINUS:
-      return "MINUS";
-
-    case TT_MUL:
-      return "MUL";
-
-    case TT_DIV:
-      return "DIV";
-
-    case TT_LPAREN:
-      return "LPAREN";
-
-    case TT_RPAREN:
-      return "RPAREN";
-
-    case TT_LBRACE:
-      return "LBRACE";
-
-    case TT_RBRACE:
-      return "RBRACE";
-
-    case TT_MOD:
-      return "MOD";
-
-    case TT_LT:
-      return "LT";
-
-    case TT_GT:
-      return "GT";
-
-    case TT_COMMA:
-      return "COMMA";
-
-    case TT_QUOTE:
-      return "QUOTE";
+      _YUJI_TOKEN_TYPE_CASE(TT_NUMBER);
+      _YUJI_TOKEN_TYPE_CASE(TT_STRING);
+      _YUJI_TOKEN_TYPE_CASE(TT_IDENTIFIER);
+      _YUJI_TOKEN_TYPE_CASE(TT_LET);
+      _YUJI_TOKEN_TYPE_CASE(TT_IF);
+      _YUJI_TOKEN_TYPE_CASE(TT_ELIF);
+      _YUJI_TOKEN_TYPE_CASE(TT_ELSE);
+      _YUJI_TOKEN_TYPE_CASE(TT_FN);
+      _YUJI_TOKEN_TYPE_CASE(TT_USE);
+      _YUJI_TOKEN_TYPE_CASE(TT_BOOL);
+      _YUJI_TOKEN_TYPE_CASE(TT_NULL);
+      _YUJI_TOKEN_TYPE_CASE(TT_WHILE);
+      _YUJI_TOKEN_TYPE_CASE(TT_ASSIGN);
+      _YUJI_TOKEN_TYPE_CASE(TT_PLUS);
+      _YUJI_TOKEN_TYPE_CASE(TT_MINUS);
+      _YUJI_TOKEN_TYPE_CASE(TT_MUL);
+      _YUJI_TOKEN_TYPE_CASE(TT_DIV);
+      _YUJI_TOKEN_TYPE_CASE(TT_LPAREN);
+      _YUJI_TOKEN_TYPE_CASE(TT_RPAREN);
+      _YUJI_TOKEN_TYPE_CASE(TT_LBRACE);
+      _YUJI_TOKEN_TYPE_CASE(TT_RBRACE);
+      _YUJI_TOKEN_TYPE_CASE(TT_MOD);
+      _YUJI_TOKEN_TYPE_CASE(TT_LT);
+      _YUJI_TOKEN_TYPE_CASE(TT_GT);
+      _YUJI_TOKEN_TYPE_CASE(TT_COMMA);
+      _YUJI_TOKEN_TYPE_CASE(TT_QUOTE);
 
     default:
       yuji_panic("Unknown token type: %d", type);
   }
+
+#undef _YUJI_TOKEN_TYPE_CASE
 }
 
 YujiToken* yuji_token_init(const char* value, const YujiTokenType type, YujiPosition position) {

@@ -46,7 +46,6 @@ char yuji_lexer_advance(YujiLexer* lexer) {
   char* line = yuji_dyn_array_get(lexer->input, lexer->position.line);
 
   if (!line || lexer->position.column >= strlen(line)) {
-
     lexer->position.line++;
     lexer->position.column = 0;
 
@@ -132,6 +131,8 @@ bool yuji_lexer_tokenize(YujiLexer* lexer, YujiDynArray* tokens) {
       value = yuji_lexer_parse_number(lexer);
       type = TT_NUMBER;
     } else {
+#define _YUJI_LEXER_OPERATOR_CASE(VALUE, TYPE) case VALUE: type = TYPE; break;
+
       switch (c) {
           _YUJI_LEXER_OPERATOR_CASE('=', TT_ASSIGN)
           _YUJI_LEXER_OPERATOR_CASE('+', TT_PLUS)
@@ -151,6 +152,8 @@ bool yuji_lexer_tokenize(YujiLexer* lexer, YujiDynArray* tokens) {
           yuji_panic("lexer error: unknown operator '%c' (%d) at %s", c, c,
                      yuji_position_to_string(lexer->position));
       }
+
+#undef _YUJI_LEXER_OPERATOR_CASE
 
       value = yuji_malloc(2);
       value[0] = c;
