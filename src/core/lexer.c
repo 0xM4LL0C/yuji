@@ -23,48 +23,77 @@ void yuji_lexer_free(YujiLexer* lexer) {
   yuji_free(lexer);
 }
 
-char yuji_lexer_peek(YujiLexer *lexer) {
-  char* line = yuji_dyn_array_get(lexer->input, lexer->position.line);
-
-  if (!line) {
+char yuji_lexer_peek(YujiLexer* lexer) {
+  if (lexer->position.line >= lexer->input->size) {
     return '\0';
   }
 
-  if (lexer->position.column < strlen(line)) {
-    return line[lexer->position.column];
-  }
-
-  return '\0';
-}
-
-char yuji_lexer_advance(YujiLexer *lexer) {
   char* line = yuji_dyn_array_get(lexer->input, lexer->position.line);
 
-  if (!line) {
+  if (!line || lexer->position.column >= strlen(line)) {
+    return '\0';
+  }
+
+  return line[lexer->position.column];
+}
+
+char yuji_lexer_advance(YujiLexer* lexer) {
+  if (lexer->position.line >= lexer->input->size) {
     lexer->current_char = '\0';
     return '\0';
   }
 
-  if (lexer->position.column < strlen(line)) {
-    lexer->position.column++;
-  } else {
+  char* line = yuji_dyn_array_get(lexer->input, lexer->position.line);
+
+  if (!line || lexer->position.column >= strlen(line)) {
+
     lexer->position.line++;
     lexer->position.column = 0;
+
+    if (lexer->position.line >= lexer->input->size) {
+      lexer->current_char = '\0';
+      return '\0';
+    }
+
+    line = yuji_dyn_array_get(lexer->input, lexer->position.line);
+
+    if (!line || line[0] == '\0') {
+      lexer->current_char = '\0';
+      return '\0';
+    }
+
+    lexer->current_char = line[0];
+  } else {
+    lexer->position.column++;
+
+    if (lexer->position.column < strlen(line)) {
+      lexer->current_char = line[lexer->position.column];
+    } else {
+      lexer->position.line++;
+      lexer->position.column = 0;
+
+      if (lexer->position.line >= lexer->input->size) {
+        lexer->current_char = '\0';
+        return '\0';
+      }
+
+      line = yuji_dyn_array_get(lexer->input, lexer->position.line);
+      lexer->current_char = (line && line[0] != '\0') ? line[0] : '\0';
+    }
   }
 
-  lexer->current_char = yuji_lexer_peek(lexer);
   return lexer->current_char;
 }
 
-bool yuji_lexer_tokenize(YujiLexer *lexer, YujiDynArray *tokens) {
+bool yuji_lexer_tokenize(YujiLexer* lexer, YujiDynArray* tokens) {
   yuji_check_memory(lexer);
   yuji_check_memory(tokens);
-
 
   while (lexer->current_char != '\0') {
     char c = lexer->current_char;
 
-    LOG("Current char: %c", c);
+
+    LOG("current char: %c", c);
 
     YujiTokenType type;
     char* value;
@@ -135,7 +164,7 @@ bool yuji_lexer_tokenize(YujiLexer *lexer, YujiDynArray *tokens) {
   return true;
 }
 
-void yuji_lexer_skip_whitespace(YujiLexer *lexer) {
+void yuji_lexer_skip_whitespace(YujiLexer* lexer) {
   while (lexer->current_char != '\0' && isspace(lexer->current_char)) {
     if (lexer->current_char == '\n') {
       lexer->position.line++;
@@ -148,7 +177,7 @@ void yuji_lexer_skip_whitespace(YujiLexer *lexer) {
   }
 }
 
-char* yuji_lexer_parse_number(YujiLexer *lexer) {
+char* yuji_lexer_parse_number(YujiLexer* lexer) {
   YujiString* str = yuji_string_init();
   char c = lexer->current_char;
 
@@ -214,7 +243,7 @@ char* yuji_lexer_parse_string(YujiLexer* lexer) {
   return result;
 }
 
-char* yuji_lexer_parse_identifier_or_keyword(YujiLexer *lexer) {
+char* yuji_lexer_parse_identifier_or_keyword(YujiLexer* lexer) {
   YujiString* str = yuji_string_init();
   char c = lexer->current_char;
 
