@@ -15,7 +15,9 @@ OBJECTS := $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SOURCES))
 
 .PHONY: all build clean run rebuild
 
-all: build
+all:
+	@mkdir -p ./.build
+	bear --output ./.build/compile_commands.json -- $(MAKE) -j$$(nproc) build
 
 build: $(BIN_PATH) $(OBJECTS)
 

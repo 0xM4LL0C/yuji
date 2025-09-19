@@ -66,11 +66,11 @@ const char* yuji_token_to_string(const YujiToken* token) {
   yuji_string_append_cstr(str, token->value);
   yuji_string_append_cstr(str, "\", .type=");
   yuji_string_append_cstr(str, yuji_token_type_to_string(token->type));
-  yuji_string_append_cstr(str, ", .position='");
+  yuji_string_append_cstr(str, ", .position=\"");
   char* pos_str = yuji_position_to_string(token->position);
   yuji_string_append_cstr(str, pos_str);
   yuji_free(pos_str);
-  yuji_string_append_cstr(str, "'}");
+  yuji_string_append_cstr(str, "\"}");
 
   const char* result = strdup(str->data);
   yuji_string_free(str);
