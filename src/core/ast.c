@@ -6,8 +6,7 @@
 #include <stdlib.h>
 
 void yuji_ast_free(YujiASTNode* node) {
-  if (!node)
-    return;
+  yuji_check_memory(node);
 
   switch (node->type) {
     case YUJI_AST_NUMBER:
@@ -22,6 +21,7 @@ void yuji_ast_free(YujiASTNode* node) {
     case YUJI_AST_BIN_OP:
       yuji_ast_free(node->value.bin_op->left);
       yuji_ast_free(node->value.bin_op->right);
+      yuji_free(node->value.bin_op->operator);
       yuji_free(node->value.bin_op);
       break;
 
@@ -37,7 +37,9 @@ void yuji_ast_free(YujiASTNode* node) {
       break;
 
     case YUJI_AST_LET:
-      yuji_ast_free((YujiASTNode*)node->value.let->assign);
+      yuji_ast_free(node->value.let->assign->value);
+      yuji_free(node->value.let->assign->name);
+      yuji_free(node->value.let->assign);
       yuji_free(node->value.let);
       break;
 
@@ -51,10 +53,11 @@ void yuji_ast_free(YujiASTNode* node) {
 
     case YUJI_AST_FN:
       yuji_free(node->value.fn->name);
-      YUJI_DYN_ARRAY_ITER(node->value.fn->params, YujiASTNode, param, {
-        yuji_ast_free(param);
+      YUJI_DYN_ARRAY_ITER(node->value.fn->params, char*, param, {
+        yuji_free(param);
       })
-      yuji_ast_free((YujiASTNode*)node->value.fn->body);
+      yuji_dyn_array_free(node->value.fn->params);
+      yuji_ast_free(node->value.fn->body);
       yuji_free(node->value.fn);
       break;
 
@@ -63,6 +66,7 @@ void yuji_ast_free(YujiASTNode* node) {
       YUJI_DYN_ARRAY_ITER(node->value.call->args, YujiASTNode, arg, {
         yuji_ast_free(arg);
       })
+      yuji_dyn_array_free(node->value.call->args);
       yuji_free(node->value.call);
       break;
 
@@ -77,18 +81,33 @@ void yuji_ast_free(YujiASTNode* node) {
 
     case YUJI_AST_WHILE:
       yuji_ast_free(node->value.while_stmt->condition);
-      yuji_ast_free((YujiASTNode*)node->value.while_stmt->body);
+
+      YUJI_DYN_ARRAY_ITER(node->value.while_stmt->body->exprs, YujiASTNode, expr, {
+        yuji_ast_free(expr);
+      })
+
+      yuji_dyn_array_free(node->value.while_stmt->body->exprs);
+      yuji_free(node->value.while_stmt->body);
       yuji_free(node->value.while_stmt);
       break;
 
     case YUJI_AST_IF:
       YUJI_DYN_ARRAY_ITER(node->value.if_stmt->branches, YujiASTIfBranch, branch, {
-        yuji_ast_free((YujiASTNode*)branch->condition);
-        yuji_ast_free((YujiASTNode*)branch->body);
+        yuji_ast_free(branch->condition);
+
+        YUJI_DYN_ARRAY_ITER(branch->body->exprs, YujiASTNode, expr, {
+          yuji_ast_free(expr);
+        })
+        yuji_free(branch->body);
         yuji_free(branch);
       })
       yuji_dyn_array_free(node->value.if_stmt->branches);
-      yuji_ast_free((YujiASTNode*)node->value.if_stmt->else_body);
+
+      YUJI_DYN_ARRAY_ITER(node->value.if_stmt->else_body->exprs, YujiASTNode, expr, {
+        yuji_ast_free(expr);
+      })
+
+      yuji_free(node->value.if_stmt->else_body);
       yuji_free(node->value.if_stmt);
       break;
 

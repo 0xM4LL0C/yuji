@@ -145,7 +145,7 @@ YujiASTNode* yuji_parser_parse_stmt(YujiParser* parser) {
     if (!yuji_parser_match(parser, TT_RPAREN)) {
       do {
         yuji_parser_expect(parser, TT_IDENTIFIER);
-        char* param = (char*)parser->current_token->value;
+        char* param = strdup(parser->current_token->value);
         yuji_dyn_array_push(params, param);
         yuji_parser_advance(parser);
       } while (yuji_parser_match(parser, TT_COMMA) && yuji_parser_advance(parser));

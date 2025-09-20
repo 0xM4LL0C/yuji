@@ -14,8 +14,8 @@ typedef struct {
 } YujiDynArray;
 
 #define YUJI_DYN_ARRAY_ITER(ARR, TYPE, VAR_NAME, BODY) \
-  for (size_t i = 0; i < ARR->size; i++) { \
-    TYPE* VAR_NAME = (TYPE*)yuji_dyn_array_get(ARR, i); \
+  for (size_t _iter_index_##VAR_NAME = 0; _iter_index_##VAR_NAME < ARR->size; _iter_index_##VAR_NAME++) { \
+    TYPE* VAR_NAME = (TYPE*)yuji_dyn_array_get(ARR, _iter_index_##VAR_NAME); \
     BODY\
   }
 
