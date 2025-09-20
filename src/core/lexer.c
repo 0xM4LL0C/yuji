@@ -96,7 +96,7 @@ bool yuji_lexer_tokenize(YujiLexer* lexer, YujiDynArray* tokens) {
       continue;
     }
 
-    LOG("current char: %c", c);
+    YUJI_LOG("current char: %c", c);
 
     YujiTokenType type;
     char* value;

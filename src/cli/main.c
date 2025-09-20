@@ -1,9 +1,9 @@
+#include "yuji/core/ast.h"
 #include "yuji/core/lexer.h"
 #include "yuji/core/memory.h"
 #include "yuji/core/parser.h"
 #include "yuji/core/token.h"
 #include "yuji/core/types/dyn_array.h"
-#include "yuji/utils.h"
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
@@ -26,7 +26,6 @@ int run_file(const char* filename) {
   fclose(file);
 
   // LEXER
-
   YujiLexer *lexer = yuji_lexer_init(input, filename);
   YujiDynArray* tokens = yuji_dyn_array_init();
 
@@ -39,10 +38,21 @@ int run_file(const char* filename) {
   })
 
   // PARSER
-
   YujiParser *parser = yuji_parser_init(tokens);
 
+  YujiDynArray* ast = yuji_parser_parse(parser);
+
+  YUJI_DYN_ARRAY_ITER(ast, YujiASTNode, node, {
+    printf("%d\n", node->type);
+  })
+
+
   // CLEANUP
+  YUJI_DYN_ARRAY_ITER(ast, YujiASTNode, node, {
+    yuji_ast_free(node);
+  })
+  yuji_dyn_array_free(ast);
+
   yuji_parser_free(parser);
 
   YUJI_DYN_ARRAY_ITER(tokens, YujiToken, token, {

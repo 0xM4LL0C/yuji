@@ -17,7 +17,7 @@ OBJECTS := $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SOURCES))
 
 all:
 	@mkdir -p ./.build
-	bear --output ./.build/compile_commands.json -- $(MAKE) -j$$(nproc) build
+	bear --output ./.build/compile_commands.json -- $(MAKE) build
 
 build: $(BIN_PATH) $(OBJECTS)
 
@@ -35,7 +35,7 @@ clean:
 rebuild:
 	rm -f $(BIN_PATH)
 	rm -f $(OBJECTS)
-	$(MAKE) build
+	$(MAKE)
 
 run: build
 	$(BIN_PATH) test.yuji
