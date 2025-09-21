@@ -1,6 +1,8 @@
 #include "yuji/core/value.h"
 #include "yuji/core/ast.h"
 #include "yuji/core/memory.h"
+#include <stdio.h>
+#include <string.h>
 
 void yuji_value_free(YujiValue* value) {
   yuji_check_memory(value);
@@ -35,6 +37,48 @@ bool yuji_value_to_bool(YujiValue* value) {
     default:
       return false;
   }
+}
+
+char* yuji_value_to_string(YujiValue* value) {
+  yuji_check_memory(value);
+
+  char* result = NULL;
+
+  switch (value->type) {
+    case VT_NUMBER: {
+      size_t len = (size_t)snprintf(NULL, 0, "%lld", (long long)value->value.number);
+      result = yuji_malloc(len + 1);
+      snprintf(result, len + 1, "%lld", (long long)value->value.number);
+      break;
+    }
+
+    case VT_STRING:
+      result = yuji_malloc(value->value.string->size + 1);
+      strcpy(result, value->value.string->data);
+      break;
+
+    case VT_BOOL:
+      result = yuji_malloc((value->value.bool_ ? strlen("true") : strlen("false")) + 1);
+      strcpy(result, value->value.bool_ ? "true" : "false");
+      break;
+
+    case VT_NULL:
+      result = yuji_malloc(strlen("null") + 1);
+      strcpy(result, "null");
+      break;
+
+    case VT_FUNCTION:
+      result = yuji_malloc(32);
+      snprintf(result, 32, "<function:%p>", (void*)value->value.function.node);
+      break;
+
+    case VT_CFUNCTION:
+      result = yuji_malloc(32);
+      snprintf(result, 32, "<cfunction:%p>", (void*)value->value.cfunction);
+      break;
+  }
+
+  return result;
 }
 
 YUJI_VALUE_INIT(number, VT_NUMBER, {

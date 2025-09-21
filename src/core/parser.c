@@ -99,16 +99,17 @@ YujiASTNode* yuji_parser_parse_block(YujiParser* parser) {
   YujiDynArray* exprs = yuji_dyn_array_init();
 
   if (yuji_parser_match(parser, TT_LBRACE)) {
-    while (!yuji_parser_match(parser, TT_RBRACE)) {
-      yuji_parser_advance(parser);
-      YujiASTNode* expr = yuji_parser_parse_expr(parser);
+    yuji_parser_advance(parser);
+
+    while (parser->current_token && !yuji_parser_match(parser, TT_RBRACE)) {
+      YujiASTNode* expr = yuji_parser_parse_stmt(parser);
       yuji_dyn_array_push(exprs, expr);
     }
 
     yuji_parser_expect(parser, TT_RBRACE);
     yuji_parser_advance(parser);
   } else {
-    YujiASTNode* expr = yuji_parser_parse_expr(parser);
+    YujiASTNode* expr = yuji_parser_parse_stmt(parser);
     yuji_dyn_array_push(exprs, expr);
   }
 
@@ -212,6 +213,15 @@ YujiASTNode* yuji_parser_parse_stmt(YujiParser* parser) {
     return yuji_ast_use_init(name);
   }
 
+  if (yuji_parser_match(parser, TT_IDENTIFIER) && yuji_parser_match_next(parser, TT_ASSIGN)) {
+    const char* name = parser->current_token->value;
+    yuji_parser_advance(parser);
+    yuji_parser_advance(parser);
+
+    YujiASTNode* value = yuji_parser_parse_expr(parser);
+    return yuji_ast_assign_init(name, value);
+  }
+
   return yuji_parser_parse_expr(parser);
 }
 
@@ -270,9 +280,32 @@ YujiASTNode* yuji_parser_parse_factor(YujiParser* parser) {
     }
 
     case TT_IDENTIFIER: {
-      YujiASTNode* node = yuji_ast_identifier_init(token->value);
+      const char* name = token->value;
       yuji_parser_advance(parser);
-      return node;
+
+      if (yuji_parser_match(parser, TT_LPAREN)) {
+        yuji_parser_advance(parser);
+
+        YujiDynArray* args = yuji_dyn_array_init();
+
+        if (!yuji_parser_match(parser, TT_RPAREN)) {
+          YujiASTNode* arg = yuji_parser_parse_expr(parser);
+          yuji_dyn_array_push(args, arg);
+
+          while (yuji_parser_match(parser, TT_COMMA)) {
+            yuji_parser_advance(parser);
+            arg = yuji_parser_parse_expr(parser);
+            yuji_dyn_array_push(args, arg);
+          }
+        }
+
+        yuji_parser_expect(parser, TT_RPAREN);
+        yuji_parser_advance(parser);
+
+        return yuji_ast_call_init(name, args);
+      }
+
+      return yuji_ast_identifier_init(name);
     }
 
     case TT_BOOL: {
@@ -294,7 +327,7 @@ YujiASTNode* yuji_parser_parse_factor(YujiParser* parser) {
     }
 
     default:
-      yuji_panic("parser error: expected token, got %s at %s",
+      yuji_panic("parser error: unexpected token, got %s at %s",
                  yuji_token_type_to_string(parser->current_token->type),
                  yuji_position_to_string(parser->current_token->position));
   }

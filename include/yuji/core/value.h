@@ -48,6 +48,7 @@ struct YujiValue {
 void yuji_value_free(YujiValue* value);
 
 bool yuji_value_to_bool(YujiValue* value);
+char* yuji_value_to_string(YujiValue* value);
 
 YujiValue* yuji_value_number_init(int64_t number);
 YujiValue* yuji_value_function_init(YujiASTFunction* node);

@@ -1,7 +1,8 @@
-use "yuji/io"
+use "std/io"
 
 let a = 0
+println("Hello, World!")
 while a < 10 {
-    println("Hello, World!")
     a = a + 1
+    println("a = ", a)
 }
