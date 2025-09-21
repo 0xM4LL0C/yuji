@@ -17,7 +17,10 @@ typedef enum {
 
 typedef struct YujiValue YujiValue;
 
-typedef YujiValue* (*YujiCFunction)(YujiDynArray* args);
+// forward declaration
+typedef struct YujiScope YujiScope;
+
+typedef YujiValue* (*YujiCFunction)(YujiScope* scope, YujiDynArray* args);
 
 typedef struct {
   YujiASTFunction* node;

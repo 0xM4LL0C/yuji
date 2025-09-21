@@ -13,6 +13,8 @@ typedef struct {
   YujiScope* current_scope;
 } YujiInterpreter;
 
+YujiScope* yuji_scope_init(YujiScope* parent);
+void yuji_scope_free(YujiScope* scope);
 void yuji_scope_push(YujiInterpreter* interpreter) ;
 void yuji_scope_pop(YujiInterpreter* interpreter) ;
 YujiValue* yuji_scope_get(YujiScope* scope, const char* key) ;
