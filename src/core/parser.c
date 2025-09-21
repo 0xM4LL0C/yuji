@@ -155,7 +155,9 @@ YujiASTNode* yuji_parser_parse_stmt(YujiParser* parser) {
     yuji_parser_expect(parser, TT_LBRACE);
 
     YujiASTNode* body = yuji_parser_parse_block(parser);
-    return yuji_ast_fn_init(name, params, body->value.block);
+    YujiASTBlock* block = body->value.block;
+    yuji_ast_free(body);
+    return yuji_ast_fn_init(name, params, block);
   } else if (yuji_parser_match(parser, TT_IF)) {
     yuji_parser_advance(parser);
 
@@ -165,7 +167,9 @@ YujiASTNode* yuji_parser_parse_stmt(YujiParser* parser) {
     yuji_parser_expect(parser, TT_LBRACE);
     YujiASTNode* body = yuji_parser_parse_block(parser);
     yuji_parser_expect(parser, TT_RBRACE);
-    yuji_dyn_array_push(branches, yuji_ast_if_branch_init(condition, body->value.block));
+    YujiASTBlock* block = body->value.block;
+    yuji_ast_free(body);
+    yuji_dyn_array_push(branches, yuji_ast_if_branch_init(condition, block));
 
     YujiASTBlock* else_body = NULL;
 
@@ -175,13 +179,16 @@ YujiASTNode* yuji_parser_parse_stmt(YujiParser* parser) {
       YujiASTNode* elif_condition = yuji_parser_parse_expr(parser);
       YujiASTNode* elif_body = yuji_parser_parse_block(parser);
       yuji_parser_expect(parser, TT_RBRACE);
-      yuji_dyn_array_push(branches, yuji_ast_if_branch_init(elif_condition, elif_body->value.block));
+      YujiASTBlock* elif_block = elif_body->value.block;
+      yuji_free(elif_body);
+      yuji_dyn_array_push(branches, yuji_ast_if_branch_init(elif_condition, elif_block));
     }
 
     if (yuji_parser_match(parser, TT_ELSE)) {
       yuji_parser_advance(parser);
       YujiASTNode* else_node = yuji_parser_parse_block(parser);
       else_body = else_node->value.block;
+      yuji_free(else_node);
     }
 
     return yuji_ast_if_init(branches, else_body);
@@ -192,7 +199,9 @@ YujiASTNode* yuji_parser_parse_stmt(YujiParser* parser) {
 
     yuji_parser_expect(parser, TT_LBRACE);
     YujiASTNode* body = yuji_parser_parse_block(parser);
-    return yuji_ast_while_init(condition, body->value.block);
+    YujiASTBlock* block = body->value.block;
+    yuji_free(body);
+    return yuji_ast_while_init(condition, block);
   } else if (yuji_parser_match(parser, TT_USE)) {
     yuji_parser_advance(parser);
 
