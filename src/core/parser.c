@@ -129,8 +129,8 @@ YujiASTNode* yuji_parser_parse_stmt(YujiParser* parser) {
     yuji_parser_advance(parser);
 
     YujiASTNode* value = yuji_parser_parse_expr(parser);
-    YujiASTNode* assign_node = yuji_ast_assign_init(name, value);
-    return yuji_ast_let_init(assign_node->value.assign);
+
+    return yuji_ast_let_init(name, value);
   } else if (yuji_parser_match(parser, TT_FN)) {
     yuji_parser_advance(parser);
 

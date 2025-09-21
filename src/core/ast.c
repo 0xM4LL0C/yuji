@@ -37,9 +37,8 @@ void yuji_ast_free(YujiASTNode* node) {
       break;
 
     case YUJI_AST_LET:
-      yuji_ast_free(node->value.let->assign->value);
-      yuji_free(node->value.let->assign->name);
-      yuji_free(node->value.let->assign);
+      yuji_free(node->value.let->name);
+      yuji_ast_free(node->value.let->value);
       yuji_free(node->value.let);
       break;
 
@@ -148,8 +147,9 @@ YUJI_AST_INIT(assign, YUJI_AST_ASSIGN, {
 
 YUJI_AST_INIT(let, YUJI_AST_LET, {
   node->value.let = yuji_malloc(sizeof(YujiASTLet));
-  node->value.let->assign = assign;
-}, YujiASTAssign* assign)
+  node->value.let->name = strdup(name);
+  node->value.let->value = value;
+}, const char* name, YujiASTNode* value)
 
 YUJI_AST_INIT(block, YUJI_AST_BLOCK, {
   node->value.block = yuji_malloc(sizeof(YujiASTBlock));

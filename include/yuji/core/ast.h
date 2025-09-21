@@ -30,7 +30,8 @@ typedef struct {
 } YujiASTAssign;
 
 typedef struct {
-  YujiASTAssign* assign;
+  char* name;
+  YujiASTNode* value;
 } YujiASTLet;
 
 typedef struct {
@@ -127,7 +128,7 @@ YujiASTNode* yuji_ast_string_init(const char* value);
 YujiASTNode* yuji_ast_bin_op_init(YujiASTNode* left, const char* operator, YujiASTNode* right);
 YujiASTNode* yuji_ast_identifier_init(const char* name);
 YujiASTNode* yuji_ast_assign_init(const char* name, YujiASTNode* value);
-YujiASTNode* yuji_ast_let_init(YujiASTAssign* assign);
+YujiASTNode* yuji_ast_let_init(const char* name, YujiASTNode* value);
 YujiASTNode* yuji_ast_block_init(YujiDynArray* exprs);
 YujiASTNode* yuji_ast_fn_init(const char* name, YujiDynArray* params, YujiASTBlock* body);
 YujiASTNode* yuji_ast_call_init(const char* name, YujiDynArray* args);
