@@ -57,7 +57,7 @@ void yuji_token_free(YujiToken* token) {
 }
 
 const char* yuji_token_to_string(const YujiToken* token) {
-  yuji_check_memory(token);
+  yuji_check_memory((void*)token);
 
   YujiString* str = yuji_string_init();
 

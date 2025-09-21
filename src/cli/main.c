@@ -1,4 +1,5 @@
 #include "yuji/core/ast.h"
+#include "yuji/core/interpreter.h"
 #include "yuji/core/lexer.h"
 #include "yuji/core/memory.h"
 #include "yuji/core/parser.h"
@@ -46,8 +47,16 @@ int run_file(const char* filename) {
     printf("%d\n", node->type);
   })
 
+  // INTERPRETER
+  YujiInterpreter* interpreter = yuji_interpreter_init();
+
+  YUJI_DYN_ARRAY_ITER(ast, YujiASTNode, node, {
+    yuji_interpreter_eval(interpreter, node);
+  })
 
   // CLEANUP
+  yuji_interpreter_free(interpreter);
+
   YUJI_DYN_ARRAY_ITER(ast, YujiASTNode, node, {
     yuji_ast_free(node);
   })

@@ -27,3 +27,5 @@ void* yuji_dyn_array_pop(YujiDynArray* arr);
 
 void* yuji_dyn_array_get(YujiDynArray* arr, size_t index);
 bool yuji_dyn_array_set(YujiDynArray* arr, size_t index, void* item);
+
+void yuji_dyn_array_remove(YujiDynArray* arr, size_t index);

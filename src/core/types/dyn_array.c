@@ -63,3 +63,17 @@ bool yuji_dyn_array_set(YujiDynArray *arr, size_t index, void* item) {
   arr->data[index] = item;
   return true;
 }
+
+void yuji_dyn_array_remove(YujiDynArray* arr, size_t index) {
+  yuji_check_memory(arr);
+
+  if (index >= arr->size) {
+    return;
+  }
+
+  for (size_t i = index; i < arr->size - 1; i++) {
+    arr->data[i] = arr->data[i + 1];
+  }
+
+  arr->size--;
+}

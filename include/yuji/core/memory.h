@@ -4,8 +4,8 @@
 #include <stddef.h>
 
 NO_RETURN void yuji_panic(const char* fmt, ...);
-void yuji_check_memory(const void* ptr);
+void yuji_check_memory(void* ptr);
 
-void* yuji_malloc(size_t size);
+__attribute__((malloc)) void* yuji_malloc(size_t size);
 void* yuji_realloc(void* ptr, size_t size);
 void yuji_free(void* ptr);

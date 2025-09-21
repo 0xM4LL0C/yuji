@@ -15,7 +15,7 @@ void yuji_panic(const char* fmt, ...) {
   exit(EXIT_FAILURE);
 }
 
-void yuji_check_memory(const void* ptr) {
+void yuji_check_memory(void* ptr) {
   if (!ptr) {
     yuji_panic("error: memory is null");
   }
