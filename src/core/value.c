@@ -1,11 +1,16 @@
 #include "yuji/core/value.h"
 #include "yuji/core/ast.h"
 #include "yuji/core/memory.h"
+#include "yuji/core/types/string.h"
 #include <stdio.h>
 #include <string.h>
 
 void yuji_value_free(YujiValue* value) {
   yuji_check_memory(value);
+
+  if (--value->refcount != 0) {
+    return;
+  }
 
   switch (value->type) {
     case VT_NUMBER:
@@ -90,18 +95,14 @@ YUJI_VALUE_INIT(function, VT_FUNCTION, {
 }, YujiASTFunction* node)
 
 YUJI_VALUE_INIT(string, VT_STRING, {
-  value->value.string = string;
+  value->value.string = yuji_string_init_from_cstr(strdup(string->data));
 }, YujiString* string)
 
 YujiValue* yuji_value_null_init() {
-  static YujiValue *global_null = NULL;
-
-  if (!global_null) {
-    global_null = yuji_malloc(sizeof(YujiValue));
-    global_null->type = VT_NULL;
-  }
-
-  return global_null;
+  YujiValue* value = yuji_malloc(sizeof(YujiValue));
+  value->type = VT_NULL;
+  value->refcount = 1;
+  return value;
 }
 
 YUJI_VALUE_INIT(cfunction, VT_CFUNCTION, {

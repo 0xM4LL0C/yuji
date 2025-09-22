@@ -4,6 +4,7 @@
 #include "yuji/core/module.h"
 #include "yuji/core/types/dyn_array.h"
 #include "yuji/core/types/map.h"
+#include "yuji/core/types/string.h"
 #include "yuji/core/value.h"
 #include "yuji/utils.h"
 #include "yuji/stdlib/_std.h"
@@ -47,6 +48,7 @@ YujiValue* yuji_scope_get(YujiScope* scope, const char* key) {
     YujiValue* val = yuji_map_get(s->env, key);
 
     if (val) {
+      val->refcount++;
       return val;
     }
   }
@@ -55,7 +57,21 @@ YujiValue* yuji_scope_get(YujiScope* scope, const char* key) {
 }
 
 void yuji_scope_set(YujiScope* scope, const char* key, YujiValue* val) {
+  YujiValue* old_val = yuji_map_get(scope->env, key);
+
+  if (old_val) {
+    yuji_value_free(old_val);
+  }
+
   yuji_map_set(scope->env, key, val);
+}
+
+void yuji_scope_merge(YujiScope* dest, YujiScope* src) {
+  YUJI_DYN_ARRAY_ITER(src->env->pairs, YujiMapPair, pair, {
+    YujiValue* val = pair->value;
+    val->refcount++;
+    yuji_scope_set(dest, pair->key, val);
+  })
 }
 
 YujiInterpreter* yuji_interpreter_init() {
@@ -83,7 +99,42 @@ void yuji_interpreter_free(YujiInterpreter* interpreter) {
 }
 
 void yuji_interpreter_load_module(YujiInterpreter* interpreter, const char* module_name) {
+  yuji_check_memory(interpreter);
 
+  YujiString* module_name_s = yuji_string_init_from_cstr(module_name);
+  YujiDynArray* parts = yuji_string_split(module_name_s, '/');
+
+  if (parts->size == 0) {
+    yuji_panic("empty module name");
+  }
+
+  YujiString* first = parts->data[0];
+  YujiModule* module = yuji_map_get(interpreter->loaded_modules, first->data);
+
+  if (!module) {
+    yuji_panic("module '%s' not found", first->data);
+  }
+
+  for (size_t i = 1; i < parts->size; i++) {
+    YujiString* part = parts->data[i];
+    YUJI_LOG("part: %s", part->data)
+    YujiModule* sub = yuji_module_find_submodule(module, part->data);
+
+    if (!sub) {
+      yuji_panic("module '%s' not found", module_name);
+    }
+
+    module = sub;
+  }
+
+  yuji_scope_merge(interpreter->current_scope, module->scope);
+  YUJI_LOG("module '%s' loaded", module_name);
+
+  YUJI_DYN_ARRAY_ITER(parts, YujiString, part, {
+    yuji_string_free(part);
+  })
+  yuji_dyn_array_free(parts);
+  yuji_string_free(module_name_s);
 }
 
 YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node) {
@@ -208,6 +259,9 @@ YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node
         yuji_panic("function %s not found", call->name);
       }
 
+      YujiValue* result = NULL;
+      YUJI_LOG("Call: %s", call->name);
+
       if (fn_val->type == VT_CFUNCTION) {
         YujiDynArray* args = yuji_dyn_array_init();
         YUJI_DYN_ARRAY_ITER(call->args, YujiASTNode, arg_expr, {
@@ -215,15 +269,11 @@ YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node
           yuji_dyn_array_push(args, arg_val);
         })
 
-        YujiValue* result = fn_val->value.cfunction(interpreter->current_scope, args);
-
+        result = fn_val->value.cfunction(interpreter->current_scope, args);
         YUJI_DYN_ARRAY_ITER(args, YujiValue, arg, {
           yuji_value_free(arg);
-
         })
         yuji_dyn_array_free(args);
-
-        return result;
       } else if (fn_val->type == VT_FUNCTION) {
         YujiASTFunction* fn_node = fn_val->value.function.node;
 
@@ -244,13 +294,16 @@ YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node
           yuji_scope_set(fn_scope, param_name, arg_val);
         }
 
-        YujiValue* result = yuji_interpreter_eval(interpreter, fn_node->body);
+        result = yuji_interpreter_eval(interpreter, fn_node->body);
 
         yuji_scope_pop(interpreter);
-        return result;
       } else {
+        yuji_value_free(fn_val);
         yuji_panic("'%s' is not a function", call->name);
       }
+
+      yuji_value_free(fn_val);
+      return result;
     }
 
     case YUJI_AST_WHILE: {

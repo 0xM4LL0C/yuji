@@ -3,6 +3,8 @@
 #include "yuji/core/memory.h"
 #include "yuji/core/token.h"
 #include "yuji/core/types/dyn_array.h"
+#include "yuji/utils.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -283,6 +285,9 @@ YujiASTNode* yuji_parser_parse_factor(YujiParser* parser) {
       const char* name = token->value;
       yuji_parser_advance(parser);
 
+      YUJI_LOG("Identifier: %s", name);
+      val
+
       if (yuji_parser_match(parser, TT_LPAREN)) {
         yuji_parser_advance(parser);
 
@@ -301,7 +306,7 @@ YujiASTNode* yuji_parser_parse_factor(YujiParser* parser) {
 
         yuji_parser_expect(parser, TT_RPAREN);
         yuji_parser_advance(parser);
-
+        YUJI_LOG("Call: %s", name);
         return yuji_ast_call_init(name, args);
       }
 

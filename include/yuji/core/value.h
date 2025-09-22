@@ -28,6 +28,7 @@ typedef struct {
 
 struct YujiValue {
   YujiValueType type;
+  int refcount;
   union {
     int64_t number;
     YujiFunction function;
@@ -41,6 +42,7 @@ struct YujiValue {
   YujiValue* yuji_value_##NAME##_init(__VA_ARGS__) { \
     YujiValue* value = yuji_malloc(sizeof(YujiValue)); \
     value->type = TYPE; \
+    value->refcount = 1; \
     BODY; \
     return value; \
   }

@@ -20,6 +20,7 @@ void yuji_scope_push(YujiInterpreter* interpreter);
 void yuji_scope_pop(YujiInterpreter* interpreter);
 YujiValue* yuji_scope_get(YujiScope* scope, const char* key);
 void yuji_scope_set(YujiScope* scope, const char* key, YujiValue* val);
+void yuji_scope_merge(YujiScope* dest, YujiScope* src);
 
 YujiInterpreter* yuji_interpreter_init();
 void yuji_interpreter_free(YujiInterpreter* interpreter);

@@ -11,5 +11,4 @@ void yuji_std_load_all(YujiInterpreter* interpreter) {
   yuji_module_add_submodule(std, libio);
 
   yuji_map_insert(interpreter->loaded_modules, std->name, std);
-  yuji_map_insert(interpreter->loaded_modules, libio->name, libio);
 }
