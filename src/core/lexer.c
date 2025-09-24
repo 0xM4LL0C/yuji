@@ -159,10 +159,11 @@ bool yuji_lexer_tokenize(YujiLexer* lexer, YujiDynArray* tokens) {
       value = yuji_malloc(2);
       value[0] = c;
       value[1] = '\0';
+
+      yuji_lexer_advance(lexer);
     }
 
     yuji_dyn_array_push(tokens, yuji_token_init(value, type, lexer->position));
-    yuji_lexer_advance(lexer);
   }
 
   return true;
