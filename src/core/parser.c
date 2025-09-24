@@ -286,7 +286,6 @@ YujiASTNode* yuji_parser_parse_factor(YujiParser* parser) {
       yuji_parser_advance(parser);
 
       YUJI_LOG("Identifier: %s", name);
-      val
 
       if (yuji_parser_match(parser, TT_LPAREN)) {
         yuji_parser_advance(parser);
