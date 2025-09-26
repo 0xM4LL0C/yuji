@@ -3,8 +3,6 @@
 #include "yuji/core/memory.h"
 #include "yuji/core/token.h"
 #include "yuji/core/types/dyn_array.h"
-#include "yuji/utils.h"
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
