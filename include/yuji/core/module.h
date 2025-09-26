@@ -2,6 +2,7 @@
 
 #include "yuji/core/interpreter.h"
 #include "yuji/core/types/map.h"
+#include <stdint.h>
 
 typedef struct {
   const char* name;
@@ -16,6 +17,10 @@ void yuji_module_add_submodule(YujiModule* module, YujiModule* submodule);
 void yuji_module_register(YujiModule* module, const char* name, YujiValue *value);
 
 YujiModule* yuji_module_find_submodule(YujiModule* module, const char* name);
+
+#define YUJI_FN_INF_ARGUMENT SIZE_MAX
+#define YUJI_FN_NO_ARGUMENT 0
+#define YUJI_FN_ARGC(N) N
 
 #define YUJI_MODULE_REGISTER_FUNC(MODULE, NAME, ARGC, FUNC) \
   do { \

@@ -1,7 +1,9 @@
 use "std/io"
 
 let a = 0
-println("Hello, World!")
+
+let name = input("")
+println("Hello, ", name)
 while a < 10 {
     a = a + 1
     println("a = ", a)

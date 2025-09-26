@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdio.h>
+#include <string.h>
 
 static YujiValue* io_print(YujiScope* scope, YujiDynArray* args) {
   YUJI_UNUSED(scope);
@@ -40,7 +41,13 @@ static YujiValue* io_input(YujiScope* scope, YujiDynArray* args) {
   YujiString* result = yuji_string_init();
   char buffer[1024];
 
-  while (fgets(buffer, sizeof(buffer), stdin)) {
+  if (fgets(buffer, sizeof(buffer), stdin)) {
+    size_t len = strlen(buffer);
+
+    if (len > 0 && buffer[len - 1] == '\n') {
+      buffer[len - 1] = '\0';
+    }
+
     yuji_string_append_cstr(result, buffer);
   }
 
@@ -50,9 +57,9 @@ static YujiValue* io_input(YujiScope* scope, YujiDynArray* args) {
 YujiModule* yuji_load_io() {
   YujiModule* module = yuji_module_init("io");
 
-  YUJI_MODULE_REGISTER_FUNC(module, "print", (size_t) -1, io_print);
-  YUJI_MODULE_REGISTER_FUNC(module, "println", (size_t) -1, io_println);
-  YUJI_MODULE_REGISTER_FUNC(module, "input", 1, io_input);
+  YUJI_MODULE_REGISTER_FUNC(module, "print", YUJI_FN_INF_ARGUMENT, io_print);
+  YUJI_MODULE_REGISTER_FUNC(module, "println", YUJI_FN_INF_ARGUMENT, io_println);
+  YUJI_MODULE_REGISTER_FUNC(module, "input", YUJI_FN_ARGC(1), io_input);
 
   return module;
 }
