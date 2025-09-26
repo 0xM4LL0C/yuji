@@ -98,12 +98,7 @@ YUJI_VALUE_INIT(string, VT_STRING, {
   value->value.string = yuji_string_init_from_cstr(strdup(string->data));
 }, YujiString* string)
 
-YujiValue* yuji_value_null_init() {
-  YujiValue* value = yuji_malloc(sizeof(YujiValue));
-  value->type = VT_NULL;
-  value->refcount = 1;
-  return value;
-}
+YUJI_VALUE_INIT(null, VT_NULL, {})
 
 YUJI_VALUE_INIT(cfunction, VT_CFUNCTION, {
   value->value.cfunction = cfunction;
