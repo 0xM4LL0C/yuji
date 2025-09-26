@@ -140,6 +140,7 @@ YujiASTNode* yuji_parser_parse_stmt(YujiParser* parser) {
 
     yuji_parser_advance(parser);
     yuji_parser_expect(parser, TT_LPAREN);
+    yuji_parser_advance(parser);
 
     YujiDynArray* params = yuji_dyn_array_init();
 
@@ -153,6 +154,7 @@ YujiASTNode* yuji_parser_parse_stmt(YujiParser* parser) {
     }
 
     yuji_parser_expect(parser, TT_RPAREN);
+    yuji_parser_advance(parser);
     yuji_parser_expect(parser, TT_LBRACE);
 
     YujiASTNode* body = yuji_parser_parse_block(parser);
