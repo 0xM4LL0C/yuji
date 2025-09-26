@@ -1,10 +1,8 @@
 use "std/io"
 
-let a = 0
-
-let name = input("")
-println("Hello, ", name)
-while a < 10 {
-    a = a + 1
-    println("a = ", a)
+fn greet(name) {
+    println("Hello, ", name)
 }
+
+let name = input("input your name: ")
+greet(name)
