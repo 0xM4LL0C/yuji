@@ -1,3 +1,4 @@
+// src/stdlib/libio.c
 #include "yuji/core/memory.h"
 #include "yuji/core/module.h"
 #include "yuji/core/types/dyn_array.h"
@@ -15,21 +16,24 @@ static YujiValue* io_print(YujiScope* scope, YujiDynArray* args) {
   }
 
   YUJI_DYN_ARRAY_ITER(args, YujiValue, arg, {
-    printf("%s", yuji_value_to_string(arg));
+    char* str = yuji_value_to_string(arg);
+    printf("%s", str);
+    yuji_free(str);
   })
 
   return yuji_value_null_init();
 }
 
 static YujiValue* io_println(YujiScope* scope, YujiDynArray* args) {
-  io_print(scope, args);
+  YujiValue* result = io_print(scope, args);
   printf("\n");
-  return yuji_value_null_init();
+  return result;
 }
 
 static YujiValue* io_input(YujiScope* scope, YujiDynArray* args) {
   if (args->size == 1) {
-    io_print(scope, args);
+    YujiValue* tmp = io_print(scope, args);
+    yuji_value_free(tmp);
   }
 
   YujiString* result = yuji_string_init();
@@ -45,9 +49,9 @@ static YujiValue* io_input(YujiScope* scope, YujiDynArray* args) {
 YujiModule* yuji_load_io() {
   YujiModule* module = yuji_module_init("io");
 
-  YUJI_MODULE_REGISTER_FUNC(module, "print", io_print);
-  YUJI_MODULE_REGISTER_FUNC(module, "println", io_println);
-  YUJI_MODULE_REGISTER_FUNC(module, "input", io_input);
+  YUJI_MODULE_REGISTER_FUNC(module, "print", -1, io_print);
+  YUJI_MODULE_REGISTER_FUNC(module, "println", -1, io_println);
+  YUJI_MODULE_REGISTER_FUNC(module, "input", 1, io_input);
 
   return module;
 }

@@ -17,5 +17,5 @@ void yuji_module_register(YujiModule* module, const char* name, YujiValue *value
 
 YujiModule* yuji_module_find_submodule(YujiModule* module, const char* name);
 
-#define YUJI_MODULE_REGISTER_FUNC(module, name, func) \
-  yuji_module_register(module, name, yuji_value_cfunction_init(func))
+#define YUJI_MODULE_REGISTER_FUNC(MODULE, NAME, ARGC, FUNC) \
+  yuji_module_register(MODULE, NAME, yuji_value_cfunction_init(NAME, ARGC, FUNC))

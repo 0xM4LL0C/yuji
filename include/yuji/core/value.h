@@ -4,6 +4,7 @@
 #include "yuji/core/types/dyn_array.h"
 #include "yuji/core/types/string.h"
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 typedef enum {
@@ -18,13 +19,17 @@ typedef enum {
 typedef struct YujiValue YujiValue;
 
 // forward declaration
-typedef struct YujiScope YujiScope;
-
-typedef YujiValue* (*YujiCFunction)(YujiScope* scope, YujiDynArray* args);
+struct YujiScope;
 
 typedef struct {
   YujiASTFunction* node;
 } YujiFunction;
+
+typedef struct {
+  const char* name;
+  int argc;
+  YujiValue* (*func)(struct YujiScope* scope, YujiDynArray* args);
+} YujiCFunction;
 
 struct YujiValue {
   YujiValueType type;
@@ -33,7 +38,7 @@ struct YujiValue {
     int64_t number;
     YujiFunction function;
     YujiString* string;
-    YujiCFunction cfunction;
+    YujiCFunction* cfunction;
     bool bool_;
   } value;
 };
@@ -56,5 +61,6 @@ YujiValue* yuji_value_number_init(int64_t number);
 YujiValue* yuji_value_function_init(YujiASTFunction* node);
 YujiValue* yuji_value_string_init(YujiString* string);
 YujiValue* yuji_value_null_init();
-YujiValue* yuji_value_cfunction_init(YujiCFunction func);
+YujiValue* yuji_value_cfunction_init(const char* name, int argc,
+                                     YujiValue * (*func)(struct YujiScope* scope, YujiDynArray* args));
 YujiValue* yuji_value_bool_init(bool bool_);

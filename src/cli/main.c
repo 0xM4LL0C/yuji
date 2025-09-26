@@ -51,7 +51,8 @@ int run_file(const char* filename) {
   YujiInterpreter* interpreter = yuji_interpreter_init();
 
   YUJI_DYN_ARRAY_ITER(ast, YujiASTNode, node, {
-    yuji_interpreter_eval(interpreter, node);
+    YujiValue* result = yuji_interpreter_eval(interpreter, node);
+    yuji_value_free(result);
   })
 
   // CLEANUP

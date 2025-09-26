@@ -15,13 +15,16 @@ void yuji_value_free(YujiValue* value) {
   switch (value->type) {
     case VT_NUMBER:
     case VT_FUNCTION:
-    case VT_CFUNCTION:
     case VT_BOOL:
     case VT_NULL:
       break;
 
     case VT_STRING:
       yuji_string_free(value->value.string);
+      break;
+
+    case VT_CFUNCTION:
+      yuji_free(value->value.cfunction);
       break;
   }
 
@@ -101,8 +104,14 @@ YUJI_VALUE_INIT(string, VT_STRING, {
 YUJI_VALUE_INIT(null, VT_NULL, {})
 
 YUJI_VALUE_INIT(cfunction, VT_CFUNCTION, {
+  YujiCFunction* cfunction = yuji_malloc(sizeof(YujiCFunction));
+
+  cfunction->name = name;
+  cfunction->argc = argc;
+  cfunction->func = func;
+
   value->value.cfunction = cfunction;
-}, YujiCFunction cfunction)
+}, const char* name, int argc, YujiValue * (*func)(struct YujiScope* scope, YujiDynArray* args))
 
 YUJI_VALUE_INIT(bool, VT_BOOL, {
   value->value.bool_ = bool_;
