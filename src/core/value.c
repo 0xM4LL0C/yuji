@@ -98,7 +98,7 @@ YUJI_VALUE_INIT(function, VT_FUNCTION, {
 }, YujiASTFunction* node)
 
 YUJI_VALUE_INIT(string, VT_STRING, {
-  value->value.string = yuji_string_init_from_cstr(strdup(string->data));
+  value->value.string = yuji_string_init_from_cstr(string->data);
 }, YujiString* string)
 
 YUJI_VALUE_INIT(null, VT_NULL, {})
@@ -106,12 +106,11 @@ YUJI_VALUE_INIT(null, VT_NULL, {})
 YUJI_VALUE_INIT(cfunction, VT_CFUNCTION, {
   YujiCFunction* cfunction = yuji_malloc(sizeof(YujiCFunction));
 
-  cfunction->name = name;
   cfunction->argc = argc;
   cfunction->func = func;
-
   value->value.cfunction = cfunction;
-}, const char* name, int argc, YujiValue * (*func)(struct YujiScope* scope, YujiDynArray* args))
+
+}, size_t argc, YujiValue * (*func)(struct YujiScope* scope, YujiDynArray* args))
 
 YUJI_VALUE_INIT(bool, VT_BOOL, {
   value->value.bool_ = bool_;

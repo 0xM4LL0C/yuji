@@ -26,8 +26,7 @@ typedef struct {
 } YujiFunction;
 
 typedef struct {
-  const char* name;
-  int argc;
+  size_t argc;
   YujiValue* (*func)(struct YujiScope* scope, YujiDynArray* args);
 } YujiCFunction;
 
@@ -61,6 +60,6 @@ YujiValue* yuji_value_number_init(int64_t number);
 YujiValue* yuji_value_function_init(YujiASTFunction* node);
 YujiValue* yuji_value_string_init(YujiString* string);
 YujiValue* yuji_value_null_init();
-YujiValue* yuji_value_cfunction_init(const char* name, int argc,
+YujiValue* yuji_value_cfunction_init(size_t argc,
                                      YujiValue * (*func)(struct YujiScope* scope, YujiDynArray* args));
 YujiValue* yuji_value_bool_init(bool bool_);

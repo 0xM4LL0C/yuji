@@ -69,9 +69,7 @@ void yuji_scope_set(YujiScope* scope, const char* key, YujiValue* val) {
 
 void yuji_scope_merge(YujiScope* dest, YujiScope* src) {
   YUJI_DYN_ARRAY_ITER(src->env->pairs, YujiMapPair, pair, {
-    YujiValue* val = pair->value;
-    val->refcount++;
-    yuji_scope_set(dest, pair->key, val);
+    yuji_scope_set(dest, pair->key, pair->value);
   })
 }
 
@@ -95,7 +93,6 @@ void yuji_interpreter_free(YujiInterpreter* interpreter) {
     yuji_module_free(pair->value);
   })
   yuji_map_free(interpreter->loaded_modules);
-
   yuji_free(interpreter);
 }
 
@@ -118,7 +115,6 @@ void yuji_interpreter_load_module(YujiInterpreter* interpreter, const char* modu
 
   for (size_t i = 1; i < parts->size; i++) {
     YujiString* part = parts->data[i];
-    YUJI_LOG("part: %s", part->data)
     YujiModule* sub = yuji_module_find_submodule(module, part->data);
 
     if (!sub) {
@@ -129,7 +125,6 @@ void yuji_interpreter_load_module(YujiInterpreter* interpreter, const char* modu
   }
 
   yuji_scope_merge(interpreter->current_scope, module->scope);
-  YUJI_LOG("module '%s' loaded", module_name);
 
   YUJI_DYN_ARRAY_ITER(parts, YujiString, part, {
     yuji_string_free(part);
@@ -156,7 +151,7 @@ YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node
       YujiValue* left = yuji_interpreter_eval(interpreter, binop->left);
       YujiValue* right = yuji_interpreter_eval(interpreter, binop->right);
 
-      YujiValue* result;
+      YujiValue* result = NULL;
 
       if (YUJI_STRCMP(binop->operator, "+")) {
         result = yuji_value_number_init(left->value.number + right->value.number);
@@ -207,20 +202,18 @@ YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node
     case YUJI_AST_LET: {
       char* name = node->value.let->name;
 
-      YujiValue* existing = yuji_scope_get(interpreter->current_scope, name);
-
-      if (existing) {
+      if (yuji_scope_get(interpreter->current_scope, name)) {
         yuji_panic("variable %s already exists", name);
       }
 
       YujiValue* value = yuji_interpreter_eval(interpreter, node->value.let->value);
       yuji_scope_set(interpreter->current_scope, name, value);
+      yuji_value_free(value);
       return yuji_value_null_init();
     }
 
     case YUJI_AST_IDENTIFIER: {
       char* name = node->value.identifier->value;
-
       YujiValue* value = yuji_scope_get(interpreter->current_scope, name);
 
       if (!value) {
@@ -232,7 +225,6 @@ YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node
 
     case YUJI_AST_ASSIGN: {
       char* name = node->value.assign->name;
-
       YujiValue* existing = yuji_scope_get(interpreter->current_scope, name);
 
       if (!existing) {
@@ -243,6 +235,7 @@ YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node
 
       YujiValue* value = yuji_interpreter_eval(interpreter, node->value.assign->value);
       yuji_scope_set(interpreter->current_scope, name, value);
+      yuji_value_free(value);
       return yuji_value_null_init();
     }
 
@@ -255,6 +248,7 @@ YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node
 
       YujiValue* value = yuji_value_function_init(node->value.fn);
       yuji_scope_set(interpreter->current_scope, name, value);
+      yuji_value_free(value);
       return yuji_value_null_init();
     }
 
@@ -266,10 +260,10 @@ YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node
         yuji_panic("function %s not found", call->name);
       }
 
-      YujiValue* result = yuji_value_null_init();
+      YujiValue* result = NULL;
 
       if (fn->type == VT_CFUNCTION) {
-        if (fn->value.cfunction->argc != -1 && fn->value.cfunction->argc != (int)call->args->size) {
+        if (fn->value.cfunction->argc != (size_t) -1 && fn->value.cfunction->argc != call->args->size) {
           yuji_panic("function '%s' expects %d, got %d", call->name, fn->value.cfunction->argc,
                      call->args->size);
         }
@@ -278,7 +272,7 @@ YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node
         YUJI_DYN_ARRAY_ITER(call->args, YujiASTNode, arg, {
           YujiValue* arg_val = yuji_interpreter_eval(interpreter, arg);
           yuji_dyn_array_push(args, arg_val);
-        });
+        })
 
         yuji_scope_push(interpreter);
         result = fn->value.cfunction->func(interpreter->current_scope, args);
@@ -306,11 +300,13 @@ YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node
           YujiASTNode* arg_expr = call->args->data[i];
           YujiValue* arg_val = yuji_interpreter_eval(interpreter, arg_expr);
           yuji_scope_set(fn_scope, param_name, arg_val);
+          yuji_value_free(arg_val);
         }
 
-        result = yuji_interpreter_eval(interpreter, fn_node->body);
-
+        YujiValue* fn_result = yuji_interpreter_eval(interpreter, fn_node->body);
         yuji_scope_pop(interpreter);
+        yuji_value_free(result);
+        result = fn_result;
       } else {
         yuji_panic("'%s' is not a function", call->name);
       }
@@ -339,7 +335,6 @@ YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node
 
           result = body_result;
         })
-
       }
 
       yuji_scope_pop(interpreter);
@@ -352,7 +347,6 @@ YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node
         bool condition_result = yuji_value_to_bool(condition_val);
 
         yuji_value_free(condition_val);
-
 
         if (condition_result) {
           YujiASTNode* block = yuji_ast_block_init(branch->body->exprs);
@@ -378,10 +372,7 @@ YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node
     }
 
     case YUJI_AST_USE: {
-      char* name = node->value.use->value;
-
-      yuji_interpreter_load_module(interpreter, name);
-
+      yuji_interpreter_load_module(interpreter, node->value.use->value);
       return yuji_value_null_init();
     }
   }

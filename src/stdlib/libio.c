@@ -5,6 +5,7 @@
 #include "yuji/core/types/string.h"
 #include "yuji/core/value.h"
 #include "yuji/utils.h"
+#include <stddef.h>
 #include <stdio.h>
 #include <stdio.h>
 
@@ -49,8 +50,8 @@ static YujiValue* io_input(YujiScope* scope, YujiDynArray* args) {
 YujiModule* yuji_load_io() {
   YujiModule* module = yuji_module_init("io");
 
-  YUJI_MODULE_REGISTER_FUNC(module, "print", -1, io_print);
-  YUJI_MODULE_REGISTER_FUNC(module, "println", -1, io_println);
+  YUJI_MODULE_REGISTER_FUNC(module, "print", (size_t) -1, io_print);
+  YUJI_MODULE_REGISTER_FUNC(module, "println", (size_t) -1, io_println);
   YUJI_MODULE_REGISTER_FUNC(module, "input", 1, io_input);
 
   return module;
