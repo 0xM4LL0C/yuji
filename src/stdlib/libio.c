@@ -51,7 +51,9 @@ static YujiValue* io_input(YujiScope* scope, YujiDynArray* args) {
     yuji_string_append_cstr(result, buffer);
   }
 
-  return yuji_value_string_init(result);
+  YujiValue* val = yuji_value_string_init(result);
+  yuji_string_free(result);
+  return val;
 }
 
 YujiModule* yuji_load_io() {
