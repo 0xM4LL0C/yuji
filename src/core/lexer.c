@@ -6,6 +6,7 @@
 #include "yuji/core/types/string.h"
 #include "yuji/utils.h"
 #include <ctype.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -208,7 +209,17 @@ char* yuji_lexer_parse_number(YujiLexer* lexer) {
   YujiString* str = yuji_string_init();
   char c = lexer->current_char;
 
-  while (c != '\0' && isdigit(c)) {
+  size_t dot_count = 0;
+
+  while (c != '\0' && (isdigit(c) || c == '.')) {
+    if (c == '.') {
+      dot_count++;
+
+      if (dot_count > 1) {
+        yuji_panic("lexer error: invalid number at %s", yuji_position_to_string(lexer->position));
+      }
+    }
+
     yuji_string_append_char(str, c);
     c = yuji_lexer_advance(lexer);
   }

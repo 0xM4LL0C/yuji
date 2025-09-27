@@ -8,7 +8,8 @@
 #include <stdint.h>
 
 typedef enum {
-  VT_NUMBER,
+  VT_INT,
+  VT_FLOAT,
   VT_FUNCTION,
   VT_CFUNCTION,
   VT_STRING,
@@ -34,7 +35,8 @@ struct YujiValue {
   YujiValueType type;
   int refcount;
   union {
-    int64_t number;
+    int64_t int_;
+    double float_;
     YujiFunction function;
     YujiString* string;
     YujiCFunction* cfunction;
@@ -56,7 +58,8 @@ void yuji_value_free(YujiValue* value);
 bool yuji_value_to_bool(YujiValue* value);
 char* yuji_value_to_string(YujiValue* value);
 
-YujiValue* yuji_value_number_init(int64_t number);
+YujiValue* yuji_value_int_init(int64_t number);
+YujiValue* yuji_value_float_init(double number);
 YujiValue* yuji_value_function_init(YujiASTFunction* node);
 YujiValue* yuji_value_string_init(YujiString* string);
 YujiValue* yuji_value_null_init();
