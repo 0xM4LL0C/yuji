@@ -34,6 +34,10 @@ typedef enum {
   TT_GT, // >
   TT_COMMA, // ,
   TT_QUOTE, // "
+  TT_EQ, // ==
+  TT_NEQ, // !=
+  TT_LTE, // <=
+  TT_GTE, // >=
 } YujiTokenType;
 
 const char* yuji_token_type_to_string(YujiTokenType type);

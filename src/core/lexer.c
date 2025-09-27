@@ -155,36 +155,59 @@ bool yuji_lexer_tokenize(YujiLexer* lexer, YujiDynArray* tokens) {
       value = yuji_lexer_parse_number(lexer);
       type = TT_NUMBER;
     } else {
+
+      if (c == '=' && yuji_lexer_peek_next(lexer) == '=') {
+        type = TT_EQ;
+        value = strdup("==");
+        yuji_lexer_advance(lexer);
+        yuji_lexer_advance(lexer);
+      } else if (c == '!' && yuji_lexer_peek_next(lexer) == '=') {
+        type = TT_NEQ;
+        value = strdup("!=");
+        yuji_lexer_advance(lexer);
+        yuji_lexer_advance(lexer);
+      } else if (c == '>' && yuji_lexer_peek_next(lexer) == '=') {
+        type = TT_GTE;
+        value = strdup(">=");
+        yuji_lexer_advance(lexer);
+        yuji_lexer_advance(lexer);
+      } else if (c == '<' && yuji_lexer_peek_next(lexer) == '=') {
+        type = TT_LTE;
+        value = strdup("<=");
+        yuji_lexer_advance(lexer);
+        yuji_lexer_advance(lexer);
+      } else {
 #define _YUJI_LEXER_OPERATOR_CASE(VALUE, TYPE) case VALUE: type = TYPE; break;
 
-      switch (c) {
-          _YUJI_LEXER_OPERATOR_CASE('=', TT_ASSIGN)
-          _YUJI_LEXER_OPERATOR_CASE('+', TT_PLUS)
-          _YUJI_LEXER_OPERATOR_CASE('-', TT_MINUS)
-          _YUJI_LEXER_OPERATOR_CASE('*', TT_MUL)
-          _YUJI_LEXER_OPERATOR_CASE('/', TT_DIV)
-          _YUJI_LEXER_OPERATOR_CASE('(', TT_LPAREN)
-          _YUJI_LEXER_OPERATOR_CASE(')', TT_RPAREN)
-          _YUJI_LEXER_OPERATOR_CASE('{', TT_LBRACE)
-          _YUJI_LEXER_OPERATOR_CASE('}', TT_RBRACE)
-          _YUJI_LEXER_OPERATOR_CASE('%', TT_MOD)
-          _YUJI_LEXER_OPERATOR_CASE('>', TT_GT)
-          _YUJI_LEXER_OPERATOR_CASE('<', TT_LT)
-          _YUJI_LEXER_OPERATOR_CASE(',', TT_COMMA)
+        switch (c) {
+            _YUJI_LEXER_OPERATOR_CASE('=', TT_ASSIGN)
+            _YUJI_LEXER_OPERATOR_CASE('+', TT_PLUS)
+            _YUJI_LEXER_OPERATOR_CASE('-', TT_MINUS)
+            _YUJI_LEXER_OPERATOR_CASE('*', TT_MUL)
+            _YUJI_LEXER_OPERATOR_CASE('/', TT_DIV)
+            _YUJI_LEXER_OPERATOR_CASE('(', TT_LPAREN)
+            _YUJI_LEXER_OPERATOR_CASE(')', TT_RPAREN)
+            _YUJI_LEXER_OPERATOR_CASE('{', TT_LBRACE)
+            _YUJI_LEXER_OPERATOR_CASE('}', TT_RBRACE)
+            _YUJI_LEXER_OPERATOR_CASE('%', TT_MOD)
+            _YUJI_LEXER_OPERATOR_CASE('>', TT_GT)
+            _YUJI_LEXER_OPERATOR_CASE('<', TT_LT)
+            _YUJI_LEXER_OPERATOR_CASE(',', TT_COMMA)
 
-        default:
-          yuji_panic("lexer error: unknown operator '%c' (%d) at %s", c, c,
-                     yuji_position_to_string(lexer->position));
-      }
+          default:
+            yuji_panic("lexer error: unknown operator '%c' (%d) at %s", c, c,
+                       yuji_position_to_string(lexer->position));
+        }
 
 #undef _YUJI_LEXER_OPERATOR_CASE
 
-      value = yuji_malloc(2);
-      value[0] = c;
-      value[1] = '\0';
-
-      yuji_lexer_advance(lexer);
+        value = yuji_malloc(2);
+        value[0] = c;
+        value[1] = '\0';
+        yuji_lexer_advance(lexer);
+      }
     }
+
 
     yuji_dyn_array_push(tokens, yuji_token_init(value, type, lexer->position));
   }
@@ -192,7 +215,7 @@ bool yuji_lexer_tokenize(YujiLexer* lexer, YujiDynArray* tokens) {
   return true;
 }
 
-void yuji_lexer_skip_whitespace(YujiLexer* lexer) {
+void yuji_lexer_skip_whitespace(YujiLexer * lexer) {
   while (lexer->current_char != '\0' && isspace(lexer->current_char)) {
     if (lexer->current_char == '\n') {
       lexer->position.line++;
@@ -205,7 +228,7 @@ void yuji_lexer_skip_whitespace(YujiLexer* lexer) {
   }
 }
 
-char* yuji_lexer_parse_number(YujiLexer* lexer) {
+char* yuji_lexer_parse_number(YujiLexer * lexer) {
   YujiString* str = yuji_string_init();
   char c = lexer->current_char;
 
@@ -230,7 +253,7 @@ char* yuji_lexer_parse_number(YujiLexer* lexer) {
   return result;
 }
 
-char* yuji_lexer_parse_string(YujiLexer* lexer) {
+char* yuji_lexer_parse_string(YujiLexer * lexer) {
   YujiString* str = yuji_string_init();
   char c = yuji_lexer_advance(lexer);
 
@@ -281,7 +304,7 @@ char* yuji_lexer_parse_string(YujiLexer* lexer) {
   return result;
 }
 
-char* yuji_lexer_parse_identifier_or_keyword(YujiLexer* lexer) {
+char* yuji_lexer_parse_identifier_or_keyword(YujiLexer * lexer) {
   YujiString* str = yuji_string_init();
   char c = lexer->current_char;
 

@@ -243,7 +243,11 @@ YujiASTNode* yuji_parser_parse_expr(YujiParser* parser) {
          (yuji_parser_match(parser, TT_PLUS) ||
           yuji_parser_match(parser, TT_MINUS) ||
           yuji_parser_match(parser, TT_GT) ||
-          yuji_parser_match(parser, TT_LT))) {
+          yuji_parser_match(parser, TT_LT) ||
+          yuji_parser_match(parser, TT_EQ) ||
+          yuji_parser_match(parser, TT_NEQ) ||
+          yuji_parser_match(parser, TT_GTE) ||
+          yuji_parser_match(parser, TT_LTE))) {
     char* op = (char*)parser->current_token->value;
     yuji_parser_advance(parser);
     YujiASTNode* right = yuji_parser_parse_term(parser);
