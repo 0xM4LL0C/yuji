@@ -1,4 +1,4 @@
-use "std/io"
+use "std/io" // test comment
 
 fn greet(name) {
     println("Hello, ", name)
