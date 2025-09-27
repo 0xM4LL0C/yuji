@@ -4,7 +4,7 @@ fn greet(name) {
     println("Hello, ", name)
 }
 
-let a = 1.312317841513485634116
+let a = 1.3 + 1
 println(a)
 let name = input("input your name: ")
 greet(name)
