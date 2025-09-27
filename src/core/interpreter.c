@@ -181,8 +181,14 @@ YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node
         result = yuji_value_bool_init(l < r);
       } else if (YUJI_STRCMP(binop->operator, ">")) {
         result = yuji_value_bool_init(l > r);
-      } else {
-        yuji_panic("Unknown operator: %s", binop->operator);
+      } else if (YUJI_STRCMP(binop->operator, "==")) {
+        result = yuji_value_bool_init(l == r);
+      } else if (YUJI_STRCMP(binop->operator, "!=")) {
+        result = yuji_value_bool_init(l != r);
+      } else if (YUJI_STRCMP(binop->operator, "<=")) {
+        result = yuji_value_bool_init(l <= r);
+      } else if (YUJI_STRCMP(binop->operator, ">=")) {
+        result = yuji_value_bool_init(l >= r);
       }
 
       yuji_value_free(left);
