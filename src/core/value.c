@@ -13,7 +13,8 @@ void yuji_value_free(YujiValue* value) {
   }
 
   switch (value->type) {
-    case VT_NUMBER:
+    case VT_INT:
+    case VT_FLOAT:
     case VT_FUNCTION:
     case VT_BOOL:
     case VT_NULL:
@@ -33,8 +34,11 @@ void yuji_value_free(YujiValue* value) {
 
 bool yuji_value_to_bool(YujiValue* value) {
   switch (value->type) {
-    case VT_NUMBER:
-      return value->value.number != 0;
+    case VT_INT:
+      return value->value.int_ != 0;
+
+    case VT_FLOAT:
+      return value->value.float_ != 0.0;
 
     case VT_BOOL:
       return value->value.bool_;
@@ -53,10 +57,30 @@ char* yuji_value_to_string(YujiValue* value) {
   char* result = NULL;
 
   switch (value->type) {
-    case VT_NUMBER: {
-      size_t len = (size_t)snprintf(NULL, 0, "%lld", (long long)value->value.number);
+    case VT_INT: {
+      size_t len = (size_t)snprintf(NULL, 0, "%lld", (long long)value->value.int_);
       result = yuji_malloc(len + 1);
-      snprintf(result, len + 1, "%lld", (long long)value->value.number);
+      snprintf(result, len + 1, "%lld", (long long)value->value.int_);
+      break;
+    }
+
+    case VT_FLOAT: {
+      char buf[64];
+      snprintf(buf, sizeof(buf), "%.15f", value->value.float_);
+      char* end = buf + strlen(buf) - 1;
+
+      while (end > buf && *end == '0') {
+        end--;
+      }
+
+      if (*end == '.') {
+        end--;
+      }
+
+      *(end + 1) = '\0';
+      size_t len = strlen(buf);
+      result = yuji_malloc(len + 1);
+      memcpy(result, buf, len + 1);
       break;
     }
 
@@ -89,9 +113,13 @@ char* yuji_value_to_string(YujiValue* value) {
   return result;
 }
 
-YUJI_VALUE_INIT(number, VT_NUMBER, {
-  value->value.number = number;
+YUJI_VALUE_INIT(int, VT_INT, {
+  value->value.int_ = number;
 }, int64_t number)
+
+YUJI_VALUE_INIT(float, VT_FLOAT, {
+  value->value.float_ = number;
+}, double number)
 
 YUJI_VALUE_INIT(function, VT_FUNCTION, {
   value->value.function.node = node;

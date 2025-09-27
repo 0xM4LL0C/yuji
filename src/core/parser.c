@@ -278,9 +278,15 @@ YujiASTNode* yuji_parser_parse_factor(YujiParser* parser) {
 
   switch (token->type) {
     case TT_NUMBER: {
-      int64_t value = strtoll(parser->current_token->value, NULL, 10);
-      yuji_parser_advance(parser);
-      return yuji_ast_number_init(value);
+      if (strchr(token->value, '.') != NULL) {
+        double v = strtod(token->value, NULL);
+        yuji_parser_advance(parser);
+        return yuji_ast_float_init(v);
+      } else {
+        int64_t v = strtoll(token->value, NULL, 10);
+        yuji_parser_advance(parser);
+        return yuji_ast_int_init(v);
+      }
     }
 
     case TT_STRING: {

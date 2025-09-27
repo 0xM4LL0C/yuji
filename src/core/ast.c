@@ -9,8 +9,12 @@ void yuji_ast_free(YujiASTNode* node) {
   yuji_check_memory(node);
 
   switch (node->type) {
-    case YUJI_AST_NUMBER:
-      yuji_free(node->value.number);
+    case YUJI_AST_INT:
+      yuji_free(node->value.int_);
+      break;
+
+    case YUJI_AST_FLOAT:
+      yuji_free(node->value.float_);
       break;
 
     case YUJI_AST_STRING:
@@ -121,7 +125,8 @@ char* yuji_ast_node_type_to_string(YujiASTNodeType type) {
 #define _YUJI_AST_NODE_TYPE_CASE(type) case type: return #type
 
   switch (type) {
-      _YUJI_AST_NODE_TYPE_CASE(YUJI_AST_NUMBER);
+      _YUJI_AST_NODE_TYPE_CASE(YUJI_AST_INT);
+      _YUJI_AST_NODE_TYPE_CASE(YUJI_AST_FLOAT);
       _YUJI_AST_NODE_TYPE_CASE(YUJI_AST_STRING);
       _YUJI_AST_NODE_TYPE_CASE(YUJI_AST_BIN_OP);
       _YUJI_AST_NODE_TYPE_CASE(YUJI_AST_IDENTIFIER);
@@ -143,10 +148,15 @@ char* yuji_ast_node_type_to_string(YujiASTNodeType type) {
 #undef _YUJI_AST_NODE_TYPE_CASE
 }
 
-YUJI_AST_INIT(number, YUJI_AST_NUMBER, {
-  node->value.number = yuji_malloc(sizeof(YujiASTNumber));
-  node->value.number->value = value;
+YUJI_AST_INIT(int, YUJI_AST_INT, {
+  node->value.int_ = yuji_malloc(sizeof(YujiASTInt));
+  node->value.int_->value = value;
 }, int64_t value)
+
+YUJI_AST_INIT(float, YUJI_AST_FLOAT, {
+  node->value.float_ = yuji_malloc(sizeof(YujiASTFloat));
+  node->value.float_->value = value;
+}, double value)
 
 YUJI_AST_INIT(string, YUJI_AST_STRING, {
   node->value.string = yuji_malloc(sizeof(YujiASTString));
@@ -233,9 +243,14 @@ YujiASTNode* yuji_ast_node_copy(YujiASTNode* node) {
   copy->type = node->type;
 
   switch (node->type) {
-    case YUJI_AST_NUMBER:
-      copy->value.number = yuji_malloc(sizeof(YujiASTNumber));
-      copy->value.number->value = node->value.number->value;
+    case YUJI_AST_INT:
+      copy->value.int_ = yuji_malloc(sizeof(YujiASTInt));
+      copy->value.int_->value = node->value.int_->value;
+      break;
+
+    case YUJI_AST_FLOAT:
+      copy->value.float_ = yuji_malloc(sizeof(YujiASTFloat));
+      copy->value.float_->value = node->value.float_->value;
       break;
 
     case YUJI_AST_STRING:

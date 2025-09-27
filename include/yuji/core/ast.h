@@ -10,7 +10,11 @@ YujiASTNode* yuji_ast_node_copy(YujiASTNode* node);
 
 typedef struct {
   int64_t value;
-} YujiASTNumber;
+} YujiASTInt;
+
+typedef struct {
+  double value;
+} YujiASTFloat;
 
 typedef struct {
   YujiString* value;
@@ -78,7 +82,8 @@ typedef struct {
 
 
 typedef enum {
-  YUJI_AST_NUMBER,
+  YUJI_AST_INT,
+  YUJI_AST_FLOAT,
   YUJI_AST_STRING,
   YUJI_AST_BIN_OP,
   YUJI_AST_IDENTIFIER,
@@ -98,7 +103,8 @@ struct YujiASTNode {
   YujiASTNodeType type;
 
   union {
-    YujiASTNumber* number;
+    YujiASTInt* int_;
+    YujiASTFloat* float_;
     YujiASTString* string;
     YujiASTBinOp* bin_op;
     YujiASTIdentifier* identifier;
@@ -127,7 +133,8 @@ void yuji_ast_free(YujiASTNode* node);
 
 char* yuji_ast_node_type_to_string(YujiASTNodeType type);
 
-YujiASTNode* yuji_ast_number_init(int64_t value);
+YujiASTNode* yuji_ast_int_init(int64_t value);
+YujiASTNode* yuji_ast_float_init(double value);
 YujiASTNode* yuji_ast_string_init(const char* value);
 YujiASTNode* yuji_ast_bin_op_init(YujiASTNode* left, const char* operator, YujiASTNode* right);
 YujiASTNode* yuji_ast_identifier_init(const char* name);

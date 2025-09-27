@@ -140,8 +140,12 @@ YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node
   YUJI_LOG("evaluating node of type: %s (%p)", yuji_ast_node_type_to_string(node->type), node);
 
   switch (node->type) {
-    case YUJI_AST_NUMBER: {
-      return yuji_value_number_init(node->value.number->value);
+    case YUJI_AST_INT: {
+      return yuji_value_int_init(node->value.int_->value);
+    }
+
+    case YUJI_AST_FLOAT: {
+      return yuji_value_float_init(node->value.float_->value);
     }
 
     case YUJI_AST_STRING: {
@@ -156,19 +160,19 @@ YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node
       YujiValue* result = NULL;
 
       if (YUJI_STRCMP(binop->operator, "+")) {
-        result = yuji_value_number_init(left->value.number + right->value.number);
+        result = yuji_value_int_init(left->value.int_ + right->value.int_);
       } else if (YUJI_STRCMP(binop->operator, "-")) {
-        result = yuji_value_number_init(left->value.number - right->value.number);
+        result = yuji_value_int_init(left->value.int_ - right->value.int_);
       } else if (YUJI_STRCMP(binop->operator, "*")) {
-        result = yuji_value_number_init(left->value.number * right->value.number);
+        result = yuji_value_int_init(left->value.int_ * right->value.int_);
       } else if (YUJI_STRCMP(binop->operator, "/")) {
-        result = yuji_value_number_init(left->value.number / right->value.number);
+        result = yuji_value_int_init(left->value.int_ / right->value.int_);
       } else if (YUJI_STRCMP(binop->operator, "%")) {
-        result = yuji_value_number_init(left->value.number % right->value.number);
+        result = yuji_value_int_init(left->value.int_ % right->value.int_);
       } else if (YUJI_STRCMP(binop->operator, "<")) {
-        result = yuji_value_bool_init(left->value.number < right->value.number);
+        result = yuji_value_bool_init(left->value.int_ < right->value.int_);
       } else if (YUJI_STRCMP(binop->operator, ">")) {
-        result = yuji_value_bool_init(left->value.number > right->value.number);
+        result = yuji_value_bool_init(left->value.int_ > right->value.int_);
       } else {
         yuji_panic("Unknown operator: %s", binop->operator);
       }
