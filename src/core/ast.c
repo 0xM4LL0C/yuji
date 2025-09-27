@@ -117,6 +117,32 @@ void yuji_ast_free(YujiASTNode* node) {
   yuji_free(node);
 }
 
+char* yuji_ast_node_type_to_string(YujiASTNodeType type) {
+#define _YUJI_AST_NODE_TYPE_CASE(type) case type: return #type
+
+  switch (type) {
+      _YUJI_AST_NODE_TYPE_CASE(YUJI_AST_NUMBER);
+      _YUJI_AST_NODE_TYPE_CASE(YUJI_AST_STRING);
+      _YUJI_AST_NODE_TYPE_CASE(YUJI_AST_BIN_OP);
+      _YUJI_AST_NODE_TYPE_CASE(YUJI_AST_IDENTIFIER);
+      _YUJI_AST_NODE_TYPE_CASE(YUJI_AST_ASSIGN);
+      _YUJI_AST_NODE_TYPE_CASE(YUJI_AST_IF);
+      _YUJI_AST_NODE_TYPE_CASE(YUJI_AST_NULL);
+      _YUJI_AST_NODE_TYPE_CASE(YUJI_AST_LET);
+      _YUJI_AST_NODE_TYPE_CASE(YUJI_AST_BLOCK);
+      _YUJI_AST_NODE_TYPE_CASE(YUJI_AST_FN);
+      _YUJI_AST_NODE_TYPE_CASE(YUJI_AST_CALL);
+      _YUJI_AST_NODE_TYPE_CASE(YUJI_AST_USE);
+      _YUJI_AST_NODE_TYPE_CASE(YUJI_AST_BOOL);
+      _YUJI_AST_NODE_TYPE_CASE(YUJI_AST_WHILE);
+
+    default:
+      yuji_panic("Unknown node type: %d", type);
+  }
+
+#undef _YUJI_AST_NODE_TYPE_CASE
+}
+
 YUJI_AST_INIT(number, YUJI_AST_NUMBER, {
   node->value.number = yuji_malloc(sizeof(YujiASTNumber));
   node->value.number->value = value;
@@ -153,14 +179,35 @@ YUJI_AST_INIT(let, YUJI_AST_LET, {
 
 YUJI_AST_INIT(block, YUJI_AST_BLOCK, {
   node->value.block = yuji_malloc(sizeof(YujiASTBlock));
-  node->value.block->exprs = exprs;
+  node->value.block->exprs = yuji_dyn_array_init();
+  YUJI_DYN_ARRAY_ITER(exprs, YujiASTNode, expr, {
+    yuji_dyn_array_push(node->value.block->exprs, expr);
+  });
 }, YujiDynArray* exprs)
 
 YUJI_AST_INIT(fn, YUJI_AST_FN, {
   node->value.fn = yuji_malloc(sizeof(YujiASTFunction));
   node->value.fn->name = strdup(name);
-  node->value.fn->params = params;
-  node->value.fn->body = (YujiASTNode*)body;
+  node->value.fn->params = yuji_dyn_array_init();
+
+  YUJI_DYN_ARRAY_ITER(params, void*, param, {
+    char* param_str = (char*)param;
+    char* param_copy = strdup(param_str);
+    yuji_dyn_array_push(node->value.fn->params, param_copy);
+  });
+
+  YujiDynArray* fn_exprs = yuji_dyn_array_init();
+
+  YUJI_DYN_ARRAY_ITER(body->exprs, YujiASTNode, expr, {
+    YujiASTNode* expr_copy = yuji_ast_node_copy(expr);
+    yuji_dyn_array_push(fn_exprs, expr_copy);
+  });
+
+  YujiASTBlock* fn_body = yuji_malloc(sizeof(YujiASTBlock));
+  fn_body->exprs = fn_exprs;
+  node->value.fn->body = yuji_ast_block_init(fn_exprs);
+  yuji_dyn_array_free(fn_exprs);
+  yuji_free(fn_body);
 }, const char* name, YujiDynArray* params, YujiASTBlock* body)
 
 YUJI_AST_INIT(call, YUJI_AST_CALL, {
@@ -178,6 +225,144 @@ YUJI_AST_INIT(bool, YUJI_AST_BOOL, {
   node->value.boolean = yuji_malloc(sizeof(YujiASTBool));
   node->value.boolean->value = value;
 }, bool value)
+
+YujiASTNode* yuji_ast_node_copy(YujiASTNode* node) {
+  yuji_check_memory(node);
+
+  YujiASTNode* copy = yuji_malloc(sizeof(YujiASTNode));
+  copy->type = node->type;
+
+  switch (node->type) {
+    case YUJI_AST_NUMBER:
+      copy->value.number = yuji_malloc(sizeof(YujiASTNumber));
+      copy->value.number->value = node->value.number->value;
+      break;
+
+    case YUJI_AST_STRING:
+      copy->value.string = yuji_malloc(sizeof(YujiASTString));
+      copy->value.string->value = yuji_string_init_from_cstr(node->value.string->value->data);
+      break;
+
+    case YUJI_AST_BIN_OP:
+      copy->value.bin_op = yuji_malloc(sizeof(YujiASTBinOp));
+      copy->value.bin_op->left = yuji_ast_node_copy(node->value.bin_op->left);
+      copy->value.bin_op->right = yuji_ast_node_copy(node->value.bin_op->right);
+      copy->value.bin_op->operator = strdup(node->value.bin_op->operator);
+      break;
+
+    case YUJI_AST_IDENTIFIER:
+      copy->value.identifier = yuji_malloc(sizeof(YujiASTIdentifier));
+      copy->value.identifier->value = strdup(node->value.identifier->value);
+      break;
+
+    case YUJI_AST_ASSIGN:
+      copy->value.assign = yuji_malloc(sizeof(YujiASTAssign));
+      copy->value.assign->name = strdup(node->value.assign->name);
+      copy->value.assign->value = yuji_ast_node_copy(node->value.assign->value);
+      break;
+
+    case YUJI_AST_LET:
+      copy->value.let = yuji_malloc(sizeof(YujiASTLet));
+      copy->value.let->name = strdup(node->value.let->name);
+      copy->value.let->value = yuji_ast_node_copy(node->value.let->value);
+      break;
+
+    case YUJI_AST_BLOCK:
+      copy->value.block = yuji_malloc(sizeof(YujiASTBlock));
+      copy->value.block->exprs = yuji_dyn_array_init();
+      YUJI_DYN_ARRAY_ITER(node->value.block->exprs, YujiASTNode, expr, {
+        YujiASTNode* expr_copy = yuji_ast_node_copy(expr);
+        yuji_dyn_array_push(copy->value.block->exprs, expr_copy);
+      });
+      break;
+
+    case YUJI_AST_FN:
+      copy->value.fn = yuji_malloc(sizeof(YujiASTFunction));
+      copy->value.fn->name = strdup(node->value.fn->name);
+      copy->value.fn->params = yuji_dyn_array_init();
+      YUJI_DYN_ARRAY_ITER(node->value.fn->params, void*, param, {
+        char* param_copy = strdup((char*)param);
+        yuji_dyn_array_push(copy->value.fn->params, param_copy);
+      });
+      copy->value.fn->body = yuji_ast_node_copy(node->value.fn->body);
+      break;
+
+    case YUJI_AST_CALL:
+      copy->value.call = yuji_malloc(sizeof(YujiASTCall));
+      copy->value.call->name = strdup(node->value.call->name);
+      copy->value.call->args = yuji_dyn_array_init();
+      YUJI_DYN_ARRAY_ITER(node->value.call->args, YujiASTNode, arg, {
+        YujiASTNode* arg_copy = yuji_ast_node_copy(arg);
+        yuji_dyn_array_push(copy->value.call->args, arg_copy);
+      });
+      break;
+
+    case YUJI_AST_USE:
+      copy->value.use = yuji_malloc(sizeof(YujiASTUse));
+      copy->value.use->value = strdup(node->value.use->value);
+      break;
+
+    case YUJI_AST_BOOL:
+      copy->value.boolean = yuji_malloc(sizeof(YujiASTBool));
+      copy->value.boolean->value = node->value.boolean->value;
+      break;
+
+    case YUJI_AST_WHILE:
+      copy->value.while_stmt = yuji_malloc(sizeof(YujiASTWhile));
+      copy->value.while_stmt->condition = yuji_ast_node_copy(node->value.while_stmt->condition);
+      copy->value.while_stmt->body = yuji_malloc(sizeof(YujiASTBlock));
+      copy->value.while_stmt->body->exprs = yuji_dyn_array_init();
+
+      if (node->value.while_stmt->body && node->value.while_stmt->body->exprs) {
+        YUJI_DYN_ARRAY_ITER(node->value.while_stmt->body->exprs, YujiASTNode, expr, {
+          YujiASTNode* expr_copy = yuji_ast_node_copy(expr);
+          yuji_dyn_array_push(copy->value.while_stmt->body->exprs, expr_copy);
+        });
+      }
+
+      break;
+
+    case YUJI_AST_IF:
+      copy->value.if_stmt = yuji_malloc(sizeof(YujiASTIf));
+      copy->value.if_stmt->branches = yuji_dyn_array_init();
+      YUJI_DYN_ARRAY_ITER(node->value.if_stmt->branches, YujiASTIfBranch, branch, {
+        YujiASTIfBranch* branch_copy = yuji_malloc(sizeof(YujiASTIfBranch));
+        branch_copy->condition = yuji_ast_node_copy(branch->condition);
+        branch_copy->body = yuji_malloc(sizeof(YujiASTBlock));
+        branch_copy->body->exprs = yuji_dyn_array_init();
+
+        YUJI_DYN_ARRAY_ITER(branch->body->exprs, YujiASTNode, expr, {
+          YujiASTNode* expr_copy = yuji_ast_node_copy(expr);
+          yuji_dyn_array_push(branch_copy->body->exprs, expr_copy);
+        });
+        yuji_dyn_array_push(copy->value.if_stmt->branches, branch_copy);
+      });
+
+      if (node->value.if_stmt->else_body) {
+        copy->value.if_stmt->else_body = yuji_malloc(sizeof(YujiASTBlock));
+        copy->value.if_stmt->else_body->exprs = yuji_dyn_array_init();
+
+        if (node->value.if_stmt->else_body->exprs) {
+          YUJI_DYN_ARRAY_ITER(node->value.if_stmt->else_body->exprs, YujiASTNode, expr, {
+            if (expr) {
+              YujiASTNode* expr_copy = yuji_ast_node_copy(expr);
+              yuji_dyn_array_push(copy->value.if_stmt->else_body->exprs, expr_copy);
+            }
+          });
+        }
+      } else {
+        copy->value.if_stmt->else_body = NULL;
+      }
+
+      break;
+
+    case YUJI_AST_NULL:
+      copy->value.null = node->value.null;
+      break;
+  }
+
+  return copy;
+}
 
 YUJI_AST_INIT(while, YUJI_AST_WHILE, {
   node->value.while_stmt = yuji_malloc(sizeof(YujiASTWhile));

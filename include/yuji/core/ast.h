@@ -6,6 +6,8 @@
 
 typedef struct YujiASTNode YujiASTNode;
 
+YujiASTNode* yuji_ast_node_copy(YujiASTNode* node);
+
 typedef struct {
   int64_t value;
 } YujiASTNumber;
@@ -122,6 +124,8 @@ struct YujiASTNode {
   }
 
 void yuji_ast_free(YujiASTNode* node);
+
+char* yuji_ast_node_type_to_string(YujiASTNodeType type);
 
 YujiASTNode* yuji_ast_number_init(int64_t value);
 YujiASTNode* yuji_ast_string_init(const char* value);

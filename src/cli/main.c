@@ -44,7 +44,7 @@ int run_file(const char* filename) {
   YujiDynArray* ast = yuji_parser_parse(parser);
 
   YUJI_DYN_ARRAY_ITER(ast, YujiASTNode, node, {
-    printf("%d\n", node->type);
+    printf("%s\n", yuji_ast_node_type_to_string(node->type));
   })
 
   // INTERPRETER

@@ -137,6 +137,8 @@ YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node
   yuji_check_memory(interpreter);
   yuji_check_memory(node);
 
+  YUJI_LOG("evaluating node of type: %s (%p)", yuji_ast_node_type_to_string(node->type), node);
+
   switch (node->type) {
     case YUJI_AST_NUMBER: {
       return yuji_value_number_init(node->value.number->value);
@@ -188,7 +190,7 @@ YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node
       })
 
       yuji_scope_pop(interpreter);
-      return result;
+      return result ? result : yuji_value_null_init();
     }
 
     case YUJI_AST_BOOL: {
@@ -304,10 +306,8 @@ YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node
           yuji_value_free(arg_val);
         }
 
-        YujiValue* fn_result = yuji_interpreter_eval(interpreter, fn_node->body);
+        result = yuji_interpreter_eval(interpreter, fn_node->body);
         yuji_scope_pop(interpreter);
-        yuji_value_free(result);
-        result = fn_result;
       } else {
         yuji_panic("'%s' is not a function", call->name);
       }
@@ -378,5 +378,5 @@ YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node
     }
   }
 
-  yuji_panic("Unknown node type");
+  yuji_panic("Unknown node type: %d", node->type);
 }
