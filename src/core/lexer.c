@@ -37,6 +37,20 @@ char yuji_lexer_peek(YujiLexer* lexer) {
   return line[lexer->position.column];
 }
 
+char yuji_lexer_peek_next(YujiLexer* lexer) {
+  if (lexer->position.line >= lexer->input->size) {
+    return '\0';
+  }
+
+  char* line = yuji_dyn_array_get(lexer->input, lexer->position.line);
+
+  if (!line || lexer->position.column >= strlen(line)) {
+    return '\0';
+  }
+
+  return line[lexer->position.column + 1];
+}
+
 char yuji_lexer_advance(YujiLexer* lexer) {
   if (lexer->position.line >= lexer->input->size) {
     lexer->current_char = '\0';
@@ -97,6 +111,14 @@ bool yuji_lexer_tokenize(YujiLexer* lexer, YujiDynArray* tokens) {
     }
 
     YUJI_LOG("current char: %c", c);
+
+    if (c == '/' && yuji_lexer_peek_next(lexer) == '/') {
+      while (lexer->current_char != '\0' && lexer->current_char != '\n') {
+        yuji_lexer_advance(lexer);
+      }
+
+      continue;
+    }
 
     YujiTokenType type;
     char* value;
