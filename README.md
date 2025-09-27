@@ -13,3 +13,27 @@
 ```bash
 make build
 ```
+
+## Roadmap
+
+✅ - stable
+🚧 - unstable
+⚠️ - in progress
+📅 - planned
+
+|              feature              | status |
+| :-------------------------------: | :----: |
+|               `let`               |   ✅   |
+|              number               |   ✅   |
+|              string               |   ✅   |
+| `+`, `-`, `*`, `/`, `%`, `<`, `>` |   ✅   |
+|               bool                |   ✅   |
+|               null                |   ✅   |
+|        `if`/`elif`/`else`         |   🚧   |
+|               `fn`                |   🚧   |
+|               `use`               |   🚧   |
+|           `io` library            |   🚧   |
+|              `while`              |   🚧   |
+|      `==`, `!=`, `<=`, `>=`       |   📅   |
+|               `for`               |   📅   |
+|               float               |   📅   |
