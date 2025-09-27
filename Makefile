@@ -1,9 +1,8 @@
 SHELL := /bin/sh
 
 CC = gcc
-CFLAGS = -Iinclude -std=gnu99 -Wall -Wextra -O2 -g3
-LDFLAGS =
-# -fsanitize=address,leak,undefined
+CFLAGS = -Iinclude -std=gnu99 -Wall -Wextra -Wshadow -Wconversion -g3
+LDFLAGS = -fsanitize=address,leak,undefined -ftrapv
 
 SRC_DIR := src
 OBJ_DIR := .build/obj
@@ -16,7 +15,9 @@ OBJECTS := $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SOURCES))
 
 .PHONY: all build clean run rebuild
 
-all: build
+all:
+	@mkdir -p ./.build
+	bear --output ./.build/compile_commands.json -- $(MAKE) build
 
 build: $(BIN_PATH) $(OBJECTS)
 
@@ -34,7 +35,7 @@ clean:
 rebuild:
 	rm -f $(BIN_PATH)
 	rm -f $(OBJECTS)
-	$(MAKE) build
+	$(MAKE)
 
 run: build
 	$(BIN_PATH) test.yuji

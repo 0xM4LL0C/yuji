@@ -1,7 +1,8 @@
-use "yuji/io"
+use "std/io"
 
-let a = 0
-while a < 10 {
-    println("Hello, World!")
-    a = a + 1
+fn greet(name) {
+    println("Hello, ", name)
 }
+
+let name = input("input your name: ")
+greet(name)
