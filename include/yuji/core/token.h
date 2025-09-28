@@ -38,6 +38,8 @@ typedef enum {
   TT_NEQ, // !=
   TT_LTE, // <=
   TT_GTE, // >=
+  TT_AND, // &&
+  TT_OR, // ||
 } YujiTokenType;
 
 const char* yuji_token_type_to_string(YujiTokenType type);

@@ -176,6 +176,16 @@ bool yuji_lexer_tokenize(YujiLexer* lexer, YujiDynArray* tokens) {
         value = strdup("<=");
         yuji_lexer_advance(lexer);
         yuji_lexer_advance(lexer);
+      } else if (c == '&' && yuji_lexer_peek_next(lexer) == '&') {
+        type = TT_AND;
+        value = strdup("&&");
+        yuji_lexer_advance(lexer);
+        yuji_lexer_advance(lexer);
+      } else if (c == '|' && yuji_lexer_peek_next(lexer) == '|') {
+        type = TT_OR;
+        value = strdup("||");
+        yuji_lexer_advance(lexer);
+        yuji_lexer_advance(lexer);
       } else {
 #define _YUJI_LEXER_OPERATOR_CASE(VALUE, TYPE) case VALUE: type = TYPE; break;
 
