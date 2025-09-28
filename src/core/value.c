@@ -113,6 +113,34 @@ char* yuji_value_to_string(YujiValue* value) {
   return result;
 }
 
+
+char* yuji_value_type_to_string(YujiValueType type) {
+  switch (type) {
+    case VT_INT:
+      return "int";
+
+    case VT_FLOAT:
+      return "float";
+
+    case VT_STRING:
+      return "string";
+
+    case VT_BOOL:
+      return "bool";
+
+    case VT_NULL:
+      return "null";
+
+    case VT_FUNCTION:
+      return "function";
+
+    case VT_CFUNCTION:
+      return "cfunction";
+  }
+
+  yuji_panic("Unknown value type: %d", type);
+}
+
 YUJI_VALUE_INIT(int, VT_INT, {
   value->value.int_ = number;
 }, int64_t number)

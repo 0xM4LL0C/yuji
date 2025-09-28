@@ -1,10 +1,6 @@
 use "std/io"
 use "std/core"
 
-let result = true
-println(not(result))
+let num = to_number("0xA0C")
 
-assert(true)
-
-exit(3)
-println("unreachable")
+println(num, " ", typeof(num))
