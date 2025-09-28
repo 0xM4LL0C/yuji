@@ -1,4 +1,8 @@
 use "std/io"
+use "std/core"
 
-let result = true && (false || true)
-println(result)
+let result = true
+println(not(result))
+
+assert(true)
+assert(false)
