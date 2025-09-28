@@ -189,6 +189,10 @@ YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node
         result = yuji_value_bool_init(l <= r);
       } else if (YUJI_STRCMP(binop->operator, ">=")) {
         result = yuji_value_bool_init(l >= r);
+      } else if (YUJI_STRCMP(binop->operator, "&&")) {
+        result = yuji_value_bool_init(yuji_value_to_bool(left) && yuji_value_to_bool(right));
+      } else if (YUJI_STRCMP(binop->operator, "||")) {
+        result = yuji_value_bool_init(yuji_value_to_bool(left) || yuji_value_to_bool(right));
       }
 
       yuji_value_free(left);

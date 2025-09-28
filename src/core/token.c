@@ -37,6 +37,8 @@ const char* yuji_token_type_to_string(const YujiTokenType type) {
       _YUJI_TOKEN_TYPE_CASE(TT_NEQ);
       _YUJI_TOKEN_TYPE_CASE(TT_LTE);
       _YUJI_TOKEN_TYPE_CASE(TT_GTE);
+      _YUJI_TOKEN_TYPE_CASE(TT_AND);
+      _YUJI_TOKEN_TYPE_CASE(TT_OR);
 
     default:
       yuji_panic("Unknown token type: %d", type);
