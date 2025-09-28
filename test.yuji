@@ -5,4 +5,6 @@ let result = true
 println(not(result))
 
 assert(true)
-assert(false)
+
+exit(3)
+println("unreachable")
