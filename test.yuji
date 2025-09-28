@@ -3,4 +3,4 @@ use "std/core"
 
 let num = to_number("0xA0C")
 
-println(num, " ", typeof(num))
+println(format("Number: {}, Type: {}", num, typeof(num)))
