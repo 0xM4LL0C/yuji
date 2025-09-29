@@ -58,6 +58,7 @@ void yuji_value_free(YujiValue* value);
 bool yuji_value_to_bool(YujiValue* value);
 char* yuji_value_to_string(YujiValue* value);
 char* yuji_value_type_to_string(YujiValueType type);
+bool yuji_value_type_is(YujiValueType type, YujiValueType expected);
 
 YujiValue* yuji_value_int_init(int64_t number);
 YujiValue* yuji_value_float_init(double number);

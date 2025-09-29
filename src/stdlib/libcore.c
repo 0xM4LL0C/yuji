@@ -91,7 +91,7 @@ static YujiValue* core_exit(YujiScope* scope, YujiDynArray* args) {
 
   YujiValue* code = yuji_dyn_array_get(args, 0);
 
-  if (code->type != VT_INT) {
+  if (!yuji_value_type_is(code->type, VT_INT)) {
     yuji_panic("exit function expects an int argument, got %s", yuji_value_to_string(code));
   }
 
@@ -111,7 +111,7 @@ static YujiValue* core_to_number(YujiScope* scope, YujiDynArray* args) {
 
   YujiValue* value = yuji_dyn_array_get(args, 0);
 
-  if (value->type != VT_STRING) {
+  if (!yuji_value_type_is(value->type, VT_STRING)) {
     yuji_panic("to_number function expects a string argument, got %s", yuji_value_to_string(value));
   }
 

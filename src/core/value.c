@@ -141,6 +141,10 @@ char* yuji_value_type_to_string(YujiValueType type) {
   yuji_panic("Unknown value type: %d", type);
 }
 
+bool yuji_value_type_is(YujiValueType type, YujiValueType expected) {
+  return type == expected;
+}
+
 YUJI_VALUE_INIT(int, VT_INT, {
   value->value.int_ = number;
 }, int64_t number)

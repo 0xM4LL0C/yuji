@@ -65,7 +65,7 @@ static YujiValue* io_format(YujiScope* scope, YujiDynArray* args) {
 
   YujiValue* fmt_val = yuji_dyn_array_get(args, 0);
 
-  if (fmt_val->type != VT_STRING) {
+  if (!yuji_value_type_is(fmt_val->type, VT_STRING)) {
     yuji_panic("format function expects a string as first argument");
   }
 
