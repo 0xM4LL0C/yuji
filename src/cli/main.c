@@ -84,11 +84,62 @@ int run_file(const char* filename) {
   return 0;
 }
 
-int main(int argc, char* argv[]) {
-  if (argc < 2) {
-    fprintf(stderr, "Usage: %s <filename>\n", argv[0]);
-    return 1;
+int run_repl() {
+  bool running = true;
+
+  YujiInterpreter* interpreter = yuji_interpreter_init();
+
+  while (running) {
+    char buffer[64];
+    YujiDynArray* input = yuji_dyn_array_init();
+
+    printf("> ");
+
+    if (!fgets(buffer, sizeof(buffer), stdin)) {
+      break;
+    }
+
+    yuji_dyn_array_push(input, buffer);
+
+    YujiLexer* lexer = yuji_lexer_init(input, "<stdin>");
+    YujiDynArray* tokens = yuji_dyn_array_init();
+    yuji_lexer_tokenize(lexer, tokens);
+
+    YujiParser* parser = yuji_parser_init(tokens);
+    YujiDynArray* ast = yuji_parser_parse(parser);
+
+    YUJI_DYN_ARRAY_ITER(ast, YujiASTNode, node, {
+      YujiValue* result = yuji_interpreter_eval(interpreter, node);
+      yuji_value_free(result);
+    })
+
+    YUJI_DYN_ARRAY_ITER(ast, YujiASTNode, node, {
+      yuji_ast_free(node);
+    })
+    yuji_dyn_array_free(ast);
+
+    yuji_parser_free(parser);
+
+    YUJI_DYN_ARRAY_ITER(tokens, YujiToken, token, {
+      yuji_token_free(token);
+    })
+    yuji_dyn_array_free(tokens);
+    yuji_lexer_free(lexer);
+    yuji_dyn_array_free(input);
   }
 
-  return run_file(argv[1]);
+  yuji_interpreter_free(interpreter);
+
+  return 0;
+}
+
+int main(int argc, char* argv[]) {
+  if (argc == 1) {
+    return run_repl();
+  } else if (argc == 2) {
+    return run_file(argv[1]);
+  }
+
+  fprintf(stderr, "Usage: %s [filename]\n", argv[0]);
+  return 1;
 }

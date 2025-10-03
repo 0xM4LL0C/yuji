@@ -38,7 +38,11 @@ YujiToken* yuji_parser_advance(YujiParser* parser) {
 
 bool yuji_parser_match(YujiParser* parser, YujiTokenType type) {
   yuji_check_memory(parser);
-  yuji_check_memory(parser->current_token);
+
+  if (!parser->current_token) {
+    return false;
+  }
+
   YujiToken* token = parser->current_token;
   return token->type == type;
 }
@@ -47,7 +51,11 @@ bool yuji_parser_match_next(YujiParser *parser, YujiTokenType type) {
   yuji_check_memory(parser);
 
   YujiToken *token = yuji_dyn_array_get(parser->tokens, parser->index + 1);
-  yuji_check_memory(token);
+
+  if (!token) {
+    return false;
+  }
+
   return token->type == type;
 }
 
@@ -230,6 +238,13 @@ YujiASTNode* yuji_parser_parse_stmt(YujiParser* parser) {
 
     YujiASTNode* value = yuji_parser_parse_expr(parser);
     return yuji_ast_assign_init(name, value);
+  }
+
+  if (yuji_parser_match(parser, TT_IDENTIFIER)) {
+    const char* name = parser->current_token->value;
+    yuji_parser_advance(parser);
+
+    return yuji_ast_identifier_init(name);
   }
 
   return yuji_parser_parse_expr(parser);

@@ -12,7 +12,11 @@ void yuji_panic(const char* fmt, ...) {
 
   va_end(args);
 
+#ifdef YUJI_DEBUG
+  abort();
+#else
   exit(EXIT_FAILURE);
+#endif
 }
 
 void yuji_check_memory(void* ptr) {
