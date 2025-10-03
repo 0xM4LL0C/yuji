@@ -240,13 +240,6 @@ YujiASTNode* yuji_parser_parse_stmt(YujiParser* parser) {
     return yuji_ast_assign_init(name, value);
   }
 
-  if (yuji_parser_match(parser, TT_IDENTIFIER)) {
-    const char* name = parser->current_token->value;
-    yuji_parser_advance(parser);
-
-    return yuji_ast_identifier_init(name);
-  }
-
   return yuji_parser_parse_expr(parser);
 }
 
