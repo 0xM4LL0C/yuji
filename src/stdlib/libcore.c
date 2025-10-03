@@ -146,15 +146,11 @@ static YujiValue* core_to_number(YujiScope* scope, YujiDynArray* args) {
   }
 }
 
-YujiModule* yuji_load_core() {
-  YujiModule* module = yuji_module_init("core");
-
+YUJI_DEFINE_MODULE(core, {
   YUJI_MODULE_REGISTER_FUNC(module, "not", YUJI_FN_ARGC(1), core_not);
   YUJI_MODULE_REGISTER_FUNC(module, "typeof", YUJI_FN_ARGC(1), core_typeof);
   YUJI_MODULE_REGISTER_FUNC(module, "assert", YUJI_FN_INF_ARGUMENT, core_assert);
   YUJI_MODULE_REGISTER_FUNC(module, "panic", YUJI_FN_ARGC(1), core_panic);
   YUJI_MODULE_REGISTER_FUNC(module, "exit", YUJI_FN_ARGC(1), core_exit);
   YUJI_MODULE_REGISTER_FUNC(module, "to_number", YUJI_FN_ARGC(1), core_to_number);
-
-  return module;
-}
+})

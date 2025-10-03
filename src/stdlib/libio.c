@@ -1,4 +1,3 @@
-// src/stdlib/libio.c
 #include "yuji/core/memory.h"
 #include "yuji/core/module.h"
 #include "yuji/core/types/dyn_array.h"
@@ -97,13 +96,9 @@ static YujiValue* io_format(YujiScope* scope, YujiDynArray* args) {
 }
 
 
-YujiModule* yuji_load_io() {
-  YujiModule* module = yuji_module_init("io");
-
+YUJI_DEFINE_MODULE(io, {
   YUJI_MODULE_REGISTER_FUNC(module, "print", YUJI_FN_INF_ARGUMENT, io_print);
   YUJI_MODULE_REGISTER_FUNC(module, "println", YUJI_FN_INF_ARGUMENT, io_println);
   YUJI_MODULE_REGISTER_FUNC(module, "input", YUJI_FN_ARGC(1), io_input);
   YUJI_MODULE_REGISTER_FUNC(module, "format", YUJI_FN_INF_ARGUMENT, io_format);
-
-  return module;
-}
+})

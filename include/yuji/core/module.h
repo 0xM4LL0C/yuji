@@ -28,3 +28,10 @@ YujiModule* yuji_module_find_submodule(YujiModule* module, const char* name);
     yuji_module_register(MODULE, NAME, tmp); \
     yuji_value_free(tmp); \
   } while(0)
+
+#define YUJI_DEFINE_MODULE(NAME, BODY) \
+  YujiModule* yuji_load_##NAME() {\
+    YujiModule* module = yuji_module_init(#NAME);\
+    BODY \
+    return module; \
+  }
