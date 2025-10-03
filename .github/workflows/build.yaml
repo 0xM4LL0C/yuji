@@ -33,3 +33,11 @@ jobs:
             make build
           fi
         shell: bash
+
+      - run: |
+          if command -v gmake >/dev/null; then
+            gmake test
+          else
+            make test
+          fi
+        shell: bash
