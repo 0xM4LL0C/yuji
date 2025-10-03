@@ -96,6 +96,7 @@ int run_repl() {
     printf("> ");
 
     if (!fgets(buffer, sizeof(buffer), stdin)) {
+      printf("\n");
       break;
     }
 
