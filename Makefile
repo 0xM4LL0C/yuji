@@ -1,5 +1,10 @@
 SHELL := /bin/sh
 
+YUJI_VERSION_MAJOR ?= 0
+YUJI_VERSION_MINOR ?= 1
+YUJI_VERSION_PATCH ?= 0
+YUJI_VERSION_STRING := $(YUJI_VERSION_MAJOR).$(YUJI_VERSION_MINOR).$(YUJI_VERSION_PATCH)
+
 CC = gcc
 SRC_DIR := src
 OBJ_DIR := .build/obj
@@ -10,7 +15,11 @@ BIN_PATH := $(BUILD_DIR)/$(BIN_NAME)
 SOURCES := $(shell find $(SRC_DIR) -name '*.c')
 OBJECTS := $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SOURCES))
 
-CFLAGS  ?= -Iinclude -std=gnu99 -Wall -Wextra -Wshadow -Wconversion
+CFLAGS  ?= -Iinclude -std=gnu99 -Wall -Wextra -Wshadow -Wconversion \
+	-DYUJI_VERSION_MAJOR=$(YUJI_VERSION_MAJOR) \
+	-DYUJI_VERSION_MINOR=$(YUJI_VERSION_MINOR) \
+	-DYUJI_VERSION_PATCH=$(YUJI_VERSION_PATCH) \
+	-DYUJI_VERSION_STRING="\"$(YUJI_VERSION_STRING)\""
 LDFLAGS ?=
 
 UNAME_S := $(shell uname -s)

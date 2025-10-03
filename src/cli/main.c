@@ -85,6 +85,10 @@ int run_file(const char* filename) {
 }
 
 int run_repl() {
+  printf("Welcome to Yuji REPL! (version %s)\n", YUJI_VERSION_STRING);
+  printf("ctrl+D to exit\n");
+
+
   bool running = true;
 
   YujiInterpreter* interpreter = yuji_interpreter_init();
@@ -97,6 +101,7 @@ int run_repl() {
 
     if (!fgets(buffer, sizeof(buffer), stdin)) {
       printf("\n");
+      yuji_dyn_array_free(input);
       break;
     }
 
