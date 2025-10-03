@@ -13,16 +13,29 @@ OBJECTS := $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SOURCES))
 CFLAGS  ?= -Iinclude -std=gnu99 -Wall -Wextra -Wshadow -Wconversion
 LDFLAGS ?=
 
+UNAME_S := $(shell uname -s)
+UNAME_M := $(shell uname -m)
+
+ifeq ($(UNAME_S),Darwin)
+    ifeq ($(UNAME_M),arm64)
+        SANITIZERS = address,undefined
+    else
+        SANITIZERS = address,leak,undefined
+    endif
+else
+    SANITIZERS = address,leak,undefined
+endif
+
 .PHONY: all debug release build clean test rebuild
 
 all: debug
 
 debug:
-	@mkdir -p .build
-	bear --output .build/compile_commands.json -- $(MAKE) debug-build
+	@mkdir -p $(BUILD_DIR)
+	bear --output $(BUILD_DIR)/compile_commands.json -- $(MAKE) debug-build
 
 debug-build: CFLAGS += -g3 -DYUJI_DEBUG
-debug-build: LDFLAGS += -fsanitize=address,leak,undefined -ftrapv
+debug-build: LDFLAGS += -fsanitize=$(SANITIZERS) -ftrapv
 debug-build: build
 
 release: CFLAGS += -O2
