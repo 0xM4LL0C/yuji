@@ -67,6 +67,21 @@ void yuji_scope_set(YujiScope* scope, const char* key, YujiValue* val) {
   yuji_map_set(scope->env, key, val);
 }
 
+void yuji_scope_update(YujiScope* scope, const char* key, YujiValue* val) {
+  for (YujiScope* s = scope; s; s = s->parent) {
+    YujiValue* existing = yuji_map_get(s->env, key);
+
+    if (existing) {
+      yuji_value_free(existing);
+      val->refcount++;
+      yuji_map_set(s->env, key, val);
+      return;
+    }
+  }
+
+  yuji_scope_set(scope, key, val);
+}
+
 void yuji_scope_merge(YujiScope* dest, YujiScope* src) {
   YUJI_DYN_ARRAY_ITER(src->env->pairs, YujiMapPair, pair, {
     yuji_scope_set(dest, pair->key, pair->value);
@@ -258,7 +273,7 @@ YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node
       yuji_value_free(existing);
 
       YujiValue* value = yuji_interpreter_eval(interpreter, node->value.assign->value);
-      yuji_scope_set(interpreter->current_scope, name, value);
+      yuji_scope_update(interpreter->current_scope, name, value);
       yuji_value_free(value);
       return yuji_value_null_init();
     }

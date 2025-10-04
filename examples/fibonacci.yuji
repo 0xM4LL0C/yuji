@@ -1,0 +1,15 @@
+use "std/io"
+use "std/core"
+
+fn fib(n) {
+    if n <= 1 {
+        n
+    } else {
+        fib(n - 1) + fib(n - 2)
+    }
+}
+
+let n = to_number(input("Enter number for N-th Fibonacci: "))
+let result = fib(n)
+
+println(format("{}th Fibonacci number = {}", n, result))

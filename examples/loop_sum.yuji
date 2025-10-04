@@ -1,0 +1,13 @@
+use "std/io"
+use "std/core"
+
+let n = to_number(input("Enter N for sum 1 + 2 + ... + N: "))
+let sum = 0
+let i = 1
+
+while i <= n {
+    sum = sum + i
+    i = i + 1
+}
+
+println(format("Sum from 1 to {} = {}", n, sum))
