@@ -30,9 +30,9 @@ jobs:
 
       - run: |
           if command -v gmake >/dev/null; then
-            bear --output .build/compile_commands.json -- gmake build
+            gmake debug
           else
-            bear --output .build/compile_commands.json -- make build
+            make debug
           fi
         shell: bash
 
