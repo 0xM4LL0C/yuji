@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+
 void yuji_ast_free(YujiASTNode* node) {
   yuji_check_memory(node);
 
@@ -213,11 +214,8 @@ YUJI_AST_INIT(fn, YUJI_AST_FN, {
     yuji_dyn_array_push(fn_exprs, expr_copy);
   });
 
-  YujiASTBlock* fn_body = yuji_malloc(sizeof(YujiASTBlock));
-  fn_body->exprs = fn_exprs;
   node->value.fn->body = yuji_ast_block_init(fn_exprs);
   yuji_dyn_array_free(fn_exprs);
-  yuji_free(fn_body);
 }, const char* name, YujiDynArray* params, YujiASTBlock* body)
 
 YUJI_AST_INIT(call, YUJI_AST_CALL, {
@@ -385,15 +383,12 @@ YUJI_AST_INIT(while, YUJI_AST_WHILE, {
   node->value.while_stmt->body = body;
 }, YujiASTNode* condition, YujiASTBlock* body)
 
-YUJI_AST_INIT(if_branch, YUJI_AST_IF, {
-  node->value.if_stmt = yuji_malloc(sizeof(YujiASTIf));
+YujiASTIfBranch* yuji_ast_if_branch_init(YujiASTNode* condition, YujiASTBlock* body) {
   YujiASTIfBranch* branch = yuji_malloc(sizeof(YujiASTIfBranch));
   branch->condition = condition;
   branch->body = body;
-  node->value.if_stmt->branches = yuji_dyn_array_init();
-  yuji_dyn_array_push(node->value.if_stmt->branches, branch);
-  node->value.if_stmt->else_body = NULL;
-}, YujiASTNode* condition, YujiASTBlock* body)
+  return branch;
+}
 
 YUJI_AST_INIT(if, YUJI_AST_IF, {
   node->value.if_stmt = yuji_malloc(sizeof(YujiASTIf));

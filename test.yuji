@@ -1,6 +1,13 @@
 use "std/io"
 use "std/core"
 
-let num = to_number("0xA0C")
+fn factorial(n) {
+    if n <= 1 {
+        1
+    } else {
+        n * factorial(n - 1)
+    }
+}
 
-println(format("Number: {}, Type: {}", num, typeof(num)))
+let result = factorial(5)
+println(format("5! = {}", result))

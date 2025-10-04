@@ -165,11 +165,8 @@ YujiASTNode* yuji_parser_parse_stmt(YujiParser* parser) {
 
     yuji_parser_expect(parser, TT_RPAREN);
     yuji_parser_advance(parser);
-    yuji_parser_expect(parser, TT_LBRACE);
-
     YujiASTNode* block_node = yuji_parser_parse_block(parser);
     YujiASTNode* fn = yuji_ast_fn_init(name, param_names, block_node->value.block);
-    yuji_ast_free(block_node);
 
     YUJI_DYN_ARRAY_ITER(param_names, char*, param, {
       yuji_free(param);
@@ -184,23 +181,17 @@ YujiASTNode* yuji_parser_parse_stmt(YujiParser* parser) {
     YujiDynArray* branches = yuji_dyn_array_init();
 
     YujiASTNode* condition = yuji_parser_parse_expr(parser);
-    yuji_parser_expect(parser, TT_LBRACE);
     YujiASTNode* body = yuji_parser_parse_block(parser);
-    yuji_parser_expect(parser, TT_RBRACE);
-    YujiASTNode* if_branch = yuji_ast_if_branch_init(condition, body->value.block);
-    yuji_ast_free(body);
+    YujiASTIfBranch* if_branch = yuji_ast_if_branch_init(condition, body->value.block);
     yuji_dyn_array_push(branches, if_branch);
 
     YujiASTBlock* else_body = NULL;
 
     while (yuji_parser_match(parser, TT_ELIF)) {
       yuji_parser_advance(parser);
-      yuji_parser_expect(parser, TT_LBRACE);
       YujiASTNode* elif_condition = yuji_parser_parse_expr(parser);
       YujiASTNode* elif_body = yuji_parser_parse_block(parser);
-      yuji_parser_expect(parser, TT_RBRACE);
-      YujiASTNode* elif_branch = yuji_ast_if_branch_init(elif_condition, elif_body->value.block);
-      yuji_ast_free(elif_body);
+      YujiASTIfBranch* elif_branch = yuji_ast_if_branch_init(elif_condition, elif_body->value.block);
       yuji_dyn_array_push(branches, elif_branch);
     }
 
