@@ -9,14 +9,42 @@ A simple programming language implementation written in C.
 
 ## Quick Start
 
+### Installation
+
+```bash
+git clone https://github.com/0xM4LL0C/yuji.git
+cd yuji
+git checkout tags/v0.1.0  # you can specify the version you want to install
+```
+
 ### Build
+
 ```bash
 make build
 ```
 
-### Run
+### Install
+
 ```bash
-./build/yuji test.yuji
+sudo make install
+```
+
+You can specify the installation prefix using the `PREFIX` variable:
+
+```bash
+sudo make install PREFIX=/usr/locals
+```
+
+### Uninstall
+
+```bash
+sudo make uninstall
+```
+
+### Run
+
+```bash
+yuji test.yuji
 ```
 
 ## Example

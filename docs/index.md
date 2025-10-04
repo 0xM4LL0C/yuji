@@ -27,6 +27,12 @@ make clean
 
 # Run test file (test.yuji)
 make test
+
+# Install Yuji
+make install
+
+# Uninstall Yuji
+make uninstall
 ```
 
 The binary yuji will be built in the .build/ directory.
