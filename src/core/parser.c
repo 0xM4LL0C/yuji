@@ -167,12 +167,12 @@ YujiASTNode* yuji_parser_parse_stmt(YujiParser* parser) {
     yuji_parser_advance(parser);
     YujiASTNode* block_node = yuji_parser_parse_block(parser);
     YujiASTNode* fn = yuji_ast_fn_init(name, param_names, block_node->value.block);
+    yuji_ast_free(block_node);
 
     YUJI_DYN_ARRAY_ITER(param_names, char*, param, {
       yuji_free(param);
     });
     yuji_dyn_array_free(param_names);
-
 
     return fn;
   } else if (yuji_parser_match(parser, TT_IF)) {
@@ -182,7 +182,7 @@ YujiASTNode* yuji_parser_parse_stmt(YujiParser* parser) {
 
     YujiASTNode* condition = yuji_parser_parse_expr(parser);
     YujiASTNode* body = yuji_parser_parse_block(parser);
-    YujiASTIfBranch* if_branch = yuji_ast_if_branch_init(condition, body->value.block);
+    YujiASTIfBranch* if_branch = yuji_ast_if_branch_init(condition, yuji_ast_extract_block(body));
     yuji_dyn_array_push(branches, if_branch);
 
     YujiASTBlock* else_body = NULL;
@@ -191,14 +191,15 @@ YujiASTNode* yuji_parser_parse_stmt(YujiParser* parser) {
       yuji_parser_advance(parser);
       YujiASTNode* elif_condition = yuji_parser_parse_expr(parser);
       YujiASTNode* elif_body = yuji_parser_parse_block(parser);
-      YujiASTIfBranch* elif_branch = yuji_ast_if_branch_init(elif_condition, elif_body->value.block);
+      YujiASTIfBranch* elif_branch = yuji_ast_if_branch_init(elif_condition,
+                                     yuji_ast_extract_block(elif_body));
       yuji_dyn_array_push(branches, elif_branch);
     }
 
     if (yuji_parser_match(parser, TT_ELSE)) {
       yuji_parser_advance(parser);
       YujiASTNode* else_node = yuji_parser_parse_block(parser);
-      else_body = else_node->value.block;
+      else_body = yuji_ast_extract_block(else_node);
     }
 
     return yuji_ast_if_init(branches, else_body);
@@ -209,8 +210,7 @@ YujiASTNode* yuji_parser_parse_stmt(YujiParser* parser) {
 
     yuji_parser_expect(parser, TT_LBRACE);
     YujiASTNode* body = yuji_parser_parse_block(parser);
-    YujiASTNode* while_node = yuji_ast_while_init(condition, body->value.block);
-    yuji_ast_free(body);
+    YujiASTNode* while_node = yuji_ast_while_init(condition, yuji_ast_extract_block(body));
     return while_node;
   } else if (yuji_parser_match(parser, TT_USE)) {
     yuji_parser_advance(parser);

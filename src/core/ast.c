@@ -48,11 +48,14 @@ void yuji_ast_free(YujiASTNode* node) {
       break;
 
     case YUJI_AST_BLOCK:
-      YUJI_DYN_ARRAY_ITER(node->value.block->exprs, YujiASTNode, expr, {
-        yuji_ast_free(expr);
-      })
-      yuji_dyn_array_free(node->value.block->exprs);
-      yuji_free(node->value.block);
+      if (node->value.block) {
+        YUJI_DYN_ARRAY_ITER(node->value.block->exprs, YujiASTNode, expr, {
+          yuji_ast_free(expr);
+        })
+        yuji_dyn_array_free(node->value.block->exprs);
+        yuji_free(node->value.block);
+      }
+
       break;
 
     case YUJI_AST_FN:
@@ -102,16 +105,20 @@ void yuji_ast_free(YujiASTNode* node) {
         YUJI_DYN_ARRAY_ITER(branch->body->exprs, YujiASTNode, expr, {
           yuji_ast_free(expr);
         })
+        yuji_dyn_array_free(branch->body->exprs);
         yuji_free(branch->body);
         yuji_free(branch);
       })
       yuji_dyn_array_free(node->value.if_stmt->branches);
 
-      YUJI_DYN_ARRAY_ITER(node->value.if_stmt->else_body->exprs, YujiASTNode, expr, {
-        yuji_ast_free(expr);
-      })
+      if (node->value.if_stmt->else_body) {
+        YUJI_DYN_ARRAY_ITER(node->value.if_stmt->else_body->exprs, YujiASTNode, expr, {
+          yuji_ast_free(expr);
+        })
+        yuji_dyn_array_free(node->value.if_stmt->else_body->exprs);
+        yuji_free(node->value.if_stmt->else_body);
+      }
 
-      yuji_free(node->value.if_stmt->else_body);
       yuji_free(node->value.if_stmt);
       break;
 
@@ -382,6 +389,17 @@ YUJI_AST_INIT(while, YUJI_AST_WHILE, {
   node->value.while_stmt->condition = condition;
   node->value.while_stmt->body = body;
 }, YujiASTNode* condition, YujiASTBlock* body)
+
+YujiASTBlock* yuji_ast_extract_block(YujiASTNode* block_node) {
+  if (!block_node || block_node->type != YUJI_AST_BLOCK) {
+    return NULL;
+  }
+
+  YujiASTBlock* block = block_node->value.block;
+  block_node->value.block = NULL;
+  yuji_ast_free(block_node);
+  return block;
+}
 
 YujiASTIfBranch* yuji_ast_if_branch_init(YujiASTNode* condition, YujiASTBlock* body) {
   YujiASTIfBranch* branch = yuji_malloc(sizeof(YujiASTIfBranch));

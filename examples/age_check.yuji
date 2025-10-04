@@ -1,0 +1,20 @@
+use "std/core"
+use "std/io"
+
+let age_str = input("Enter your age: ")
+
+if not(age_str) {
+    panic("Age cannot be empty")
+}
+
+let age = to_number(age_str)
+
+if age < 0 {
+    panic("Age cannot be negative")
+}
+
+if age >= 18 {
+    print("You are an adult")
+} else {
+    print("You are a minor")
+}

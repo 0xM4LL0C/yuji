@@ -372,9 +372,12 @@ YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node
         yuji_value_free(condition_val);
 
         if (condition_result) {
-          YujiASTNode* block = yuji_ast_block_init(branch->body->exprs);
-          YujiValue* result = yuji_interpreter_eval(interpreter, block);
-          yuji_ast_free(block);
+          YujiValue* result = yuji_value_null_init();
+          YUJI_DYN_ARRAY_ITER(branch->body->exprs, YujiASTNode, expr, {
+            YujiValue* expr_result = yuji_interpreter_eval(interpreter, expr);
+            yuji_value_free(result);
+            result = expr_result;
+          })
           return result;
         }
       })
