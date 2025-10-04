@@ -14,7 +14,7 @@ if age < 0 {
 }
 
 if age >= 18 {
-    print("You are an adult")
+    println("You are an adult")
 } else {
-    print("You are a minor")
+    println("You are a minor")
 }
