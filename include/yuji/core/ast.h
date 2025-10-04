@@ -146,6 +146,7 @@ YujiASTNode* yuji_ast_call_init(const char* name, YujiDynArray* args);
 YujiASTNode* yuji_ast_use_init(const char* value);
 YujiASTNode* yuji_ast_bool_init(bool value);
 YujiASTNode* yuji_ast_while_init(YujiASTNode* condition, YujiASTBlock* body);
-YujiASTNode* yuji_ast_if_branch_init(YujiASTNode* condition, YujiASTBlock* body);
+YujiASTIfBranch* yuji_ast_if_branch_init(YujiASTNode* condition, YujiASTBlock* body);
 YujiASTNode* yuji_ast_if_init(YujiDynArray* branches, YujiASTBlock* else_body);
+YujiASTBlock* yuji_ast_extract_block(YujiASTNode* block_node);
 YujiASTNode* yuji_ast_null_init();

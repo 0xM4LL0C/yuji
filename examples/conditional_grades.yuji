@@ -1,0 +1,16 @@
+use "std/io"
+use "std/core"
+
+let score = to_number(input("Enter score (0-100): "))
+
+if score < 0 || score > 100 {
+    panic("Score must be between 0 and 100")
+} elif score >= 90 {
+    println("Excellent! A")
+} elif score >= 80 {
+    println("Good! B")
+} elif score >= 70 {
+    println("Satisfactory! C")
+} else {
+    println("Unsatisfactory! F")
+}
