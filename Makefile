@@ -35,7 +35,10 @@ else
     SANITIZERS = address,leak,undefined
 endif
 
-.PHONY: all debug release build clean test rebuild
+PREFIX ?= /usr/local
+BIN_INSTALL_PATH := $(PREFIX)/bin/$(BIN_NAME)
+
+.PHONY: all debug release build clean test rebuild install uninstall
 
 all: debug
 
@@ -70,3 +73,15 @@ rebuild:
 
 test: debug
 	$(BIN_PATH) test.yuji
+
+install: $(BIN_PATH)
+	@echo "Installing $(BIN_NAME) to $(BIN_INSTALL_PATH)..."
+	@mkdir -p $(dir $(BIN_INSTALL_PATH))
+	@cp $(BIN_PATH) $(BIN_INSTALL_PATH)
+	@chmod +x $(BIN_INSTALL_PATH)
+	@echo "Installed."
+
+uninstall:
+	@echo "Removing $(BIN_INSTALL_PATH)..."
+	@rm -f $(BIN_INSTALL_PATH)
+	@echo "Uninstalled."
