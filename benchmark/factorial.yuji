@@ -1,0 +1,13 @@
+use "std/io"
+use "std/core"
+
+fn factorial(n) {
+    if n <= 1 {
+        1
+    } else {
+        n * factorial(n - 1)
+    }
+}
+
+let result = factorial(5)
+println(format("5! = {}", result))
