@@ -1,8 +1,8 @@
 use "std/io"
-use "std/time"
-use "std/math"
 
-while true {
-    println(format("rand number: {}", random(1, 5)))
-    sleepms(500)
+
+fn test() {
+    return test()
 }
+
+println(test())

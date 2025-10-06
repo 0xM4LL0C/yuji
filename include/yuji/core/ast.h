@@ -80,6 +80,9 @@ typedef struct {
   YujiASTBlock* else_body;
 } YujiASTIf;
 
+typedef struct {
+  YujiASTNode* value;
+} YujiASTReturn;
 
 typedef enum {
   YUJI_AST_INT,
@@ -96,7 +99,8 @@ typedef enum {
   YUJI_AST_BOOL,
   YUJI_AST_WHILE,
   YUJI_AST_IF,
-  YUJI_AST_NULL
+  YUJI_AST_NULL,
+  YUJI_AST_RETURN
 } YujiASTNodeType;
 
 struct YujiASTNode {
@@ -118,6 +122,7 @@ struct YujiASTNode {
     YujiASTWhile* while_stmt;
     YujiASTIf* if_stmt;
     YujiASTNull* null;
+    YujiASTReturn* return_stmt;
   } value;
 };
 
@@ -150,3 +155,4 @@ YujiASTIfBranch* yuji_ast_if_branch_init(YujiASTNode* condition, YujiASTBlock* b
 YujiASTNode* yuji_ast_if_init(YujiDynArray* branches, YujiASTBlock* else_body);
 YujiASTBlock* yuji_ast_extract_block(YujiASTNode* block_node);
 YujiASTNode* yuji_ast_null_init();
+YujiASTNode* yuji_ast_return_init(YujiASTNode* value);

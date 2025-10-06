@@ -4,6 +4,7 @@
 #include "yuji/core/module.h"
 #include "yuji/core/types/dyn_array.h"
 #include "yuji/core/types/map.h"
+#include "yuji/core/types/stack.h"
 #include "yuji/core/types/string.h"
 #include "yuji/core/value.h"
 #include "yuji/utils.h"
@@ -88,11 +89,42 @@ void yuji_scope_merge(YujiScope* dest, YujiScope* src) {
   })
 }
 
+YujiCallFrame* yuji_call_frame_init(YujiScope* scope, const char* name, YujiDynArray* args) {
+  YujiCallFrame* frame = yuji_malloc(sizeof(YujiCallFrame));
+
+  frame->scope = scope;
+  frame->function_name = strdup(name);
+  frame->args = args;
+  frame->has_return = false;
+  frame->return_value = NULL;
+
+  return frame;
+}
+
+void yuji_call_frame_free(YujiCallFrame* frame) {
+  yuji_free(frame->function_name);
+
+  if (frame->args) {
+    YUJI_DYN_ARRAY_ITER(frame->args, YujiValue, arg, {
+      yuji_value_free(arg);
+    })
+    yuji_dyn_array_free(frame->args);
+  }
+
+  if (frame->return_value) {
+    yuji_value_free(frame->return_value);
+  }
+
+  yuji_free(frame);
+}
+
 YujiInterpreter* yuji_interpreter_init() {
   YujiInterpreter* interpreter = yuji_malloc(sizeof(YujiInterpreter));
 
   interpreter->current_scope = yuji_scope_init(NULL);
   interpreter->loaded_modules = yuji_map_init();
+  interpreter->call_stack = yuji_stack_init();
+  interpreter->max_stack_size = 10000;
 
   yuji_std_load_all(interpreter);
 
@@ -108,6 +140,7 @@ void yuji_interpreter_free(YujiInterpreter* interpreter) {
     yuji_module_free(pair->value);
   })
   yuji_map_free(interpreter->loaded_modules);
+  yuji_stack_free(interpreter->call_stack);
   yuji_free(interpreter);
 }
 
@@ -146,6 +179,16 @@ void yuji_interpreter_load_module(YujiInterpreter* interpreter, const char* modu
   })
   yuji_dyn_array_free(parts);
   yuji_string_free(module_name_s);
+}
+
+void yuji_print_call_stack(YujiInterpreter* interpreter) {
+  printf("Call stack traceback:\n");
+
+  size_t i = 0;
+  YUJI_DYN_ARRAY_ITER(interpreter->call_stack->data, YujiCallFrame, frame, {
+    printf("  #%zu: in function '%s'%s\n", i, frame->function_name,
+           frame->has_return ? " (returned)" : "");
+  })
 }
 
 YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node) {
@@ -224,8 +267,15 @@ YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node
         yuji_value_free(result);
 
         result = expr_result;
-      })
 
+        if (interpreter->call_stack->data->size > 0) {
+          YujiCallFrame* frame = yuji_stack_peek(interpreter->call_stack);
+
+          if (frame->has_return) {
+            break;
+          }
+        }
+      })
       yuji_scope_pop(interpreter);
       return result ? result : yuji_value_null_init();
     }
@@ -315,13 +365,13 @@ YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node
         })
 
         yuji_scope_push(interpreter);
-        result = fn->value.cfunction->func(interpreter->current_scope, args);
-        yuji_scope_pop(interpreter);
+        YujiCallFrame* frame = yuji_call_frame_init(interpreter->current_scope, call->name, args);
+        yuji_stack_push(interpreter->call_stack, frame);
 
-        YUJI_DYN_ARRAY_ITER(args, YujiValue, arg, {
-          yuji_value_free(arg);
-        })
-        yuji_dyn_array_free(args);
+        result = fn->value.cfunction->func(interpreter->current_scope, args);
+
+        yuji_call_frame_free(yuji_stack_pop(interpreter->call_stack));
+        yuji_scope_pop(interpreter);
       } else if (fn->type == VT_FUNCTION) {
         YujiASTFunction* fn_node = fn->value.function.node;
 
@@ -343,8 +393,30 @@ YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node
           yuji_value_free(arg_val);
         }
 
+        if (interpreter->call_stack->data->size > interpreter->max_stack_size) {
+          yuji_panic("stack overflow");
+        }
+
+        YujiCallFrame* frame = yuji_call_frame_init(fn_scope, call->name, NULL);
+        yuji_stack_push(interpreter->call_stack, frame);
+
         result = yuji_interpreter_eval(interpreter, fn_node->body);
+
+        YujiValue* ret_val;
+
+        if (frame->has_return) {
+          ret_val = frame->return_value ? frame->return_value : yuji_value_null_init();
+          frame->return_value = NULL;
+          yuji_value_free(result);
+        } else {
+          ret_val = result;
+        }
+
+        yuji_call_frame_free(yuji_stack_pop(interpreter->call_stack));
         yuji_scope_pop(interpreter);
+        yuji_value_free(fn);
+
+        return ret_val;
       } else {
         yuji_panic("'%s' is not a function", call->name);
       }
@@ -368,9 +440,7 @@ YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node
 
         YUJI_DYN_ARRAY_ITER(node->value.while_stmt->body->exprs, YujiASTNode, body, {
           YujiValue* body_result = yuji_interpreter_eval(interpreter, body);
-
           yuji_value_free(result);
-
           result = body_result;
         })
       }
@@ -383,7 +453,6 @@ YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node
       YUJI_DYN_ARRAY_ITER(node->value.if_stmt->branches, YujiASTIfBranch, branch, {
         YujiValue* condition_val = yuji_interpreter_eval(interpreter, branch->condition);
         bool condition_result = yuji_value_to_bool(condition_val);
-
         yuji_value_free(condition_val);
 
         if (condition_result) {
@@ -401,9 +470,7 @@ YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node
         YujiValue* result = yuji_value_null_init();
         YUJI_DYN_ARRAY_ITER(node->value.if_stmt->else_body->exprs, YujiASTNode, expr, {
           YujiValue* expr_result = yuji_interpreter_eval(interpreter, expr);
-
           yuji_value_free(result);
-
           result = expr_result;
         })
         return result;
@@ -416,6 +483,23 @@ YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node
       yuji_interpreter_load_module(interpreter, node->value.use->value);
       return yuji_value_null_init();
     }
+
+    case YUJI_AST_RETURN: {
+      if (interpreter->call_stack->data->size == 0) {
+        yuji_panic("Cannot return from top-level code");
+      }
+
+      YujiValue* value = node->value.return_stmt->value
+                         ? yuji_interpreter_eval(interpreter, node->value.return_stmt->value)
+                         : yuji_value_null_init();
+      YujiCallFrame* frame = yuji_dyn_array_get(interpreter->call_stack->data,
+                             interpreter->call_stack->data->size - 1);
+      frame->has_return = true;
+      value->refcount++;
+      frame->return_value = value;
+      return value;
+    }
+
   }
 
   yuji_panic("Unknown node type: %d", node->type);

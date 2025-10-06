@@ -7,8 +7,12 @@
 #include "yuji/core/types/dyn_array.h"
 #include "yuji/utils.h"
 #include <errno.h>
+#include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+
+YujiInterpreter* g_interpreter;
 
 int run_file(const char* filename) {
   FILE *file = fopen(filename, "r");
@@ -22,7 +26,6 @@ int run_file(const char* filename) {
 
   while (fgets(buffer, sizeof(buffer), file)) {
     yuji_dyn_array_push(input, strdup(buffer));
-    YUJI_LOG("%s", buffer);
   }
 
   fclose(file);
@@ -54,6 +57,7 @@ int run_file(const char* filename) {
 
   // INTERPRETER
   YujiInterpreter* interpreter = yuji_interpreter_init();
+  g_interpreter = interpreter;
 
   YUJI_DYN_ARRAY_ITER(ast, YujiASTNode, node, {
     YujiValue* result = yuji_interpreter_eval(interpreter, node);
@@ -139,7 +143,17 @@ int run_repl() {
   return 0;
 }
 
+void ctrl_c_handler(int signal) {
+  if (g_interpreter) {
+    yuji_print_call_stack(g_interpreter);
+  }
+
+  exit(signal);
+}
+
 int main(int argc, char* argv[]) {
+  signal(SIGINT, ctrl_c_handler);
+
   if (argc == 1) {
     return run_repl();
   } else if (argc == 2) {

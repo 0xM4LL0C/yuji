@@ -1,7 +1,9 @@
 #pragma once
 
 #include "yuji/core/ast.h"
+#include "yuji/core/types/dyn_array.h"
 #include "yuji/core/types/map.h"
+#include "yuji/core/types/stack.h"
 #include "yuji/core/value.h"
 
 typedef struct YujiScope {
@@ -10,10 +12,21 @@ typedef struct YujiScope {
 } YujiScope;
 
 typedef struct {
+  YujiScope* scope;
+  char* function_name;
+  YujiDynArray* args;
+  bool has_return;
+  YujiValue* return_value;
+} YujiCallFrame;
+
+typedef struct {
   YujiScope* current_scope;
   YujiMap* loaded_modules;
+  YujiStack* call_stack;
+  size_t max_stack_size;
 } YujiInterpreter;
 
+// SCOPE
 YujiScope* yuji_scope_init(YujiScope* parent);
 void yuji_scope_free(YujiScope* scope);
 void yuji_scope_push(YujiInterpreter* interpreter);
@@ -23,6 +36,13 @@ void yuji_scope_set(YujiScope* scope, const char* key, YujiValue* val);
 void yuji_scope_update(YujiScope* scope, const char* key, YujiValue* val);
 void yuji_scope_merge(YujiScope* dest, YujiScope* src);
 
+// CALL FRAME
+YujiCallFrame* yuji_call_frame_init(YujiScope* scope, const char* name, YujiDynArray* args);
+void yuji_call_frame_free(YujiCallFrame* frame);
+
+void yuji_print_call_stack(YujiInterpreter* interpreter);
+
+// INTERPRETER
 YujiInterpreter* yuji_interpreter_init();
 void yuji_interpreter_free(YujiInterpreter* interpreter);
 
