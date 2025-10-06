@@ -186,8 +186,8 @@ void yuji_print_call_stack(YujiInterpreter* interpreter) {
 
   size_t i = 0;
   YUJI_DYN_ARRAY_ITER(interpreter->call_stack->data, YujiCallFrame, frame, {
-    printf("  #%zu: in function '%s'%s\n", i, frame->function_name,
-           frame->has_return ? " (returned)" : "");
+    printf("  #%zu: in function '%s'\n", i, frame->function_name);
+    i++;
   })
 }
 
