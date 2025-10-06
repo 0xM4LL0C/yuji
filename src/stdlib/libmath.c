@@ -60,24 +60,6 @@ static YujiValue* math_tan(YujiScope* scope, YujiDynArray* args) {
   return yuji_value_float_init(tan(value));
 }
 
-static YujiValue* math_atan(YujiScope* scope, YujiDynArray* args) {
-  YUJI_UNUSED(scope);
-
-  if (args->size != 1) {
-    yuji_panic("atan function expects exactly one argument");
-  }
-
-  YujiValue* arg = yuji_dyn_array_get(args, 0);
-
-  if (arg->type != VT_INT && arg->type != VT_FLOAT) {
-    yuji_panic("atan function expects a int or float");
-  }
-
-  double value = arg->type == VT_INT ? (double)arg->value.int_ : arg->value.float_;
-
-  return yuji_value_float_init(atan(value));
-}
-
 static YujiValue* math_pow(YujiScope* scope, YujiDynArray* args) {
   YUJI_UNUSED(scope);
 
@@ -222,7 +204,6 @@ YUJI_DEFINE_MODULE(math, {
   YUJI_MODULE_REGISTER_FUNC(module, "sin", YUJI_FN_ARGC(1), math_sin);
   YUJI_MODULE_REGISTER_FUNC(module, "cos", YUJI_FN_ARGC(1), math_cos);
   YUJI_MODULE_REGISTER_FUNC(module, "tan", YUJI_FN_ARGC(1), math_tan);
-  YUJI_MODULE_REGISTER_FUNC(module, "atan", YUJI_FN_ARGC(1), math_atan);
   YUJI_MODULE_REGISTER_FUNC(module, "pow", YUJI_FN_ARGC(2), math_pow);
   YUJI_MODULE_REGISTER_FUNC(module, "sqrt", YUJI_FN_ARGC(1), math_sqrt);
   YUJI_MODULE_REGISTER_FUNC(module, "abs", YUJI_FN_ARGC(1), math_abs);
