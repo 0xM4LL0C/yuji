@@ -1,13 +1,8 @@
 use "std/io"
-use "std/core"
+use "std/time"
+use "std/math"
 
-fn factorial(n) {
-    if n <= 1 {
-        1
-    } else {
-        n * factorial(n - 1)
-    }
+while true {
+    println(format("rand number: {}", random(1, 5)))
+    sleepms(500)
 }
-
-let result = factorial(5)
-println(format("5! = {}", result))
