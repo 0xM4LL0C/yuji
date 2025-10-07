@@ -220,3 +220,37 @@ let msg = format("Hello, {}!", name)
 
 println(msg) // "Hello, World!"
 ```
+
+### std/os
+
+> [!NOTE]
+> added in v0.2.0
+
+- `system(command)`: Executes a command in the shell.
+- `setenv(key, value)`: Sets an environment variable.
+- `getenv(key)`: Gets an environment variable.
+
+### std/time
+
+> [!NOTE]
+> added in v0.2.0
+
+- `time()`: Returns the current Unix timestamp in seconds.
+- `sleep(seconds)`: Pauses execution for the specified number of seconds.
+- `sleepms(milliseconds)`: Pauses execution for the specified number of milliseconds.
+
+### std/math
+
+> [!NOTE]
+> added in v0.2.0
+
+- `sin(x)`: Returns the sine of x (in radians).
+- `cos(x)`: Returns the cosine of x (in radians).
+- `tan(x)`: Returns the tangent of x (in radians).
+- `pow(base, exponent)`: Returns base raised to the power of exponent.
+- `sqrt(x)`: Returns the square root of x.
+- `abs(x)`: Returns the absolute value of x.
+- `floor(x)`: Returns the largest integer less than or equal to x.
+- `ceil(x)`: Returns the smallest integer greater than or equal to x.
+- `round(x)`: Returns the nearest integer to x.
+- `random(min, max)`: Returns a random integer between min and max (inclusive).

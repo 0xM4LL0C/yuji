@@ -4,6 +4,9 @@
 
 extern YujiModule* yuji_load_io();
 extern YujiModule* yuji_load_core();
+extern YujiModule* yuji_load_os();
+extern YujiModule* yuji_load_time();
+extern YujiModule* yuji_load_math();
 
 void yuji_std_load_all(YujiInterpreter* interpreter) {
   YujiModule* std = yuji_module_init("std");
@@ -13,6 +16,15 @@ void yuji_std_load_all(YujiInterpreter* interpreter) {
 
   YujiModule* libcore = yuji_load_core();
   yuji_module_add_submodule(std, libcore);
+
+  YujiModule* libos = yuji_load_os();
+  yuji_module_add_submodule(std, libos);
+
+  YujiModule* libtime = yuji_load_time();
+  yuji_module_add_submodule(std, libtime);
+
+  YujiModule* libmath = yuji_load_math();
+  yuji_module_add_submodule(std, libmath);
 
   yuji_map_insert(interpreter->loaded_modules, std->name, std);
 }

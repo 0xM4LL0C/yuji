@@ -1,13 +1,8 @@
 use "std/io"
-use "std/core"
 
-fn factorial(n) {
-    if n <= 1 {
-        1
-    } else {
-        n * factorial(n - 1)
-    }
+
+fn test() {
+    return test()
 }
 
-let result = factorial(5)
-println(format("5! = {}", result))
+println(test())
