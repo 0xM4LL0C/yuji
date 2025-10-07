@@ -1,8 +1,17 @@
 use "std/io"
 
 
-fn test() {
-    return test()
+let i = 0
+
+println("before loop")
+while true {
+    i = i + 1
+    println(i)
+    if (i >= 10) {
+        println("before break")
+        break
+        println("after break")
+    }
 }
 
-println(test())
+println("after loop")

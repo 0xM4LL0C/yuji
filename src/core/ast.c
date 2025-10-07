@@ -10,6 +10,10 @@ void yuji_ast_free(YujiASTNode* node) {
   yuji_check_memory(node);
 
   switch (node->type) {
+    case YUJI_AST_NULL:
+    case YUJI_AST_BREAK:
+      break;
+
     case YUJI_AST_INT:
       yuji_free(node->value.int_);
       break;
@@ -122,9 +126,6 @@ void yuji_ast_free(YujiASTNode* node) {
       yuji_free(node->value.if_stmt);
       break;
 
-    case YUJI_AST_NULL:
-      break;
-
     case YUJI_AST_RETURN:
       yuji_ast_free(node->value.return_stmt->value);
       yuji_free(node->value.return_stmt);
@@ -154,10 +155,10 @@ char* yuji_ast_node_type_to_string(YujiASTNodeType type) {
       _YUJI_AST_NODE_TYPE_CASE(YUJI_AST_BOOL);
       _YUJI_AST_NODE_TYPE_CASE(YUJI_AST_WHILE);
       _YUJI_AST_NODE_TYPE_CASE(YUJI_AST_RETURN);
-
-    default:
-      yuji_panic("Unknown node type: %d", type);
+      _YUJI_AST_NODE_TYPE_CASE(YUJI_AST_BREAK);
   }
+
+  yuji_panic("Unknown node type: %d", type);
 
 #undef _YUJI_AST_NODE_TYPE_CASE
 }
@@ -390,6 +391,10 @@ YujiASTNode* yuji_ast_node_copy(YujiASTNode* node) {
       copy->value.return_stmt = yuji_malloc(sizeof(YujiASTReturn));
       copy->value.return_stmt->value = yuji_ast_node_copy(node->value.return_stmt->value);
       break;
+
+    case YUJI_AST_BREAK:
+      copy->value.break_stmt = yuji_malloc(sizeof(YujiASTBreak));
+      break;
   }
 
   return copy;
@@ -438,3 +443,12 @@ YUJI_AST_INIT(return, YUJI_AST_RETURN, {
   node->value.return_stmt = yuji_malloc(sizeof(YujiASTReturn));
   node->value.return_stmt->value = value;
 }, YujiASTNode* value)
+
+YUJI_AST_INIT(break, YUJI_AST_BREAK, {
+  static YujiASTBreak* global_break = NULL;
+
+  if (!global_break) {
+    global_break = yuji_malloc(sizeof(YujiASTBreak));
+  }
+  node->value.break_stmt = global_break;
+}, void)
