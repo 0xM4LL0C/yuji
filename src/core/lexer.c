@@ -147,6 +147,10 @@ bool yuji_lexer_tokenize(YujiLexer* lexer, YujiDynArray* tokens) {
         type = TT_WHILE;
       } else if (strcmp(value, "return") == 0) {
         type = TT_RETURN;
+      } else if (strcmp(value, "break") == 0) {
+        type = TT_BREAK;
+      } else if (strcmp(value, "continue") == 0) {
+        type = TT_CONTINUE;
       } else {
         type = TT_IDENTIFIER;
       }

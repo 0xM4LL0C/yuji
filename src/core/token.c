@@ -20,6 +20,8 @@ const char* yuji_token_type_to_string(const YujiTokenType type) {
       _YUJI_TOKEN_TYPE_CASE(TT_NULL);
       _YUJI_TOKEN_TYPE_CASE(TT_WHILE);
       _YUJI_TOKEN_TYPE_CASE(TT_RETURN);
+      _YUJI_TOKEN_TYPE_CASE(TT_BREAK);
+      _YUJI_TOKEN_TYPE_CASE(TT_CONTINUE);
       _YUJI_TOKEN_TYPE_CASE(TT_ASSIGN);
       _YUJI_TOKEN_TYPE_CASE(TT_PLUS);
       _YUJI_TOKEN_TYPE_CASE(TT_MINUS);
@@ -40,10 +42,9 @@ const char* yuji_token_type_to_string(const YujiTokenType type) {
       _YUJI_TOKEN_TYPE_CASE(TT_GTE);
       _YUJI_TOKEN_TYPE_CASE(TT_AND);
       _YUJI_TOKEN_TYPE_CASE(TT_OR);
-
-    default:
-      yuji_panic("Unknown token type: %d", type);
   }
+
+  yuji_panic("Unknown token type: %d", type);
 
 #undef _YUJI_TOKEN_TYPE_CASE
 }

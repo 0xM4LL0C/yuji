@@ -19,6 +19,8 @@ typedef enum {
   TT_NULL,
   TT_WHILE,
   TT_RETURN,
+  TT_BREAK,
+  TT_CONTINUE,
 
   // operators
   TT_ASSIGN, // =

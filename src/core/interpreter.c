@@ -118,12 +118,26 @@ void yuji_call_frame_free(YujiCallFrame* frame) {
   yuji_free(frame);
 }
 
+YujiLoopFrame* yuji_loop_frame_init() {
+  YujiLoopFrame* frame = yuji_malloc(sizeof(YujiLoopFrame));
+
+  frame->has_break = false;
+  frame->has_continue = false;
+
+  return frame;
+}
+
+void yuji_loop_frame_free(YujiLoopFrame* frame) {
+  yuji_free(frame);
+}
+
 YujiInterpreter* yuji_interpreter_init() {
   YujiInterpreter* interpreter = yuji_malloc(sizeof(YujiInterpreter));
 
   interpreter->current_scope = yuji_scope_init(NULL);
   interpreter->loaded_modules = yuji_map_init();
   interpreter->call_stack = yuji_stack_init();
+  interpreter->loop_stack = yuji_stack_init();
   interpreter->max_stack_size = 10000;
 
   yuji_std_load_all(interpreter);
@@ -141,6 +155,7 @@ void yuji_interpreter_free(YujiInterpreter* interpreter) {
   })
   yuji_map_free(interpreter->loaded_modules);
   yuji_stack_free(interpreter->call_stack);
+  yuji_stack_free(interpreter->loop_stack);
   yuji_free(interpreter);
 }
 
@@ -189,6 +204,39 @@ void yuji_print_call_stack(YujiInterpreter* interpreter) {
     printf("  #%zu: in function '%s'\n", i, frame->function_name);
     i++;
   })
+}
+
+YujiValue* yuji_interpreter_eval_block(YujiInterpreter* interpreter, YujiASTBlock* block) {
+  yuji_check_memory(interpreter);
+  yuji_check_memory(block);
+
+  yuji_scope_push(interpreter);
+  YujiValue* result = yuji_value_null_init();
+
+  YUJI_DYN_ARRAY_ITER(block->exprs, YujiASTNode, expr, {
+    YujiValue* expr_result = yuji_interpreter_eval(interpreter, expr);
+    yuji_value_free(result);
+
+    result = expr_result;
+
+    if (interpreter->call_stack->data->size > 0) {
+      YujiCallFrame* frame = yuji_stack_peek(interpreter->call_stack);
+
+      if (frame->has_return) {
+        break;
+      }
+    }
+
+    if (interpreter->loop_stack->data->size > 0) {
+      YujiLoopFrame* lframe = yuji_stack_peek(interpreter->loop_stack);
+
+      if (lframe->has_break || lframe->has_continue) {
+        break;
+      }
+    }
+  })
+  yuji_scope_pop(interpreter);
+  return result;
 }
 
 YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node) {
@@ -259,25 +307,7 @@ YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node
     }
 
     case YUJI_AST_BLOCK: {
-      yuji_scope_push(interpreter);
-      YujiValue* result = yuji_value_null_init();
-
-      YUJI_DYN_ARRAY_ITER(node->value.block->exprs, YujiASTNode, expr, {
-        YujiValue* expr_result = yuji_interpreter_eval(interpreter, expr);
-        yuji_value_free(result);
-
-        result = expr_result;
-
-        if (interpreter->call_stack->data->size > 0) {
-          YujiCallFrame* frame = yuji_stack_peek(interpreter->call_stack);
-
-          if (frame->has_return) {
-            break;
-          }
-        }
-      })
-      yuji_scope_pop(interpreter);
-      return result ? result : yuji_value_null_init();
+      return yuji_interpreter_eval_block(interpreter, node->value.block);
     }
 
     case YUJI_AST_BOOL: {
@@ -427,24 +457,29 @@ YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node
 
     case YUJI_AST_WHILE: {
       yuji_scope_push(interpreter);
+      YujiLoopFrame* loop_frame = yuji_loop_frame_init();
+      yuji_stack_push(interpreter->loop_stack, loop_frame);
+
       YujiValue* result = yuji_value_null_init();
 
       while (true) {
         YujiValue* condition_val = yuji_interpreter_eval(interpreter, node->value.while_stmt->condition);
-        bool should_continue = yuji_value_to_bool(condition_val);
+        bool cond = yuji_value_to_bool(condition_val);
         yuji_value_free(condition_val);
 
-        if (!should_continue) {
+        if (!cond || loop_frame->has_break) {
           break;
         }
 
-        YUJI_DYN_ARRAY_ITER(node->value.while_stmt->body->exprs, YujiASTNode, body, {
-          YujiValue* body_result = yuji_interpreter_eval(interpreter, body);
-          yuji_value_free(result);
-          result = body_result;
-        })
+        if (loop_frame->has_continue) {
+          loop_frame->has_continue = false;
+        }
+
+        yuji_value_free(result);
+        result = yuji_interpreter_eval_block(interpreter, node->value.while_stmt->body);
       }
 
+      yuji_loop_frame_free(yuji_stack_pop(interpreter->loop_stack));
       yuji_scope_pop(interpreter);
       return result;
     }
@@ -456,24 +491,12 @@ YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node
         yuji_value_free(condition_val);
 
         if (condition_result) {
-          YujiValue* result = yuji_value_null_init();
-          YUJI_DYN_ARRAY_ITER(branch->body->exprs, YujiASTNode, expr, {
-            YujiValue* expr_result = yuji_interpreter_eval(interpreter, expr);
-            yuji_value_free(result);
-            result = expr_result;
-          })
-          return result;
+          return yuji_interpreter_eval_block(interpreter, branch->body);
         }
       })
 
       if (node->value.if_stmt->else_body) {
-        YujiValue* result = yuji_value_null_init();
-        YUJI_DYN_ARRAY_ITER(node->value.if_stmt->else_body->exprs, YujiASTNode, expr, {
-          YujiValue* expr_result = yuji_interpreter_eval(interpreter, expr);
-          yuji_value_free(result);
-          result = expr_result;
-        })
-        return result;
+        return yuji_interpreter_eval_block(interpreter, node->value.if_stmt->else_body);
       }
 
       return yuji_value_null_init();
@@ -492,15 +515,34 @@ YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node
       YujiValue* value = node->value.return_stmt->value
                          ? yuji_interpreter_eval(interpreter, node->value.return_stmt->value)
                          : yuji_value_null_init();
-      YujiCallFrame* frame = yuji_dyn_array_get(interpreter->call_stack->data,
-                             interpreter->call_stack->data->size - 1);
+      YujiCallFrame* frame = yuji_stack_peek(interpreter->call_stack);
       frame->has_return = true;
       value->refcount++;
       frame->return_value = value;
       return value;
     }
 
+    case YUJI_AST_BREAK: {
+      if (interpreter->loop_stack->data->size == 0) {
+        yuji_panic("Cannot break outside of a loop");
+      }
+
+      YujiLoopFrame* frame = yuji_stack_peek(interpreter->loop_stack);
+      frame->has_break = true;
+      return yuji_value_null_init();
+    }
+
+    case YUJI_AST_CONTINUE: {
+      if (interpreter->loop_stack->data->size == 0) {
+        yuji_panic("Cannot continue outside of a loop");
+      }
+
+      YujiLoopFrame* frame = yuji_stack_peek(interpreter->loop_stack);
+      frame->has_continue = true;
+      return yuji_value_null_init();
+    }
   }
+
 
   yuji_panic("Unknown node type: %d", node->type);
 }

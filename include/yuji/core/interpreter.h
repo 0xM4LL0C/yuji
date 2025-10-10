@@ -20,9 +20,15 @@ typedef struct {
 } YujiCallFrame;
 
 typedef struct {
+  bool has_break;
+  bool has_continue;
+} YujiLoopFrame;
+
+typedef struct {
   YujiScope* current_scope;
   YujiMap* loaded_modules;
   YujiStack* call_stack;
+  YujiStack* loop_stack;
   size_t max_stack_size;
 } YujiInterpreter;
 
@@ -42,9 +48,14 @@ void yuji_call_frame_free(YujiCallFrame* frame);
 
 void yuji_print_call_stack(YujiInterpreter* interpreter);
 
+// LOOP FRAME
+YujiLoopFrame* yuji_loop_frame_init();
+void yuji_loop_frame_free(YujiLoopFrame* frame);
+
 // INTERPRETER
 YujiInterpreter* yuji_interpreter_init();
 void yuji_interpreter_free(YujiInterpreter* interpreter);
 
 void yuji_interpreter_load_module(YujiInterpreter* interpreter, const char* module_name);
+YujiValue* yuji_interpreter_eval_block(YujiInterpreter* interpreter, YujiASTBlock* block);
 YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node);

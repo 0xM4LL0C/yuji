@@ -220,22 +220,26 @@ YujiASTNode* yuji_parser_parse_stmt(YujiParser* parser) {
     yuji_parser_advance(parser);
 
     return yuji_ast_use_init(name);
-  }
-
-  if (yuji_parser_match(parser, TT_IDENTIFIER) && yuji_parser_match_next(parser, TT_ASSIGN)) {
+  } else if (yuji_parser_match(parser, TT_IDENTIFIER) && yuji_parser_match_next(parser, TT_ASSIGN)) {
     const char* name = parser->current_token->value;
     yuji_parser_advance(parser);
     yuji_parser_advance(parser);
 
     YujiASTNode* value = yuji_parser_parse_expr(parser);
     return yuji_ast_assign_init(name, value);
-  }
-
-  if (yuji_parser_match(parser, TT_RETURN)) {
+  } else if (yuji_parser_match(parser, TT_RETURN)) {
     yuji_parser_advance(parser);
 
     YujiASTNode* value = yuji_parser_parse_expr(parser);
     return yuji_ast_return_init(value);
+  } else if (yuji_parser_match(parser, TT_BREAK)) {
+    yuji_parser_advance(parser);
+
+    return yuji_ast_break_init();
+  } else if (yuji_parser_match(parser, TT_CONTINUE)) {
+    yuji_parser_advance(parser);
+
+    return yuji_ast_continue_init();
   }
 
   return yuji_parser_parse_expr(parser);

@@ -1,8 +1,20 @@
 use "std/io"
 
 
-fn test() {
-    return test()
+let i = 0
+
+println("before loop")
+while i <= 20 {
+    i = i + 1
+    println(i)
+
+    println("before cond")
+    if (i >= 10) {
+        println("before continue")
+        continue
+        println("after continue")
+    }
+    println("after cond")
 }
 
-println(test())
+println("after loop")
