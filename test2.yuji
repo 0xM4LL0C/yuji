@@ -1,8 +1,0 @@
-use "std/io"
-
-let count = 0
-while count < 5 {
-    count = count + 1
-    println(count)
-}
-println("Done!")
