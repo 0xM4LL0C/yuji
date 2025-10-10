@@ -15,6 +15,7 @@ typedef enum {
   VT_STRING,
   VT_NULL,
   VT_BOOL,
+  VT_ARRAY,
 } YujiValueType;
 
 typedef struct YujiValue YujiValue;
@@ -41,6 +42,7 @@ struct YujiValue {
     YujiString* string;
     YujiCFunction* cfunction;
     bool bool_;
+    YujiDynArray* array;
   } value;
 };
 
@@ -68,3 +70,4 @@ YujiValue* yuji_value_null_init();
 YujiValue* yuji_value_cfunction_init(size_t argc,
                                      YujiValue * (*func)(struct YujiScope* scope, YujiDynArray* args));
 YujiValue* yuji_value_bool_init(bool bool_);
+YujiValue* yuji_value_array_init(YujiDynArray* array);

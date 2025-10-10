@@ -31,6 +31,8 @@ const char* yuji_token_type_to_string(const YujiTokenType type) {
       _YUJI_TOKEN_TYPE_CASE(TT_RPAREN);
       _YUJI_TOKEN_TYPE_CASE(TT_LBRACE);
       _YUJI_TOKEN_TYPE_CASE(TT_RBRACE);
+      _YUJI_TOKEN_TYPE_CASE(TT_LBRACKET);
+      _YUJI_TOKEN_TYPE_CASE(TT_RBRACKET);
       _YUJI_TOKEN_TYPE_CASE(TT_MOD);
       _YUJI_TOKEN_TYPE_CASE(TT_LT);
       _YUJI_TOKEN_TYPE_CASE(TT_GT);

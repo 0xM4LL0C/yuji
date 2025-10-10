@@ -131,6 +131,14 @@ void yuji_ast_free(YujiASTNode* node) {
       yuji_ast_free(node->value.return_stmt->value);
       yuji_free(node->value.return_stmt);
       break;
+
+    case YUJI_AST_ARRAY:
+      YUJI_DYN_ARRAY_ITER(node->value.array->elements, YujiASTNode, element, {
+        yuji_ast_free(element);
+      });
+      yuji_dyn_array_free(node->value.array->elements);
+      yuji_free(node->value.array);
+      break;
   }
 
   yuji_free(node);
@@ -158,6 +166,7 @@ char* yuji_ast_node_type_to_string(YujiASTNodeType type) {
       _YUJI_AST_NODE_TYPE_CASE(YUJI_AST_RETURN);
       _YUJI_AST_NODE_TYPE_CASE(YUJI_AST_BREAK);
       _YUJI_AST_NODE_TYPE_CASE(YUJI_AST_CONTINUE);
+      _YUJI_AST_NODE_TYPE_CASE(YUJI_AST_ARRAY);
   }
 
   yuji_panic("Unknown node type: %d", type);
@@ -401,6 +410,14 @@ YujiASTNode* yuji_ast_node_copy(YujiASTNode* node) {
     case YUJI_AST_CONTINUE:
       copy->value.continue_stmt = yuji_malloc(sizeof(YujiASTContinue));
       break;
+
+    case YUJI_AST_ARRAY:
+      copy->value.array = yuji_malloc(sizeof(YujiASTArray));
+      copy->value.array->elements = yuji_dyn_array_init();
+      YUJI_DYN_ARRAY_ITER(node->value.array->elements, YujiASTNode, element, {
+        yuji_dyn_array_push(copy->value.array->elements, yuji_ast_node_copy(element));
+      })
+      break;
   }
 
   return copy;
@@ -467,3 +484,8 @@ YUJI_AST_INIT(continue, YUJI_AST_CONTINUE, {
   }
   node->value.continue_stmt = global_continue;
 }, void)
+
+YUJI_AST_INIT(array, YUJI_AST_ARRAY, {
+  node->value.array = yuji_malloc(sizeof(YujiASTArray));
+  node->value.array->elements = elements;
+}, YujiDynArray* elements)

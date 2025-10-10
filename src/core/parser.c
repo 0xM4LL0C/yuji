@@ -406,6 +406,27 @@ YujiASTNode* yuji_parser_parse_factor(YujiParser* parser) {
       return expr;
     }
 
+    case TT_LBRACKET: {
+      yuji_parser_advance(parser);
+      YujiDynArray* elements = yuji_dyn_array_init();
+
+      if (!yuji_parser_match(parser, TT_RBRACKET)) {
+        YujiASTNode* element = yuji_parser_parse_expr(parser);
+        yuji_dyn_array_push(elements, element);
+
+        while (yuji_parser_match(parser, TT_COMMA)) {
+          yuji_parser_advance(parser);
+          element = yuji_parser_parse_expr(parser);
+          yuji_dyn_array_push(elements, element);
+        }
+      }
+
+      yuji_parser_expect(parser, TT_RBRACKET);
+      yuji_parser_advance(parser);
+
+      return yuji_ast_array_init(elements);
+    }
+
     default:
       yuji_panic("parser error: unexpected token, got %s at %s",
                  yuji_token_type_to_string(parser->current_token->type),

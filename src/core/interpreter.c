@@ -541,8 +541,18 @@ YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node
       frame->has_continue = true;
       return yuji_value_null_init();
     }
-  }
 
+    case YUJI_AST_ARRAY: {
+      YujiDynArray* evaluated_elements = yuji_dyn_array_init();
+
+      YUJI_DYN_ARRAY_ITER(node->value.array->elements, YujiASTNode, element, {
+        YujiValue* evaluated = yuji_interpreter_eval(interpreter, element);
+        yuji_dyn_array_push(evaluated_elements, evaluated);
+      })
+
+      return yuji_value_array_init(evaluated_elements);
+    }
+  }
 
   yuji_panic("Unknown node type: %d", node->type);
 }

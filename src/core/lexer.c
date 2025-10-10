@@ -230,6 +230,8 @@ bool yuji_lexer_tokenize(YujiLexer* lexer, YujiDynArray* tokens) {
             _YUJI_LEXER_OPERATOR_CASE(')', TT_RPAREN)
             _YUJI_LEXER_OPERATOR_CASE('{', TT_LBRACE)
             _YUJI_LEXER_OPERATOR_CASE('}', TT_RBRACE)
+            _YUJI_LEXER_OPERATOR_CASE('[', TT_LBRACKET)
+            _YUJI_LEXER_OPERATOR_CASE(']', TT_RBRACKET)
             _YUJI_LEXER_OPERATOR_CASE('%', TT_MOD)
             _YUJI_LEXER_OPERATOR_CASE('>', TT_GT)
             _YUJI_LEXER_OPERATOR_CASE('<', TT_LT)
