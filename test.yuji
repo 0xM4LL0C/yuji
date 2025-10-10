@@ -4,14 +4,17 @@ use "std/io"
 let i = 0
 
 println("before loop")
-while true {
+while i <= 20 {
     i = i + 1
     println(i)
+
+    println("before cond")
     if (i >= 10) {
-        println("before break")
-        break
-        println("after break")
+        println("before continue")
+        continue
+        println("after continue")
     }
+    println("after cond")
 }
 
 println("after loop")

@@ -21,6 +21,7 @@ typedef struct {
 
 typedef struct {
   bool has_break;
+  bool has_continue;
 } YujiLoopFrame;
 
 typedef struct {
@@ -56,4 +57,5 @@ YujiInterpreter* yuji_interpreter_init();
 void yuji_interpreter_free(YujiInterpreter* interpreter);
 
 void yuji_interpreter_load_module(YujiInterpreter* interpreter, const char* module_name);
+YujiValue* yuji_interpreter_eval_block(YujiInterpreter* interpreter, YujiASTBlock* block);
 YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node);

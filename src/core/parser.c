@@ -236,6 +236,10 @@ YujiASTNode* yuji_parser_parse_stmt(YujiParser* parser) {
     yuji_parser_advance(parser);
 
     return yuji_ast_break_init();
+  } else if (yuji_parser_match(parser, TT_CONTINUE)) {
+    yuji_parser_advance(parser);
+
+    return yuji_ast_continue_init();
   }
 
   return yuji_parser_parse_expr(parser);
