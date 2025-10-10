@@ -43,6 +43,11 @@ typedef enum {
   TT_GTE, // >=
   TT_AND, // &&
   TT_OR, // ||
+  TT_PLUS_ASSIGN, // +=
+  TT_MINUS_ASSIGN, // -=
+  TT_MUL_ASSIGN, // *=
+  TT_DIV_ASSIGN, // /=
+  TT_MOD_ASSIGN, // %=
 } YujiTokenType;
 
 const char* yuji_token_type_to_string(YujiTokenType type);

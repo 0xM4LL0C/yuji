@@ -1,20 +1,19 @@
 use "std/io"
+use "std/core"
 
+let a = 5
 
-let i = 0
+a += 5
+assert(a == 10)
 
-println("before loop")
-while i <= 20 {
-    i = i + 1
-    println(i)
+a -= 5
+assert(a == 5)
 
-    println("before cond")
-    if (i >= 10) {
-        println("before continue")
-        continue
-        println("after continue")
-    }
-    println("after cond")
-}
+a *= 5
+assert(a == 25)
 
-println("after loop")
+a /= 5
+assert(a == 5)
+
+a %= 5
+assert(a == 0)
