@@ -10,7 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - added support for `return`, `break`, `continue` keywords
-- added new stdlib modules: `std/math`, `std/time`, `std/os`
+- added new stdlib modules: `std/math`, `std/time`, `std/os`, `std/array`
+- added array support
 
 ## [v0.1.0] - 2025-10-04
 

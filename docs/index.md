@@ -254,3 +254,12 @@ println(msg) // "Hello, World!"
 - `ceil(x)`: Returns the smallest integer greater than or equal to x.
 - `round(x)`: Returns the nearest integer to x.
 - `random(min, max)`: Returns a random integer between min and max (inclusive).
+
+### std/array
+
+> [!NOTE]
+> added in v0.2.0
+
+- `push(array, value)`: Adds a value to the end of an array.
+- `pop(array)`: Removes and returns the last element of an array.
+- `len(array)`: Returns the length of an array.
