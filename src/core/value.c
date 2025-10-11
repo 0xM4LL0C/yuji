@@ -144,6 +144,7 @@ char* yuji_value_to_string(YujiValue* value) {
     }
   }
 
+  yuji_check_memory(result);
   return result;
 }
 
