@@ -192,6 +192,31 @@ bool yuji_lexer_tokenize(YujiLexer* lexer, YujiDynArray* tokens) {
         value = strdup("||");
         yuji_lexer_advance(lexer);
         yuji_lexer_advance(lexer);
+      } else if (c == '+' && yuji_lexer_peek_next(lexer) == '=') {
+        type = TT_PLUS_ASSIGN;
+        value = strdup("+=");
+        yuji_lexer_advance(lexer);
+        yuji_lexer_advance(lexer);
+      } else if (c == '-' && yuji_lexer_peek_next(lexer) == '=') {
+        type = TT_MINUS_ASSIGN;
+        value = strdup("-=");
+        yuji_lexer_advance(lexer);
+        yuji_lexer_advance(lexer);
+      } else if (c == '*' && yuji_lexer_peek_next(lexer) == '=') {
+        type = TT_MUL_ASSIGN;
+        value = strdup("*=");
+        yuji_lexer_advance(lexer);
+        yuji_lexer_advance(lexer);
+      } else if (c == '/' && yuji_lexer_peek_next(lexer) == '=') {
+        type = TT_DIV_ASSIGN;
+        value = strdup("/=");
+        yuji_lexer_advance(lexer);
+        yuji_lexer_advance(lexer);
+      } else if (c == '%' && yuji_lexer_peek_next(lexer) == '=') {
+        type = TT_MOD_ASSIGN;
+        value = strdup("%=");
+        yuji_lexer_advance(lexer);
+        yuji_lexer_advance(lexer);
       } else {
 #define _YUJI_LEXER_OPERATOR_CASE(VALUE, TYPE) case VALUE: type = TYPE; break;
 
@@ -205,6 +230,8 @@ bool yuji_lexer_tokenize(YujiLexer* lexer, YujiDynArray* tokens) {
             _YUJI_LEXER_OPERATOR_CASE(')', TT_RPAREN)
             _YUJI_LEXER_OPERATOR_CASE('{', TT_LBRACE)
             _YUJI_LEXER_OPERATOR_CASE('}', TT_RBRACE)
+            _YUJI_LEXER_OPERATOR_CASE('[', TT_LBRACKET)
+            _YUJI_LEXER_OPERATOR_CASE(']', TT_RBRACKET)
             _YUJI_LEXER_OPERATOR_CASE('%', TT_MOD)
             _YUJI_LEXER_OPERATOR_CASE('>', TT_GT)
             _YUJI_LEXER_OPERATOR_CASE('<', TT_LT)

@@ -4,7 +4,6 @@ use "std/core"
 fn fib(n) {
     if n <= 1 {
         n
-        panic(n)
     } else {
         fib(n - 1) + fib(n - 2)
     }

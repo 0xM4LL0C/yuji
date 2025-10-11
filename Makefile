@@ -85,3 +85,9 @@ uninstall:
 	@echo "Removing $(BIN_INSTALL_PATH)..."
 	@rm -f $(BIN_INSTALL_PATH)
 	@echo "Uninstalled."
+
+benchmark: clean release
+	hyperfine -N \
+        "./.build/yuji benchmark/factorial.yuji" \
+        "python3 benchmark/factorial.py" \
+        "lua benchmark/factorial.lua"

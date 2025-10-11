@@ -1,6 +1,7 @@
 #include "yuji/core/value.h"
 #include "yuji/core/ast.h"
 #include "yuji/core/memory.h"
+#include "yuji/core/types/dyn_array.h"
 #include "yuji/core/types/string.h"
 #include <stdio.h>
 #include <string.h>
@@ -18,6 +19,13 @@ void yuji_value_free(YujiValue* value) {
     case VT_FUNCTION:
     case VT_BOOL:
     case VT_NULL:
+      break;
+
+    case VT_ARRAY:
+      YUJI_DYN_ARRAY_ITER(value->value.array, YujiValue, element, {
+        yuji_value_free(element);
+      })
+      yuji_dyn_array_free(value->value.array);
       break;
 
     case VT_STRING:
@@ -108,8 +116,35 @@ char* yuji_value_to_string(YujiValue* value) {
       result = yuji_malloc(32);
       snprintf(result, 32, "<cfunction:%p>", (void*)value->value.cfunction);
       break;
+
+    case VT_ARRAY: {
+      YujiDynArray* array = value->value.array;
+      YujiString* str = yuji_string_init();
+
+      yuji_string_append_cstr(str, "[");
+
+      size_t i = 0;
+      YUJI_DYN_ARRAY_ITER(array, YujiValue, element, {
+        char* element_str = yuji_value_to_string(element);
+        yuji_string_append_cstr(str, element_str);
+        yuji_free(element_str);
+
+        if (i < array->size - 1) {
+          yuji_string_append_cstr(str, ", ");
+        }
+        i++;
+      })
+
+      yuji_string_append_cstr(str, "]");
+
+      result = yuji_malloc(str->size + 1);
+      strcpy(result, str->data);
+      yuji_string_free(str);
+      break;
+    }
   }
 
+  yuji_check_memory(result);
   return result;
 }
 
@@ -132,10 +167,11 @@ char* yuji_value_type_to_string(YujiValueType type) {
       return "null";
 
     case VT_FUNCTION:
+    case VT_CFUNCTION:
       return "function";
 
-    case VT_CFUNCTION:
-      return "cfunction";
+    case VT_ARRAY:
+      return "array";
   }
 
   yuji_panic("Unknown value type: %d", type);
@@ -175,3 +211,7 @@ YUJI_VALUE_INIT(cfunction, VT_CFUNCTION, {
 YUJI_VALUE_INIT(bool, VT_BOOL, {
   value->value.bool_ = bool_;
 }, bool bool_)
+
+YUJI_VALUE_INIT(array, VT_ARRAY, {
+  value->value.array = array;
+}, YujiDynArray* array)

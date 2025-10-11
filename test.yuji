@@ -1,20 +1,17 @@
 use "std/io"
+use "std/array"
 
+let a = 1
 
-let i = 0
+let b = [a, 2]
 
-println("before loop")
-while i <= 20 {
-    i = i + 1
-    println(i)
+b[1] = 4
 
-    println("before cond")
-    if (i >= 10) {
-        println("before continue")
-        continue
-        println("after continue")
-    }
-    println("after cond")
-}
+push(b, 5)
 
-println("after loop")
+println(len(b))
+println(b)
+
+println(pop(b))
+println(pop(b))
+println(b)
