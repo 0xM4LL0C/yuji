@@ -220,6 +220,29 @@ YujiASTNode* yuji_parser_parse_stmt(YujiParser* parser) {
     yuji_parser_advance(parser);
 
     return yuji_ast_use_init(name);
+  } else if (yuji_parser_match(parser, TT_IDENTIFIER)
+             && yuji_parser_match_next(parser, TT_LBRACKET)) {
+    YujiASTNode* array = yuji_parser_parse_expr(parser);
+
+    if (yuji_parser_match(parser, TT_ASSIGN)) {
+      yuji_parser_advance(parser);
+      YujiASTNode* value = yuji_parser_parse_expr(parser);
+
+      if (array->type == YUJI_AST_INDEX_ACCESS) {
+        YujiASTNode* result = yuji_ast_index_assign_init(
+                                array->value.index_access->object,
+                                array->value.index_access->index,
+                                value
+                              );
+        yuji_free(array->value.index_access);
+        yuji_free(array);
+        return result;
+      } else {
+        yuji_panic("parser error: expected index access before assignment");
+      }
+    }
+
+    return array;
   } else if (yuji_parser_match(parser, TT_IDENTIFIER) && yuji_parser_match_next(parser, TT_ASSIGN)) {
     const char* name = parser->current_token->value;
     yuji_parser_advance(parser);
@@ -381,10 +404,31 @@ YujiASTNode* yuji_parser_parse_factor(YujiParser* parser) {
 
         yuji_parser_expect(parser, TT_RPAREN);
         yuji_parser_advance(parser);
-        return yuji_ast_call_init(name, args);
+
+        YujiASTNode* node = yuji_ast_call_init(name, args);
+
+        while (yuji_parser_match(parser, TT_LBRACKET)) {
+          yuji_parser_advance(parser);
+          YujiASTNode* index = yuji_parser_parse_expr(parser);
+          yuji_parser_expect(parser, TT_RBRACKET);
+          yuji_parser_advance(parser);
+          node = yuji_ast_index_access_init(node, index);
+        }
+
+        return node;
       }
 
-      return yuji_ast_identifier_init(name);
+      YujiASTNode* node = yuji_ast_identifier_init(name);
+
+      while (yuji_parser_match(parser, TT_LBRACKET)) {
+        yuji_parser_advance(parser);
+        YujiASTNode* index = yuji_parser_parse_expr(parser);
+        yuji_parser_expect(parser, TT_RBRACKET);
+        yuji_parser_advance(parser);
+        node = yuji_ast_index_access_init(node, index);
+      }
+
+      return node;
     }
 
     case TT_BOOL: {

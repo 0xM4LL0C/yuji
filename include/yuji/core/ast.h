@@ -92,6 +92,17 @@ typedef struct {
   YujiDynArray* elements;
 } YujiASTArray;
 
+typedef struct {
+  YujiASTNode* object;
+  YujiASTNode* index;
+} YujiASTIndexAccess;
+
+typedef struct {
+  YujiASTNode* object;
+  YujiASTNode* index;
+  YujiASTNode* value;
+} YujiASTIndexAssign;
+
 
 typedef enum {
   YUJI_AST_INT,
@@ -113,6 +124,8 @@ typedef enum {
   YUJI_AST_BREAK,
   YUJI_AST_CONTINUE,
   YUJI_AST_ARRAY,
+  YUJI_AST_INDEX_ACCESS,
+  YUJI_AST_INDEX_ASSIGN,
 } YujiASTNodeType;
 
 struct YujiASTNode {
@@ -138,6 +151,8 @@ struct YujiASTNode {
     YujiASTBreak* break_stmt;
     YujiASTContinue* continue_stmt;
     YujiASTArray* array;
+    YujiASTIndexAccess* index_access;
+    YujiASTIndexAssign* index_assign;
   } value;
 };
 
@@ -174,3 +189,6 @@ YujiASTNode* yuji_ast_return_init(YujiASTNode* value);
 YujiASTNode* yuji_ast_break_init();
 YujiASTNode* yuji_ast_continue_init();
 YujiASTNode* yuji_ast_array_init(YujiDynArray* elements);
+YujiASTNode* yuji_ast_index_access_init(YujiASTNode* object, YujiASTNode* index);
+YujiASTNode* yuji_ast_index_assign_init(YujiASTNode* object, YujiASTNode* index,
+                                        YujiASTNode* value);

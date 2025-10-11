@@ -139,6 +139,19 @@ void yuji_ast_free(YujiASTNode* node) {
       yuji_dyn_array_free(node->value.array->elements);
       yuji_free(node->value.array);
       break;
+
+    case YUJI_AST_INDEX_ACCESS:
+      yuji_ast_free(node->value.index_access->object);
+      yuji_ast_free(node->value.index_access->index);
+      yuji_free(node->value.index_access);
+      break;
+
+    case YUJI_AST_INDEX_ASSIGN:
+      yuji_ast_free(node->value.index_assign->object);
+      yuji_ast_free(node->value.index_assign->index);
+      yuji_ast_free(node->value.index_assign->value);
+      yuji_free(node->value.index_assign);
+      break;
   }
 
   yuji_free(node);
@@ -167,6 +180,8 @@ char* yuji_ast_node_type_to_string(YujiASTNodeType type) {
       _YUJI_AST_NODE_TYPE_CASE(YUJI_AST_BREAK);
       _YUJI_AST_NODE_TYPE_CASE(YUJI_AST_CONTINUE);
       _YUJI_AST_NODE_TYPE_CASE(YUJI_AST_ARRAY);
+      _YUJI_AST_NODE_TYPE_CASE(YUJI_AST_INDEX_ACCESS);
+      _YUJI_AST_NODE_TYPE_CASE(YUJI_AST_INDEX_ASSIGN);
   }
 
   yuji_panic("Unknown node type: %d", type);
@@ -333,6 +348,19 @@ YujiASTNode* yuji_ast_node_copy(YujiASTNode* node) {
         yuji_dyn_array_push(copy->value.array->elements, yuji_ast_node_copy(element));
       })
       break;
+
+    case YUJI_AST_INDEX_ACCESS:
+      copy->value.index_access = yuji_malloc(sizeof(YujiASTIndexAccess));
+      copy->value.index_access->object = yuji_ast_node_copy(node->value.index_access->object);
+      copy->value.index_access->index = yuji_ast_node_copy(node->value.index_access->index);
+      break;
+
+    case YUJI_AST_INDEX_ASSIGN:
+      copy->value.index_assign = yuji_malloc(sizeof(YujiASTIndexAssign));
+      copy->value.index_assign->object = yuji_ast_node_copy(node->value.index_assign->object);
+      copy->value.index_assign->index = yuji_ast_node_copy(node->value.index_assign->index);
+      copy->value.index_assign->value = yuji_ast_node_copy(node->value.index_assign->value);
+      break;
   }
 
   return copy;
@@ -489,3 +517,16 @@ YUJI_AST_INIT(array, YUJI_AST_ARRAY, {
   node->value.array = yuji_malloc(sizeof(YujiASTArray));
   node->value.array->elements = elements;
 }, YujiDynArray* elements)
+
+YUJI_AST_INIT(index_access, YUJI_AST_INDEX_ACCESS, {
+  node->value.index_access = yuji_malloc(sizeof(YujiASTIndexAccess));
+  node->value.index_access->object = object;
+  node->value.index_access->index = index;
+}, YujiASTNode* object, YujiASTNode* index)
+
+YUJI_AST_INIT(index_assign, YUJI_AST_INDEX_ASSIGN, {
+  node->value.index_assign = yuji_malloc(sizeof(YujiASTIndexAssign));
+  node->value.index_assign->object = object;
+  node->value.index_assign->index = index;
+  node->value.index_assign->value = value;
+}, YujiASTNode* object, YujiASTNode* index, YujiASTNode* value)

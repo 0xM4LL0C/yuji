@@ -4,4 +4,6 @@ let a = 1
 
 let b = [a, 2]
 
+b[1] = 4
+
 println(b)

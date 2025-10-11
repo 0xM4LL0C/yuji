@@ -552,6 +552,66 @@ YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node
 
       return yuji_value_array_init(evaluated_elements);
     }
+
+    case YUJI_AST_INDEX_ACCESS: {
+      YujiValue* obj_val = yuji_interpreter_eval(interpreter, node->value.index_access->object);
+      YujiValue* index_val = yuji_interpreter_eval(interpreter, node->value.index_access->index);
+
+      if (obj_val->type != VT_ARRAY) {
+        yuji_panic("Cannot index non-array type");
+      }
+
+      if (index_val->type != VT_INT) {
+        yuji_panic("Array index must be an integer");
+      }
+
+      int64_t index = index_val->value.int_;
+      yuji_value_free(index_val);
+
+      if (index < 0 || (size_t)index >= obj_val->value.array->size) {
+        yuji_value_free(obj_val);
+        yuji_panic("Array index out of bounds: %lld", (long long)index);
+      }
+
+      YujiValue* element = yuji_dyn_array_get(obj_val->value.array, (size_t)index);
+      element->refcount++;
+      yuji_value_free(obj_val);
+      return element;
+    }
+
+    case YUJI_AST_INDEX_ASSIGN: {
+      YujiValue* obj_val = yuji_interpreter_eval(interpreter, node->value.index_assign->object);
+      YujiValue* index_val = yuji_interpreter_eval(interpreter, node->value.index_assign->index);
+      YujiValue* new_value = yuji_interpreter_eval(interpreter, node->value.index_assign->value);
+
+      if (obj_val->type != VT_ARRAY) {
+        yuji_panic("Cannot index non-array type");
+      }
+
+      if (index_val->type != VT_INT) {
+        yuji_panic("Array index must be an integer");
+      }
+
+      int64_t index = index_val->value.int_;
+      yuji_value_free(index_val);
+
+      if (index < 0 || (size_t)index >= obj_val->value.array->size) {
+        yuji_value_free(obj_val);
+        yuji_value_free(new_value);
+        yuji_panic("Array index out of bounds: %lld", (long long)index);
+      }
+
+      YujiValue* old_element = yuji_dyn_array_get(obj_val->value.array, (size_t)index);
+      yuji_value_free(old_element);
+
+      new_value->refcount++;
+      yuji_dyn_array_set(obj_val->value.array, (size_t)index, new_value);
+
+      yuji_value_free(obj_val);
+      yuji_value_free(new_value);
+
+      return yuji_value_null_init();
+    }
   }
 
   yuji_panic("Unknown node type: %d", node->type);
