@@ -1,90 +1,12 @@
-#include "yuji/core/ast.h"
-#include "yuji/core/interpreter.h"
-#include "yuji/core/lexer.h"
-#include "yuji/core/memory.h"
-#include "yuji/core/parser.h"
-#include "yuji/core/token.h"
-#include "yuji/core/types/dyn_array.h"
-#include "yuji/utils.h"
-#include <errno.h>
+#include "yuji/core/runner.h"
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
-YujiInterpreter* g_interpreter;
+YujiRunner* g_yuji_runner;
 
 int run_file(const char* filename) {
-  FILE *file = fopen(filename, "r");
-
-  if (!file) {
-    yuji_panic("error opening file '%s': %s", filename, strerror(errno));
-  }
-
-  char buffer[64];
-  YujiDynArray* input = yuji_dyn_array_init();
-
-  while (fgets(buffer, sizeof(buffer), file)) {
-    yuji_dyn_array_push(input, strdup(buffer));
-  }
-
-  fclose(file);
-
-  // LEXER
-  YujiLexer *lexer = yuji_lexer_init(input, filename);
-  YujiDynArray* tokens = yuji_dyn_array_init();
-
-  yuji_lexer_tokenize(lexer, tokens);
-
-#ifdef YUJI_DEBUG
-  YUJI_DYN_ARRAY_ITER(tokens, YujiToken, token, {
-    const char* token_as_string = yuji_token_to_string(token);
-    YUJI_LOG("%s", token_as_string);
-    yuji_free((void*)token_as_string);
-  })
-#endif
-
-  // PARSER
-  YujiParser *parser = yuji_parser_init(tokens);
-
-  YujiDynArray* ast = yuji_parser_parse(parser);
-
-#ifdef YUJI_DEBUG
-  YUJI_DYN_ARRAY_ITER(ast, YujiASTNode, node, {
-    YUJI_LOG("%s", yuji_ast_node_type_to_string(node->type));
-  })
-#endif
-
-  // INTERPRETER
-  YujiInterpreter* interpreter = yuji_interpreter_init();
-  g_interpreter = interpreter;
-
-  YUJI_DYN_ARRAY_ITER(ast, YujiASTNode, node, {
-    YujiValue* result = yuji_interpreter_eval(interpreter, node);
-    yuji_value_free(result);
-  })
-
-  // CLEANUP
-  yuji_interpreter_free(interpreter);
-
-  YUJI_DYN_ARRAY_ITER(ast, YujiASTNode, node, {
-    yuji_ast_free(node);
-  })
-  yuji_dyn_array_free(ast);
-
-  yuji_parser_free(parser);
-
-  YUJI_DYN_ARRAY_ITER(tokens, YujiToken, token, {
-    yuji_token_free(token);
-  })
-  yuji_dyn_array_free(tokens);
-  yuji_lexer_free(lexer);
-
-  YUJI_DYN_ARRAY_ITER(input, char, str, {
-    yuji_free(str);
-  })
-  yuji_dyn_array_free(input);
-
+  yuji_runner_run_file(g_yuji_runner, filename);
   return 0;
 }
 
@@ -92,60 +14,27 @@ int run_repl() {
   printf("Welcome to Yuji REPL! (version %s)\n", YUJI_VERSION_STRING);
   printf("ctrl+D to exit\n");
 
-
   bool running = true;
-
-  YujiInterpreter* interpreter = yuji_interpreter_init();
 
   while (running) {
     char buffer[64];
-    YujiDynArray* input = yuji_dyn_array_init();
-
     printf("> ");
 
     if (!fgets(buffer, sizeof(buffer), stdin)) {
       printf("\n");
-      yuji_dyn_array_free(input);
       break;
     }
 
-    yuji_dyn_array_push(input, buffer);
-
-    YujiLexer* lexer = yuji_lexer_init(input, "<stdin>");
-    YujiDynArray* tokens = yuji_dyn_array_init();
-    yuji_lexer_tokenize(lexer, tokens);
-
-    YujiParser* parser = yuji_parser_init(tokens);
-    YujiDynArray* ast = yuji_parser_parse(parser);
-
-    YUJI_DYN_ARRAY_ITER(ast, YujiASTNode, node, {
-      YujiValue* result = yuji_interpreter_eval(interpreter, node);
-      yuji_value_free(result);
-    })
-
-    YUJI_DYN_ARRAY_ITER(ast, YujiASTNode, node, {
-      yuji_ast_free(node);
-    })
-    yuji_dyn_array_free(ast);
-
-    yuji_parser_free(parser);
-
-    YUJI_DYN_ARRAY_ITER(tokens, YujiToken, token, {
-      yuji_token_free(token);
-    })
-    yuji_dyn_array_free(tokens);
-    yuji_lexer_free(lexer);
-    yuji_dyn_array_free(input);
+    yuji_runner_run_string(g_yuji_runner, buffer);
   }
-
-  yuji_interpreter_free(interpreter);
 
   return 0;
 }
 
 void ctrl_c_handler(int signal) {
-  if (g_interpreter) {
-    yuji_print_call_stack(g_interpreter);
+  if (g_yuji_runner) {
+    yuji_print_call_stack(g_yuji_runner);
+    yuji_runner_free(g_yuji_runner);
   }
 
   exit(signal);
@@ -154,12 +43,17 @@ void ctrl_c_handler(int signal) {
 int main(int argc, char* argv[]) {
   signal(SIGINT, ctrl_c_handler);
 
+  g_yuji_runner = yuji_runner_init();
+  int exit_code = 1;
+
   if (argc == 1) {
-    return run_repl();
+    exit_code = run_repl();
   } else if (argc == 2) {
-    return run_file(argv[1]);
+    exit_code = run_file(argv[1]);
+  } else {
+    fprintf(stderr, "Usage: %s [filename]\n", argv[0]);
   }
 
-  fprintf(stderr, "Usage: %s [filename]\n", argv[0]);
-  return 1;
+  yuji_runner_free(g_yuji_runner);
+  return exit_code;
 }

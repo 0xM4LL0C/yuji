@@ -46,8 +46,6 @@ void yuji_scope_merge(YujiScope* dest, YujiScope* src);
 YujiCallFrame* yuji_call_frame_init(YujiScope* scope, const char* name, YujiDynArray* args);
 void yuji_call_frame_free(YujiCallFrame* frame);
 
-void yuji_print_call_stack(YujiInterpreter* interpreter);
-
 // LOOP FRAME
 YujiLoopFrame* yuji_loop_frame_init();
 void yuji_loop_frame_free(YujiLoopFrame* frame);
