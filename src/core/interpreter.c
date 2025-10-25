@@ -196,16 +196,6 @@ void yuji_interpreter_load_module(YujiInterpreter* interpreter, const char* modu
   yuji_string_free(module_name_s);
 }
 
-void yuji_print_call_stack(YujiInterpreter* interpreter) {
-  printf("Call stack traceback:\n");
-
-  size_t i = 0;
-  YUJI_DYN_ARRAY_ITER(interpreter->call_stack->data, YujiCallFrame, frame, {
-    printf("  #%zu: in function '%s'\n", i, frame->function_name);
-    i++;
-  })
-}
-
 YujiValue* yuji_interpreter_eval_block(YujiInterpreter* interpreter, YujiASTBlock* block) {
   yuji_check_memory(interpreter);
   yuji_check_memory(block);
