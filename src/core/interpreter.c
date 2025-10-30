@@ -381,7 +381,7 @@ YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node
       if (fn->type == VT_CFUNCTION) {
         if (fn->value.cfunction->argc != YUJI_FN_INF_ARGUMENT
             && fn->value.cfunction->argc != call->args->size) {
-          yuji_panic("function '%s' expects %d, got %d", call->name, fn->value.cfunction->argc,
+          yuji_panic("function '%s' expects %ld, got %ld", call->name, fn->value.cfunction->argc,
                      call->args->size);
         }
 
