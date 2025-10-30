@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - added new stdlib modules: `std/math`, `std/time`, `std/os`, `std/array`
 - added array support
 - added support for anonymous functions
+- added support for `+=`, `-=`, `*=`, `/=`, `%=` operators
 
 ## [v0.1.0] - 2025-10-04
 
