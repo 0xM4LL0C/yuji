@@ -176,6 +176,31 @@ let result = add(3, 4)
 
 Functions support multiple parameters and return the last expression's value (implicit return).
 
+### Anonymous Functions
+
+> [!NOTE]
+> added in v0.2.0
+
+Anonymous functions (also called lambdas) can be created without a name and assigned to variables:
+
+```yuji
+let add = fn(a, b) { a + b }
+let result = add(3, 4)  // 7
+```
+
+They can be passed as arguments to other functions:
+
+```yuji
+use "std/io"
+
+fn do_twice(f, x) {
+    f(f(x))
+}
+
+let double = fn(x) { x * 2 }
+println(do_twice(double, 2))  // 8
+```
+
 ### Modules
 
 Import modules with use:
