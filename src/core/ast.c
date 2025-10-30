@@ -64,7 +64,10 @@ void yuji_ast_free(YujiASTNode* node) {
       break;
 
     case YUJI_AST_FN:
-      yuji_free(node->value.fn->name);
+      if (node->value.fn->name) { // for anon funcs
+        yuji_free(node->value.fn->name);
+      }
+
       YUJI_DYN_ARRAY_ITER(node->value.fn->params, char*, param, {
         yuji_free(param);
       })
@@ -433,7 +436,13 @@ YUJI_AST_INIT(block, YUJI_AST_BLOCK, {
 
 YUJI_AST_INIT(fn, YUJI_AST_FN, {
   node->value.fn = yuji_malloc(sizeof(YujiASTFunction));
-  node->value.fn->name = strdup(name);
+
+  if (name) {
+    node->value.fn->name = strdup(name);
+  } else {
+    node->value.fn->name = NULL; // for anon funcs
+  }
+
   node->value.fn->params = yuji_dyn_array_init();
 
   YUJI_DYN_ARRAY_ITER(params, void*, param, {

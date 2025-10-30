@@ -351,6 +351,13 @@ YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node
     case YUJI_AST_FN: {
       char* name = node->value.fn->name;
 
+      if (!name) {
+        YujiValue* value = yuji_value_function_init(node->value.fn);
+        value->refcount++;
+        yuji_value_free(value);
+        return value;
+      }
+
       if (yuji_scope_get(interpreter->current_scope, name)) {
         yuji_panic("function %s already exists", name);
       }
@@ -438,7 +445,7 @@ YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node
 
         return ret_val;
       } else {
-        yuji_panic("'%s' is not a function", call->name);
+        yuji_panic("'%s' is not a function (got '%s')", call->name, yuji_value_to_string(fn));
       }
 
       yuji_value_free(fn);

@@ -142,13 +142,13 @@ YujiASTNode* yuji_parser_parse_stmt(YujiParser* parser) {
     YujiASTNode* value = yuji_parser_parse_expr(parser);
 
     return yuji_ast_let_init(name, value);
-  } else if (yuji_parser_match(parser, TT_FN)) {
+  } else if (yuji_parser_match(parser, TT_FN) && yuji_parser_match_next(parser, TT_IDENTIFIER)) {
     yuji_parser_advance(parser);
 
     yuji_parser_expect(parser, TT_IDENTIFIER);
     const char* name = parser->current_token->value;
-
     yuji_parser_advance(parser);
+
     yuji_parser_expect(parser, TT_LPAREN);
     yuji_parser_advance(parser);
 
@@ -381,6 +381,41 @@ YujiASTNode* yuji_parser_parse_factor(YujiParser* parser) {
       yuji_parser_advance(parser);
       return node;
     }
+
+    case TT_FN: {
+      yuji_parser_advance(parser);
+
+      char* name = NULL; // for anon funcs
+
+      yuji_parser_expect(parser, TT_LPAREN);
+      yuji_parser_advance(parser);
+
+      YujiDynArray* param_names = yuji_dyn_array_init();
+
+      if (!yuji_parser_match(parser, TT_RPAREN)) {
+        do {
+          yuji_parser_expect(parser, TT_IDENTIFIER);
+          char* param = strdup(parser->current_token->value);
+          yuji_dyn_array_push(param_names, param);
+          yuji_parser_advance(parser);
+        } while (yuji_parser_match(parser, TT_COMMA) && yuji_parser_advance(parser));
+      }
+
+      yuji_parser_expect(parser, TT_RPAREN);
+      yuji_parser_advance(parser);
+
+      YujiASTNode* block_node = yuji_parser_parse_block(parser);
+      YujiASTNode* fn_node = yuji_ast_fn_init(name, param_names, block_node->value.block);
+      yuji_ast_free(block_node);
+
+      YUJI_DYN_ARRAY_ITER(param_names, char*, param, {
+        yuji_free(param);
+      });
+      yuji_dyn_array_free(param_names);
+
+      return fn_node;
+    }
+
 
     case TT_IDENTIFIER: {
       const char* name = token->value;
