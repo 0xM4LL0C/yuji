@@ -82,6 +82,35 @@ Yuji is dynamically typed. Built-in types include:
 - Array (`array`): Ordered collection of elements, e.g., `[1, 2, 3]`.
 ```
 
+### Variables
+
+Declare variables with `let`:
+
+```yuji
+let x = 5
+let name = "Yuji"
+let pi = 3.14
+```
+
+Reassign existing variables with `=`:
+
+```yuji
+x = 1
+```
+
+Variables are scoped to blocks {}.
+
+### Operators
+
+- Arithmetic: `+`, `-`, `*`, `/`, `%` (modulo), `+=`, `-=`, `*=`, `/=`, `%=`.
+- Comparison: `<`, `>`, `<=`, `>=`, `==`, `!=`.
+- Logical: `&&` (and), `||` (or)
+
+```yuji
+let sum = 2 + 3 * 4  // 14 (operator precedence: * before +)
+let is_greater = 10 > 5  // true
+```
+
 ### Control Flow
 
 #### If/Elif/Else
