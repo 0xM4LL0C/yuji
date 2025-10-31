@@ -79,34 +79,7 @@ Yuji is dynamically typed. Built-in types include:
 - String (`string`): Text, e.g., `"hello"`. Supports escapes like `\n` and `\"`.
 - Boolean (`bool`): `true` or `false`.
 - Null (`null`): Represents absence of value.
-
-### Variables
-
-Declare variables with `let`:
-
-```yuji
-let x = 5
-let name = "Yuji"
-let pi = 3.14
-```
-
-Reassign existing variables with `=`:
-
-```yuji
-x = x + 1
-```
-
-Variables are scoped to blocks {}.
-
-### Operators
-
-- Arithmetic: `+`, `-`, `*`, `/`, `%` (modulo).
-- Comparison: `<`, `>`, `<=`, `>=`, `==`, `!=`.
-- Logical: `&&` (and), `||` (or)
-
-```yuji
-let sum = 2 + 3 * 4  // 14 (operator precedence: * before +)
-let is_greater = 10 > 5  // true
+- Array (`array`): Ordered collection of elements, e.g., `[1, 2, 3]`.
 ```
 
 ### Control Flow
