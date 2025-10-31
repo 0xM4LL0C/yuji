@@ -14,7 +14,7 @@ A simple programming language implementation written in C.
 ```bash
 git clone https://github.com/0xM4LL0C/yuji.git
 cd yuji
-git checkout tags/v0.1.0  # you can specify the version you want to install
+git checkout tags/v0.2.0  # you can specify the version you want to install
 ```
 
 ### Build
@@ -79,27 +79,27 @@ For detailed language documentation, syntax guide, and standard library referenc
 
 ```bash
 Benchmark 1: ./.build/yuji benchmark/factorial.yuji
-  Time (mean ± σ):       2.7 ms ±   0.8 ms    [User: 0.6 ms, System: 1.4 ms]
-  Range (min … max):     1.8 ms …  10.0 ms    1028 runs
+  Time (mean ± σ):       2.9 ms ±   0.5 ms    [User: 0.7 ms, System: 1.6 ms]
+  Range (min … max):     2.1 ms …   5.4 ms    797 runs
 
 Benchmark 2: python3 benchmark/factorial.py
-  Time (mean ± σ):     319.8 ms ±  22.2 ms    [User: 145.5 ms, System: 164.4 ms]
-  Range (min … max):   293.1 ms … 359.4 ms    10 runs
+  Time (mean ± σ):     293.8 ms ±  15.5 ms    [User: 139.1 ms, System: 145.7 ms]
+  Range (min … max):   275.7 ms … 318.1 ms    10 runs
 
 Benchmark 3: lua benchmark/factorial.lua
-  Time (mean ± σ):       5.2 ms ±   1.3 ms    [User: 1.6 ms, System: 2.6 ms]
-  Range (min … max):     3.6 ms …  15.4 ms    522 runs
+  Time (mean ± σ):       4.6 ms ±   0.9 ms    [User: 1.5 ms, System: 2.3 ms]
+  Range (min … max):     3.5 ms …  14.5 ms    207 runs
 
 Summary
   ./.build/yuji benchmark/factorial.yuji ran
-    1.91 ± 0.73 times faster than lua benchmark/factorial.lua
-  118.67 ± 35.52 times faster than python3 benchmark/factorial.py
+    1.59 ± 0.41 times faster than lua benchmark/factorial.lua
+  102.25 ± 18.23 times faster than python3 benchmark/factorial.py
 ```
 
 ### Versions
 
-- yuji: 0.1.0
-- python: 3.13.5
+- yuji: 0.2.0
+- python: 3.14.0
 - lua: 5.4.8
 
 ### Running Benchmarks
@@ -108,10 +108,7 @@ Dependencies:
 - [hyperfine](https://github.com/sharkdp/hyperfine)
 
 ```bash
-hyperfine -N \
-    "./.build/yuji benchmark/factorial.yuji" \
-    "python3 benchmark/factorial.py" \
-    "lua benchmark/factorial.lua"
+make benchmark
 ```
 
 ## Roadmap

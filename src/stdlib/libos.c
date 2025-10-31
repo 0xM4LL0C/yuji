@@ -11,7 +11,7 @@ static YujiValue* os_system(YujiScope* scope, YujiDynArray* args) {
   YUJI_UNUSED(scope);
 
   if (args->size != 1) {
-    yuji_panic("system function expects 1 argument, got %d", args->size);
+    yuji_panic("system function expects 1 argument, got %ld", args->size);
   }
 
   YujiValue* arg = yuji_dyn_array_get(args, 0);
@@ -28,7 +28,7 @@ static YujiValue* os_setenv(YujiScope* scope, YujiDynArray* args) {
   YUJI_UNUSED(scope);
 
   if (args->size != 2) {
-    yuji_panic("setenv function expects 2 arguments, got %d", args->size);
+    yuji_panic("setenv function expects 2 arguments, got %ld", args->size);
   }
 
   YujiValue* key = yuji_dyn_array_get(args, 0);
@@ -46,7 +46,7 @@ static YujiValue* os_getenv(YujiScope* scope, YujiDynArray* args) {
   YUJI_UNUSED(scope);
 
   if (args->size != 1) {
-    yuji_panic("getenv function expects 1 argument, got %d", args->size);
+    yuji_panic("getenv function expects 1 argument, got %ld", args->size);
   }
 
   YujiValue* key = yuji_dyn_array_get(args, 0);

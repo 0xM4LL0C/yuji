@@ -10,3 +10,4 @@ CompileFlags:
     - "-Wextra"
     - "-Wshadow"
     - "-Wconversion"
+    - "-Wno-ignored-attributes"

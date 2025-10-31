@@ -116,6 +116,10 @@ void yuji_runner_run_file(YujiRunner* runner, const char* filename) {
 }
 
 void yuji_print_call_stack(YujiRunner* runner) {
+  if (!runner->interpreter->call_stack->data->size) {
+    return;
+  }
+
   printf("Call stack traceback:\n");
 
   size_t i = 0;

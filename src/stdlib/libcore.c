@@ -11,7 +11,7 @@ static YujiValue* core_not(YujiScope* scope, YujiDynArray* args) {
   YUJI_UNUSED(scope);
 
   if (args->size != 1) {
-    yuji_panic("not function expects 1 argument, got %d", args->size);
+    yuji_panic("not function expects 1 argument, got %ld", args->size);
   }
 
   YujiValue* value = yuji_dyn_array_get(args, 0);
@@ -22,7 +22,7 @@ static YujiValue* core_typeof(YujiScope* scope, YujiDynArray* args) {
   YUJI_UNUSED(scope);
 
   if (args->size != 1) {
-    yuji_panic("typeof function expects 1 argument, got %d", args->size);
+    yuji_panic("typeof function expects 1 argument, got %ld", args->size);
   }
 
   YujiValue* value = yuji_dyn_array_get(args, 0);
@@ -39,9 +39,9 @@ static YujiValue* core_assert(YujiScope* scope, YujiDynArray* args) {
   YUJI_UNUSED(scope);
 
   if (args->size < 1) {
-    yuji_panic("assert function expects 1 argument, got %d", args->size);
+    yuji_panic("assert function expects 1 argument, got %ld", args->size);
   } else if (args->size > 2) {
-    yuji_panic("assert function maximum 2 arguments, got %d", args->size);
+    yuji_panic("assert function maximum 2 arguments, got %ld", args->size);
   }
 
   YujiValue* condition = yuji_dyn_array_get(args, 0);
@@ -69,7 +69,7 @@ static YujiValue* core_panic(YujiScope* scope, YujiDynArray* args) {
   YUJI_UNUSED(scope);
 
   if (args->size != 1) {
-    yuji_panic("panic function expects 1 argument, got %d", args->size);
+    yuji_panic("panic function expects 1 argument, got %ld", args->size);
   }
 
   YujiValue* message = yuji_dyn_array_get(args, 0);
@@ -86,7 +86,7 @@ static YujiValue* core_exit(YujiScope* scope, YujiDynArray* args) {
   YUJI_UNUSED(scope);
 
   if (args->size != 1) {
-    yuji_panic("exit function expects 1 argument, got %d", args->size);
+    yuji_panic("exit function expects 1 argument, got %ld", args->size);
   }
 
   YujiValue* code = yuji_dyn_array_get(args, 0);
@@ -106,7 +106,7 @@ static YujiValue* core_to_number(YujiScope* scope, YujiDynArray* args) {
   YUJI_UNUSED(scope);
 
   if (args->size != 1) {
-    yuji_panic("to_number function expects 1 argument, got %d", args->size);
+    yuji_panic("to_number function expects 1 argument, got %ld", args->size);
   }
 
   YujiValue* value = yuji_dyn_array_get(args, 0);
