@@ -14,7 +14,7 @@ A simple programming language implementation written in C.
 ```bash
 git clone https://github.com/0xM4LL0C/yuji.git
 cd yuji
-git checkout tags/v0.2.0  # you can specify the version you want to install
+git checkout tags/v0.2.1  # you can specify the version you want to install
 ```
 
 ### Build

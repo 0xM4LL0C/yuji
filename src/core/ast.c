@@ -249,7 +249,7 @@ YujiASTNode* yuji_ast_node_copy(YujiASTNode* node) {
 
     case YUJI_AST_FN:
       copy->value.fn = yuji_malloc(sizeof(YujiASTFunction));
-      copy->value.fn->name = strdup(node->value.fn->name);
+      copy->value.fn->name = node->value.fn->name ? strdup(node->value.fn->name) : NULL;
       copy->value.fn->params = yuji_dyn_array_init();
       YUJI_DYN_ARRAY_ITER(node->value.fn->params, void*, param, {
         char* param_copy = strdup((char*)param);
