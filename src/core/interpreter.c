@@ -271,7 +271,7 @@ YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node
         }
 
         result = is_float ? yuji_value_float_init(l / r) : yuji_value_int_init((int64_t)(l / r));
-      } else if (!is_float && YUJI_STRCMP(binop->operator, "%")) {
+      } else if (YUJI_STRCMP(binop->operator, "%")) {
         result = yuji_value_int_init((int64_t)l % (int64_t)r);
       } else if (YUJI_STRCMP(binop->operator, "<")) {
         result = yuji_value_bool_init(l < r);
@@ -293,6 +293,11 @@ YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node
 
       yuji_value_free(left);
       yuji_value_free(right);
+
+      if (result == NULL) {
+        yuji_panic("unhandled operator");
+      }
+
       return result;
     }
 
