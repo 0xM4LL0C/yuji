@@ -118,3 +118,7 @@ See the [project board](https://github.com/users/0xM4LL0C/projects/14) for plann
 ## License
 
 YUJI is licensed under the [MIT License](LICENSE).
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=0xM4LL0C/yuji&type=date&legend=top-left)](https://www.star-history.com/#0xM4LL0C/yuji&type=date&legend=top-left)
