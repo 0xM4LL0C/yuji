@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - fixed crash when copying anonymous function in `yuji_ast_node_copy` (#38)
+- fixed null pointer dereference in interpreter (#37)
 
 ## [v0.2.0] - 2025-11-31
 
