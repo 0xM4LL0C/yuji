@@ -1,12 +1,12 @@
-#include "yuji/core/runner.h"
+#include "yuji/core/state.h"
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-YujiRunner* g_yuji_runner;
+YujiState* g_yuji_state;
 
 int run_file(const char* filename) {
-  yuji_runner_run_file(g_yuji_runner, filename);
+  yuji_eval_file(g_yuji_state, filename);
   return 0;
 }
 
@@ -25,16 +25,16 @@ int run_repl() {
       break;
     }
 
-    yuji_runner_run_string(g_yuji_runner, buffer);
+    yuji_eval_string(g_yuji_state, buffer);
   }
 
   return 0;
 }
 
 void ctrl_c_handler(int signal) {
-  if (g_yuji_runner) {
-    yuji_print_call_stack(g_yuji_runner);
-    yuji_runner_free(g_yuji_runner);
+  if (g_yuji_state) {
+    yuji_print_call_stack(g_yuji_state);
+    yuji_state_free(g_yuji_state);
   }
 
   exit(signal);
@@ -43,7 +43,7 @@ void ctrl_c_handler(int signal) {
 int main(int argc, char* argv[]) {
   signal(SIGINT, ctrl_c_handler);
 
-  g_yuji_runner = yuji_runner_init();
+  g_yuji_state = yuji_state_init();
   int exit_code = 1;
 
   if (argc == 1) {
@@ -54,6 +54,6 @@ int main(int argc, char* argv[]) {
     fprintf(stderr, "Usage: %s [filename]\n", argv[0]);
   }
 
-  yuji_runner_free(g_yuji_runner);
+  yuji_state_free(g_yuji_state);
   return exit_code;
 }

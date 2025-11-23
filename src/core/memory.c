@@ -1,10 +1,10 @@
 #include "yuji/core/memory.h"
-#include "yuji/core/runner.h"
+#include "yuji/core/state.h"
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-extern YujiRunner* g_yuji_runner;
+extern YujiState* g_yuji_state;
 
 void yuji_panic(const char* fmt, ...) {
   fprintf(stderr, "===== PANIC =====\n");
@@ -15,8 +15,8 @@ void yuji_panic(const char* fmt, ...) {
   fprintf(stderr, "\n");
   va_end(args);
 
-  if (g_yuji_runner) {
-    yuji_print_call_stack(g_yuji_runner);
+  if (g_yuji_state) {
+    yuji_print_call_stack(g_yuji_state);
   }
 
 #ifdef YUJI_DEBUG
