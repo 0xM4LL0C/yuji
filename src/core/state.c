@@ -1,4 +1,4 @@
-#include "yuji/core/runner.h"
+#include "yuji/core/state.h"
 #include "yuji/core/interpreter.h"
 #include "yuji/core/lexer.h"
 #include "yuji/core/memory.h"
@@ -9,19 +9,19 @@
 #include <stdio.h>
 #include <string.h>
 
-YujiRunner* yuji_runner_init() {
-  YujiRunner* runner = yuji_malloc(sizeof(YujiRunner));
+YujiState* yuji_state_init() {
+  YujiState* state = yuji_malloc(sizeof(YujiState));
 
-  runner->interpreter = yuji_interpreter_init();
+  state->interpreter = yuji_interpreter_init();
 
-  return runner;
+  return state;
 }
 
-void yuji_runner_free(YujiRunner *runner) {
-  yuji_check_memory(runner);
+void yuji_state_free(YujiState *state) {
+  yuji_check_memory(state);
 
-  yuji_interpreter_free(runner->interpreter);
-  yuji_free(runner);
+  yuji_interpreter_free(state->interpreter);
+  yuji_free(state);
 }
 
 static YujiDynArray* get_input(const char* str) {
@@ -30,7 +30,7 @@ static YujiDynArray* get_input(const char* str) {
   return result;
 }
 
-static YujiValue* run_input(YujiRunner* runner, YujiDynArray* input, const char* source_name) {
+static YujiValue* run_input(YujiState* state, YujiDynArray* input, const char* source_name) {
   // LEXER
   YujiLexer* lexer = yuji_lexer_init(input, source_name);
   YujiDynArray* tokens = yuji_dyn_array_init();
@@ -47,7 +47,7 @@ static YujiValue* run_input(YujiRunner* runner, YujiDynArray* input, const char*
     if (last_result) {
       yuji_value_free(last_result);
     }
-    last_result = yuji_interpreter_eval(runner->interpreter, node);
+    last_result = yuji_interpreter_eval(state->interpreter, node);
   })
 
   // CLEANUP
@@ -67,12 +67,12 @@ static YujiValue* run_input(YujiRunner* runner, YujiDynArray* input, const char*
   return last_result;
 }
 
-void yuji_runner_run_string(YujiRunner* runner, const char* string) {
-  yuji_check_memory(runner);
+void yuji_eval_string(YujiState* state, const char* string) {
+  yuji_check_memory(state);
   yuji_check_memory((void*)string);
 
   YujiDynArray* input = get_input(string);
-  YujiValue* result = run_input(runner, input, "<string>");
+  YujiValue* result = run_input(state, input, "<string>");
 
   if (result) {
     yuji_value_free(result);
@@ -84,8 +84,8 @@ void yuji_runner_run_string(YujiRunner* runner, const char* string) {
   yuji_dyn_array_free(input);
 }
 
-void yuji_runner_run_file(YujiRunner* runner, const char* filename) {
-  yuji_check_memory(runner);
+void yuji_eval_file(YujiState* state, const char* filename) {
+  yuji_check_memory(state);
   yuji_check_memory((void*)filename);
 
   FILE* file = fopen(filename, "r");
@@ -103,7 +103,7 @@ void yuji_runner_run_file(YujiRunner* runner, const char* filename) {
 
   fclose(file);
 
-  YujiValue* result = run_input(runner, input, filename);
+  YujiValue* result = run_input(state, input, filename);
 
   if (result) {
     yuji_value_free(result);
@@ -115,15 +115,15 @@ void yuji_runner_run_file(YujiRunner* runner, const char* filename) {
   yuji_dyn_array_free(input);
 }
 
-void yuji_print_call_stack(YujiRunner* runner) {
-  if (!runner->interpreter->call_stack->data->size) {
+void yuji_print_call_stack(YujiState* state) {
+  if (!state->interpreter->call_stack->data->size) {
     return;
   }
 
   printf("Call stack traceback:\n");
 
   size_t i = 0;
-  YUJI_DYN_ARRAY_ITER(runner->interpreter->call_stack->data, YujiCallFrame, frame, {
+  YUJI_DYN_ARRAY_ITER(state->interpreter->call_stack->data, YujiCallFrame, frame, {
     printf("  #%zu: in function '%s'\n", i, frame->function_name);
     i++;
   })

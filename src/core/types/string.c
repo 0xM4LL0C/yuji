@@ -60,3 +60,9 @@ YujiDynArray* yuji_string_split(YujiString* str, char delim) {
   yuji_dyn_array_push(result, buf);
   return result;
 }
+
+void yuji_string_append(YujiString* str, const char* buf, size_t len) {
+  for (size_t i = 0; i < len; i++) {
+    yuji_string_append_char(str, buf[i]);
+  }
+}

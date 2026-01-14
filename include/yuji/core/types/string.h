@@ -15,5 +15,6 @@ void yuji_string_free(YujiString* str);
 
 void yuji_string_append_char(YujiString* sstr, char char_);
 void yuji_string_append_cstr(YujiString* str, const char* cstr);
+void yuji_string_append(YujiString* str, const char* buf, size_t len);
 
 YujiDynArray* yuji_string_split(YujiString* str, char delim);

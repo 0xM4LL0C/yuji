@@ -14,4 +14,16 @@ fn map(arr, func) {
 }
 
 let result = map([1, 2, 3], fn(x) { x + 1 })
-println(format("result: {}", result))
+// println(format("result: {}", result))
+
+let fd_w = open("example.txt", "w")
+println("fd: ", fd_w)
+write(fd_w, format("result: {}\n", result))
+println("fd: ", fd_w)
+
+close(fd_w)
+
+let fd_r = open("example.txt", "r")
+let content = read(fd_r)
+println(content)
+close(fd_r)

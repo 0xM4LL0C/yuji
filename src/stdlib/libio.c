@@ -1,13 +1,40 @@
+#include "yuji/core/interpreter.h"
 #include "yuji/core/memory.h"
 #include "yuji/core/module.h"
 #include "yuji/core/types/dyn_array.h"
 #include "yuji/core/types/string.h"
 #include "yuji/core/value.h"
 #include "yuji/utils.h"
+#include <errno.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
+
+static int _string_to_file_mode(const char* str) {
+  int flags = 0;
+
+  if (strcmp(str, "r") == 0) {
+    flags = O_RDONLY;
+  } else if (strcmp(str, "r+") == 0) {
+    flags = O_RDWR;
+  } else if (strcmp(str, "w") == 0) {
+    flags = O_WRONLY | O_CREAT | O_TRUNC;
+  } else if (strcmp(str, "w+") == 0) {
+    flags = O_RDWR | O_CREAT | O_TRUNC;
+  } else if (strcmp(str, "a") == 0) {
+    flags = O_WRONLY | O_CREAT | O_APPEND;
+  } else if (strcmp(str, "a+") == 0) {
+    flags = O_RDWR | O_CREAT | O_APPEND;
+  } else {
+    yuji_panic("invalid open mode");
+  }
+
+  return flags;
+}
 
 static YujiValue* io_print(YujiScope* scope, YujiDynArray* args) {
   YUJI_UNUSED(scope);
@@ -95,10 +122,120 @@ static YujiValue* io_format(YujiScope* scope, YujiDynArray* args) {
   return formatted;
 }
 
+static YujiValue* io_open(YujiScope* scope, YujiDynArray* args) {
+  YUJI_UNUSED(scope);
+
+  if (args->size != 2) {
+    yuji_panic("open function expects 2 arguments, got %ld", args->size);
+  }
+
+  YujiValue* name = yuji_dyn_array_get(args, 0);
+  YujiValue* mode = yuji_dyn_array_get(args, 1);
+
+  if (name->type != VT_STRING) {
+    yuji_panic("open function expects an string argument, got %s", yuji_value_to_string(name));
+  } else if (mode->type != VT_STRING) {
+    yuji_panic("open function expects an string argument, got %s", yuji_value_to_string(mode));
+  }
+
+  int fd = open(name->value.string->data, _string_to_file_mode(mode->value.string->data), 0644);
+
+  if (fd < 0) {
+    yuji_panic("open failed: %s", strerror(errno));
+  }
+
+  return yuji_value_int_init(fd);
+}
+
+static YujiValue* io_close(YujiScope* scope, YujiDynArray* args) {
+  YUJI_UNUSED(scope);
+
+  if (args->size != 1) {
+    yuji_panic("close function expects 1 arguments, got %ld", args->size);
+  }
+
+  YujiValue* fd = yuji_dyn_array_get(args, 0);
+
+  if (fd->type != VT_INT) {
+    yuji_panic("close function expects an int argument, got %s", yuji_value_to_string(fd));
+  }
+
+  close((int)fd->value.int_);
+
+  return yuji_value_null_init();
+}
+
+static YujiValue* io_write(YujiScope* scope, YujiDynArray* args) {
+  YUJI_UNUSED(scope);
+
+  if (args->size != 2) {
+    yuji_panic("write function expects 2 arguments, got %ld", args->size);
+  }
+
+  YujiValue* fd = yuji_dyn_array_get(args, 0);
+  YujiValue* data = yuji_dyn_array_get(args, 1);
+
+  if (fd->type != VT_INT) {
+    yuji_panic("write function expects an int argument, got %s", yuji_value_to_string(fd));
+  } else if (data->type != VT_STRING) {
+    yuji_panic("write function expects an string argument, got %s", yuji_value_to_string(fd));
+  }
+
+  ssize_t r = write((int)fd->value.int_, data->value.string->data, data->value.string->size);
+
+  if (r < 0) {
+    yuji_panic("write failed: %s", strerror(errno));
+  }
+
+  fsync((int)fd->value.int_);
+
+  return yuji_value_null_init();
+}
+
+static YujiValue* io_read(YujiScope* scope, YujiDynArray* args) {
+  YUJI_UNUSED(scope);
+
+  if (args->size != 1) {
+    yuji_panic("read expects 1 argument");
+  }
+
+  YujiValue* fd = yuji_dyn_array_get(args, 0);
+
+  if (fd->type != VT_INT) {
+    yuji_panic("read expects int fd");
+  }
+
+  YujiString* str = yuji_string_init();
+  char buf[4096];
+
+
+  ssize_t n;
+
+  while ((n = read((int)fd->value.int_, buf, 4096)) > 0) {
+    yuji_string_append(str, buf, (size_t)n);
+  }
+
+  if (n < 0) {
+    yuji_string_free(str);
+    yuji_panic("read failed: %s", strerror(errno));
+  }
+
+  YujiValue* v = yuji_value_string_init(str);
+  yuji_string_free(str);
+  return v;
+}
 
 YUJI_DEFINE_MODULE(io, {
+  YUJI_MODULE_REGISTER(int, module, "stdin", STDIN_FILENO);
+  YUJI_MODULE_REGISTER(int, module, "stdout", STDOUT_FILENO);
+  YUJI_MODULE_REGISTER(int, module, "stderr", STDERR_FILENO);
+
   YUJI_MODULE_REGISTER_FUNC(module, "print", YUJI_FN_INF_ARGUMENT, io_print);
   YUJI_MODULE_REGISTER_FUNC(module, "println", YUJI_FN_INF_ARGUMENT, io_println);
   YUJI_MODULE_REGISTER_FUNC(module, "input", YUJI_FN_ARGC(1), io_input);
   YUJI_MODULE_REGISTER_FUNC(module, "format", YUJI_FN_INF_ARGUMENT, io_format);
+  YUJI_MODULE_REGISTER_FUNC(module, "open", YUJI_FN_ARGC(2), io_open);
+  YUJI_MODULE_REGISTER_FUNC(module, "close", YUJI_FN_ARGC(1), io_close);
+  YUJI_MODULE_REGISTER_FUNC(module, "write", YUJI_FN_ARGC(2), io_write);
+  YUJI_MODULE_REGISTER_FUNC(module, "read", YUJI_FN_ARGC(1), io_read);
 })
