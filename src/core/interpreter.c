@@ -2,6 +2,7 @@
 #include "yuji/core/ast.h"
 #include "yuji/core/memory.h"
 #include "yuji/core/module.h"
+#include "yuji/core/state.h"
 #include "yuji/core/types/dyn_array.h"
 #include "yuji/core/types/map.h"
 #include "yuji/core/types/stack.h"
@@ -11,6 +12,10 @@
 #include "yuji/stdlib/_std.h"
 #include <stdio.h>
 #include <string.h>
+#include <dirent.h>
+#include <unistd.h>
+
+extern YujiState* G_YUJI_STATE;
 
 
 YujiScope* yuji_scope_init(YujiScope* parent) {
@@ -162,29 +167,69 @@ void yuji_interpreter_free(YujiInterpreter* interpreter) {
 void yuji_interpreter_load_module(YujiInterpreter* interpreter, const char* module_name) {
   yuji_check_memory(interpreter);
 
-  YujiString* module_name_s = yuji_string_init_from_cstr(module_name);
-  YujiDynArray* parts = yuji_string_split(module_name_s, '/');
+  YujiString* name_str = yuji_string_init_from_cstr(module_name);
+  YujiDynArray* parts = yuji_string_split(name_str, '/');
 
   if (parts->size == 0) {
     yuji_panic("empty module name");
   }
 
-  YujiString* first = parts->data[0];
-  YujiModule* module = yuji_map_get(interpreter->loaded_modules, first->data);
+  YujiModule* module = NULL;
 
-  if (!module) {
-    yuji_panic("module '%s' not found", first->data);
-  }
+  YujiString* first = yuji_dyn_array_get(parts, 0);
 
-  for (size_t i = 1; i < parts->size; i++) {
-    YujiString* part = parts->data[i];
-    YujiModule* sub = yuji_module_find_submodule(module, part->data);
-
-    if (!sub) {
-      yuji_panic("module '%s' not found", module_name);
+  if (strcmp(first->data, "@") == 0) {
+    if (parts->size < 2) {
+      yuji_panic("invalid module path");
     }
 
-    module = sub;
+    YujiString* root_name = yuji_dyn_array_get(parts, 1);
+    module = yuji_map_get(interpreter->loaded_modules, root_name->data);
+
+    if (!module) {
+      module = yuji_module_init(root_name->data);
+      yuji_map_set(interpreter->loaded_modules, root_name->data, module);
+
+      YujiASTNode* ast = yuji_get_ast_from_file(root_name->data);
+      YujiScope* prev = interpreter->current_scope;
+      interpreter->current_scope = module->scope;
+
+      YujiValue* result = yuji_interpreter_eval_module(interpreter, ast->value.module);
+
+      interpreter->current_scope = prev;
+      yuji_value_free(result);
+
+      yuji_ast_free(ast);
+    }
+
+    for (size_t i = 2; i < parts->size; i++) {
+      YujiString* part = yuji_dyn_array_get(parts, i);
+      YujiModule* sub = yuji_module_find_submodule(module, part->data);
+
+      if (!sub) {
+        sub = yuji_module_init(part->data);
+        yuji_module_add_submodule(module, sub);
+      }
+
+      module = sub;
+    }
+  } else {
+    module = yuji_map_get(interpreter->loaded_modules, first->data);
+
+    if (!module) {
+      yuji_panic("module '%s' not found", first->data);
+    }
+
+    for (size_t i = 1; i < parts->size; i++) {
+      YujiString* part = yuji_dyn_array_get(parts, i);
+      YujiModule* sub = yuji_module_find_submodule(module, part->data);
+
+      if (!sub) {
+        yuji_panic("module '%s' not found", module_name);
+      }
+
+      module = sub;
+    }
   }
 
   yuji_scope_merge(interpreter->current_scope, module->scope);
@@ -192,8 +237,27 @@ void yuji_interpreter_load_module(YujiInterpreter* interpreter, const char* modu
   YUJI_DYN_ARRAY_ITER(parts, YujiString, part, {
     yuji_string_free(part);
   })
+
   yuji_dyn_array_free(parts);
-  yuji_string_free(module_name_s);
+  yuji_string_free(name_str);
+}
+
+
+
+YujiValue* yuji_interpreter_eval_module(YujiInterpreter* interpreter, YujiASTModule* module) {
+  yuji_check_memory(interpreter);
+  yuji_check_memory(module);
+
+  YUJI_LOG("ENTER MODULE: %s | EXPRS SIZE: %ld", module->name, module->exprs->size)
+  YUJI_DYN_ARRAY_ITER(module->exprs, YujiASTNode, expr, {
+    YUJI_LOG("EVAL AST TYPE: %s", yuji_ast_node_type_to_string(expr->type))
+    YujiValue* expr_result = yuji_interpreter_eval(interpreter, expr);
+    yuji_value_free(expr_result);
+  })
+
+  YUJI_LOG("LEAVE MODULE: %s", module->name)
+
+  return yuji_value_null_init();
 }
 
 YujiValue* yuji_interpreter_eval_block(YujiInterpreter* interpreter, YujiASTBlock* block) {
@@ -236,6 +300,10 @@ YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node
   YUJI_LOG("evaluating node of type: %s (%p)", yuji_ast_node_type_to_string(node->type), node);
 
   switch (node->type) {
+    case YUJI_AST_MODULE: {
+      return yuji_interpreter_eval_module(interpreter, node->value.module);
+    }
+
     case YUJI_AST_INT: {
       return yuji_value_int_init(node->value.int_->value);
     }

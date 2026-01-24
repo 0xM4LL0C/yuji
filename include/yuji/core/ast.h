@@ -9,6 +9,11 @@ typedef struct YujiASTNode YujiASTNode;
 YujiASTNode* yuji_ast_node_copy(YujiASTNode* node);
 
 typedef struct {
+  const char* name;
+  YujiDynArray* exprs;
+} YujiASTModule;
+
+typedef struct {
   int64_t value;
 } YujiASTInt;
 
@@ -105,6 +110,7 @@ typedef struct {
 
 
 typedef enum {
+  YUJI_AST_MODULE,
   YUJI_AST_INT,
   YUJI_AST_FLOAT,
   YUJI_AST_STRING,
@@ -132,6 +138,7 @@ struct YujiASTNode {
   YujiASTNodeType type;
 
   union {
+    YujiASTModule* module;
     YujiASTInt* int_;
     YujiASTFloat* float_;
     YujiASTString* string;
@@ -161,13 +168,24 @@ struct YujiASTNode {
     YujiASTNode* node = yuji_malloc(sizeof(YujiASTNode)); \
     node->type = TYPE;\
     BODY;\
+    YUJI_LOG("creating node: %s (%d | %p)", yuji_ast_node_type_to_string(TYPE), TYPE, node); \
     return node;\
   }
+
+#define AST_ASSERT(NODE) \
+  do { \
+    if ((NODE)->type < 0 || (NODE)->type > YUJI_AST_INDEX_ASSIGN) { \
+      fprintf(stderr, "AST CORRUPTED %p type=%d\n", NODE, NODE->type); \
+      abort(); \
+    } \
+  } while (0)
+
 
 void yuji_ast_free(YujiASTNode* node);
 
 char* yuji_ast_node_type_to_string(YujiASTNodeType type);
 
+YujiASTNode* yuji_ast_module_init(const char* name, YujiDynArray* exprs);
 YujiASTNode* yuji_ast_int_init(int64_t value);
 YujiASTNode* yuji_ast_float_init(double value);
 YujiASTNode* yuji_ast_string_init(const char* value);

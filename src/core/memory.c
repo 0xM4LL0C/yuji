@@ -3,8 +3,9 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-extern YujiState* g_yuji_state;
+extern YujiState* G_YUJI_STATE;
 
 void yuji_panic(const char* fmt, ...) {
   fprintf(stderr, "===== PANIC =====\n");
@@ -15,8 +16,8 @@ void yuji_panic(const char* fmt, ...) {
   fprintf(stderr, "\n");
   va_end(args);
 
-  if (g_yuji_state) {
-    yuji_print_call_stack(g_yuji_state);
+  if (G_YUJI_STATE) {
+    yuji_print_call_stack(G_YUJI_STATE);
   }
 
 #ifdef YUJI_DEBUG
@@ -35,6 +36,7 @@ void yuji_check_memory(void* ptr) {
 void* yuji_malloc(size_t size) {
   void* ptr = malloc(size);
   yuji_check_memory(ptr);
+  memset(ptr, 0, size);
   return ptr;
 }
 

@@ -5,6 +5,7 @@
 #include "yuji/core/types/dyn_array.h"
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 YujiParser* yuji_parser_init(YujiDynArray* tokens) {
   YujiParser* parser = yuji_malloc(sizeof(YujiParser));
@@ -90,16 +91,15 @@ void yuji_parser_except_next(YujiParser* parser, YujiTokenType type) {
   parser->index--;
 }
 
-YujiDynArray* yuji_parser_parse(YujiParser* parser) {
-  YujiDynArray* ast = yuji_dyn_array_init();
+YujiASTNode* yuji_parser_parse(const char* module_name, YujiParser* parser) {
+  YujiDynArray* exprs = yuji_dyn_array_init();
 
   while (parser->current_token) {
     YujiASTNode* stmt = yuji_parser_parse_stmt(parser);
-    yuji_dyn_array_push(ast, stmt);
+    yuji_dyn_array_push(exprs, stmt);
   }
 
-
-  return ast;
+  return yuji_ast_module_init(module_name, exprs);
 }
 
 YujiASTNode* yuji_parser_parse_block(YujiParser* parser) {

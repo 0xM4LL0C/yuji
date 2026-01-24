@@ -24,6 +24,7 @@ LDFLAGS ?= -lm
 
 UNAME_S := $(shell uname -s)
 UNAME_M := $(shell uname -m)
+ENABLE_SANITAZERS ?= 1
 
 ifeq ($(UNAME_S),Darwin)
     ifeq ($(UNAME_M),arm64)
@@ -47,7 +48,12 @@ debug:
 	bear --output $(BUILD_DIR)/compile_commands.json -- $(MAKE) debug-build
 
 debug-build: CFLAGS += -g3 -DYUJI_DEBUG
-debug-build: LDFLAGS += -fsanitize=$(SANITIZERS) -ftrapv
+debug-build: LDFLAGS += -ftrapv
+
+ifeq ($(ENABLE_SANITAZERS), 1)
+	LDFLAGS += -fsanitize=$(SANITIZERS)
+endif
+
 debug-build: build
 
 release: CFLAGS += -O2
@@ -71,7 +77,7 @@ rebuild:
 	rm -f $(OBJECTS)
 	$(MAKE)
 
-test: debug
+test:
 	$(BIN_PATH) test.yuji
 
 install: $(BIN_PATH)

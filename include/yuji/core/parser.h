@@ -21,7 +21,7 @@ bool yuji_parser_match_next(YujiParser* parser, YujiTokenType type);
 void yuji_parser_expect(YujiParser* parser, YujiTokenType type);
 void yuji_parser_expect_next(YujiParser* parser, YujiTokenType type);
 
-YujiDynArray* yuji_parser_parse(YujiParser* parser);
+YujiASTNode* yuji_parser_parse(const char* module_name, YujiParser* parser);
 
 YujiASTNode* yuji_parser_parse_block(YujiParser* parser);
 YujiASTNode* yuji_parser_parse_stmt(YujiParser* parser);
