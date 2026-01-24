@@ -2,6 +2,7 @@
 
 [![build](https://github.com/0xM4LL0C/yuji/actions/workflows/build.yaml/badge.svg)](https://github.com/0xM4LL0C/yuji/actions/workflows/build.yaml)
 [![CodeQL](https://github.com/0xM4LL0C/yuji/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/0xM4LL0C/yuji/actions/workflows/github-code-scanning/codeql)
+[![CodeFactor](https://www.codefactor.io/repository/github/0xm4ll0c/yuji/badge)](https://www.codefactor.io/repository/github/0xm4ll0c/yuji)
 
 <img src="/assets/yuji-logo.png">
 
