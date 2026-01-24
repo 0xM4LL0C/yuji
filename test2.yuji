@@ -1,0 +1,14 @@
+use "std/io"
+use "std/array"
+
+fn map(arr, func) {
+    let result = []
+
+    let i = 0
+    while i < len(arr) {
+        push(result, func(arr[i]))
+        i += 1
+    }
+
+    return result
+}

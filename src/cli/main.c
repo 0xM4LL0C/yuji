@@ -3,10 +3,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-YujiState* g_yuji_state;
+YujiState* G_YUJI_STATE = NULL;
 
 int run_file(const char* filename) {
-  yuji_eval_file(g_yuji_state, filename);
+  yuji_eval_file(G_YUJI_STATE, filename);
   return 0;
 }
 
@@ -25,16 +25,16 @@ int run_repl() {
       break;
     }
 
-    yuji_eval_string(g_yuji_state, buffer);
+    yuji_eval_string(G_YUJI_STATE, buffer);
   }
 
   return 0;
 }
 
 void ctrl_c_handler(int signal) {
-  if (g_yuji_state) {
-    yuji_print_call_stack(g_yuji_state);
-    yuji_state_free(g_yuji_state);
+  if (G_YUJI_STATE) {
+    yuji_print_call_stack(G_YUJI_STATE);
+    yuji_state_free(G_YUJI_STATE);
   }
 
   exit(signal);
@@ -43,7 +43,7 @@ void ctrl_c_handler(int signal) {
 int main(int argc, char* argv[]) {
   signal(SIGINT, ctrl_c_handler);
 
-  g_yuji_state = yuji_state_init();
+  G_YUJI_STATE = yuji_state_init();
   int exit_code = 1;
 
   if (argc == 1) {
@@ -54,6 +54,6 @@ int main(int argc, char* argv[]) {
     fprintf(stderr, "Usage: %s [filename]\n", argv[0]);
   }
 
-  yuji_state_free(g_yuji_state);
+  yuji_state_free(G_YUJI_STATE);
   return exit_code;
 }

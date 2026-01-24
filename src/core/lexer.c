@@ -251,6 +251,7 @@ bool yuji_lexer_tokenize(YujiLexer* lexer, YujiDynArray* tokens) {
       }
     }
 
+    YUJI_LOG("VALUE: %s", value)
     yuji_dyn_array_push(tokens, yuji_token_init(value, type, lexer->position));
   }
 

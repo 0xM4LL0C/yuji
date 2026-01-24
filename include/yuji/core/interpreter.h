@@ -6,6 +6,7 @@
 #include "yuji/core/types/stack.h"
 #include "yuji/core/value.h"
 
+
 typedef struct YujiScope {
   YujiMap* env;
   struct YujiScope* parent;
@@ -54,6 +55,6 @@ void yuji_loop_frame_free(YujiLoopFrame* frame);
 YujiInterpreter* yuji_interpreter_init();
 void yuji_interpreter_free(YujiInterpreter* interpreter);
 
-void yuji_interpreter_load_module(YujiInterpreter* interpreter, const char* module_name);
+YujiValue* yuji_interpreter_eval_module(YujiInterpreter* interpreter, YujiASTModule* module);
 YujiValue* yuji_interpreter_eval_block(YujiInterpreter* interpreter, YujiASTBlock* block);
 YujiValue* yuji_interpreter_eval(YujiInterpreter* interpreter, YujiASTNode* node);

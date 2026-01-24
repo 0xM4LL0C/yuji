@@ -16,10 +16,17 @@ void yuji_value_free(YujiValue* value) {
   switch (value->type) {
     case VT_INT:
     case VT_FLOAT:
-    case VT_FUNCTION:
     case VT_BOOL:
     case VT_NULL:
       break;
+
+    case VT_FUNCTION: {
+      YujiASTNode* wrapper = yuji_malloc(sizeof(YujiASTNode));
+      wrapper->type = YUJI_AST_FN;
+      wrapper->value.fn = value->value.function.node;
+      yuji_ast_free(wrapper);
+      break;
+    }
 
     case VT_ARRAY:
       YUJI_DYN_ARRAY_ITER(value->value.array, YujiValue, element, {
@@ -190,7 +197,9 @@ YUJI_VALUE_INIT(float, VT_FLOAT, {
 }, double number)
 
 YUJI_VALUE_INIT(function, VT_FUNCTION, {
-  value->value.function.node = node;
+  YujiASTNode* fn_node = yuji_ast_fn_init(node->name, node->params, node->body->value.block);
+  value->value.function.node = fn_node->value.fn;
+  yuji_free(fn_node);
 }, YujiASTFunction* node)
 
 YUJI_VALUE_INIT(string, VT_STRING, {

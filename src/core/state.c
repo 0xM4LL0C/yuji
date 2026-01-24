@@ -1,9 +1,11 @@
 #include "yuji/core/state.h"
+#include "yuji/core/ast.h"
 #include "yuji/core/interpreter.h"
 #include "yuji/core/lexer.h"
 #include "yuji/core/memory.h"
 #include "yuji/core/parser.h"
 #include "yuji/core/types/dyn_array.h"
+#include "yuji/core/types/string.h"
 #include "yuji/core/value.h"
 #include <errno.h>
 #include <stdio.h>
@@ -26,45 +28,66 @@ void yuji_state_free(YujiState *state) {
 
 static YujiDynArray* get_input(const char* str) {
   YujiDynArray* result = yuji_dyn_array_init();
-  yuji_dyn_array_push(result, strdup(str));
+  char* buffer = strdup(str);
+
+  char* token = strtok(buffer, "\n");
+
+  while (token) {
+    yuji_dyn_array_push(result, strdup(token));
+    token = strtok(NULL, "\n");
+  }
+
+  yuji_free(buffer);
   return result;
 }
 
-static YujiValue* run_input(YujiState* state, YujiDynArray* input, const char* source_name) {
+YujiASTNode* yuji_get_ast(const char* string, const char* source_name) {
   // LEXER
+  YujiDynArray* input = get_input(string);
   YujiLexer* lexer = yuji_lexer_init(input, source_name);
   YujiDynArray* tokens = yuji_dyn_array_init();
   yuji_lexer_tokenize(lexer, tokens);
 
   // PARSER
   YujiParser* parser = yuji_parser_init(tokens);
-  YujiDynArray* ast = yuji_parser_parse(parser);
-
-  YujiValue* last_result = NULL;
-
-  // INTERPRETER
-  YUJI_DYN_ARRAY_ITER(ast, YujiASTNode, node, {
-    if (last_result) {
-      yuji_value_free(last_result);
-    }
-    last_result = yuji_interpreter_eval(state->interpreter, node);
-  })
+  YujiASTNode* ast = yuji_parser_parse(source_name, parser);
 
   // CLEANUP
-  YUJI_DYN_ARRAY_ITER(ast, YujiASTNode, node, {
-    yuji_ast_free(node);
-  })
-  yuji_dyn_array_free(ast);
-
   yuji_parser_free(parser);
 
   YUJI_DYN_ARRAY_ITER(tokens, YujiToken, token, {
     yuji_token_free(token);
   })
   yuji_dyn_array_free(tokens);
+
+  YUJI_DYN_ARRAY_ITER(input, char*, line, {
+    yuji_free(line);
+  })
+  yuji_dyn_array_free(input);
   yuji_lexer_free(lexer);
 
-  return last_result;
+  return ast;
+}
+
+YujiASTNode* yuji_get_ast_from_file(const char* filename) {
+  FILE* file = fopen(filename, "r");
+
+  if (!file) {
+    yuji_panic("error opening file '%s': %s", filename, strerror(errno));
+  }
+
+  char buffer[64];
+  YujiString* str = yuji_string_init();
+
+  while (fgets(buffer, sizeof(buffer), file)) {
+    yuji_string_append(str, buffer, strlen(buffer));
+  }
+
+  fclose(file);
+  YujiASTNode* ast = yuji_get_ast(str->data, filename);
+  yuji_string_free(str);
+
+  return ast;
 }
 
 void yuji_eval_string(YujiState* state, const char* string) {
@@ -72,14 +95,15 @@ void yuji_eval_string(YujiState* state, const char* string) {
   yuji_check_memory((void*)string);
 
   YujiDynArray* input = get_input(string);
-  YujiValue* result = run_input(state, input, "<string>");
+  YujiASTNode* ast = yuji_get_ast(string, "<string>");
+  YujiValue* result = yuji_interpreter_eval(state->interpreter, ast);
 
-  if (result) {
-    yuji_value_free(result);
-  }
+  yuji_value_free(result);
 
-  YUJI_DYN_ARRAY_ITER(input, char, str, {
-    yuji_free(str);
+  yuji_ast_free(ast);
+
+  YUJI_DYN_ARRAY_ITER(input, char*, line, {
+    yuji_free(line);
   })
   yuji_dyn_array_free(input);
 }
@@ -88,31 +112,12 @@ void yuji_eval_file(YujiState* state, const char* filename) {
   yuji_check_memory(state);
   yuji_check_memory((void*)filename);
 
-  FILE* file = fopen(filename, "r");
+  YujiASTNode* ast = yuji_get_ast_from_file(filename);
+  YujiValue * result = yuji_interpreter_eval(state->interpreter, ast);
 
-  if (!file) {
-    yuji_panic("error opening file '%s': %s", filename, strerror(errno));
-  }
+  yuji_value_free(result);
 
-  char buffer[64];
-  YujiDynArray* input = yuji_dyn_array_init();
-
-  while (fgets(buffer, sizeof(buffer), file)) {
-    yuji_dyn_array_push(input, strdup(buffer));
-  }
-
-  fclose(file);
-
-  YujiValue* result = run_input(state, input, filename);
-
-  if (result) {
-    yuji_value_free(result);
-  }
-
-  YUJI_DYN_ARRAY_ITER(input, char, str, {
-    yuji_free(str);
-  })
-  yuji_dyn_array_free(input);
+  yuji_ast_free(ast);
 }
 
 void yuji_print_call_stack(YujiState* state) {

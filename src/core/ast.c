@@ -1,7 +1,9 @@
+#include "yuji/utils.h"
 #include "yuji/core/ast.h"
 #include "yuji/core/memory.h"
 #include "yuji/core/types/dyn_array.h"
 #include "yuji/core/types/string.h"
+#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
@@ -13,6 +15,16 @@ void yuji_ast_free(YujiASTNode* node) {
     case YUJI_AST_NULL:
     case YUJI_AST_BREAK:
     case YUJI_AST_CONTINUE:
+      break;
+
+    case YUJI_AST_MODULE:
+      yuji_free((void*)node->value.module->name);
+
+      YUJI_DYN_ARRAY_ITER(node->value.module->exprs, YujiASTNode, expr, {
+        yuji_ast_free(expr);
+      })
+      yuji_dyn_array_free(node->value.module->exprs);
+      yuji_free(node->value.module);
       break;
 
     case YUJI_AST_INT:
@@ -164,6 +176,7 @@ char* yuji_ast_node_type_to_string(YujiASTNodeType type) {
 #define _YUJI_AST_NODE_TYPE_CASE(type) case type: return #type
 
   switch (type) {
+      _YUJI_AST_NODE_TYPE_CASE(YUJI_AST_MODULE);
       _YUJI_AST_NODE_TYPE_CASE(YUJI_AST_INT);
       _YUJI_AST_NODE_TYPE_CASE(YUJI_AST_FLOAT);
       _YUJI_AST_NODE_TYPE_CASE(YUJI_AST_STRING);
@@ -196,6 +209,15 @@ YujiASTNode* yuji_ast_node_copy(YujiASTNode* node) {
   yuji_check_memory(node);
 
   switch (node->type) {
+    case YUJI_AST_MODULE: {
+      YujiDynArray* exprs_copy = yuji_dyn_array_init();
+      YUJI_DYN_ARRAY_ITER(node->value.module->exprs, YujiASTNode, expr, {
+        yuji_dyn_array_push(exprs_copy, yuji_ast_node_copy(expr));
+      });
+      return yuji_ast_module_init(node->value.module->name, exprs_copy);
+    }
+
+
     case YUJI_AST_NULL:
       return yuji_ast_null_init();
 
@@ -417,8 +439,7 @@ YUJI_AST_INIT(fn, YUJI_AST_FN, {
   node->value.fn->params = yuji_dyn_array_init();
 
   YUJI_DYN_ARRAY_ITER(params, void*, param, {
-    char* param_str = (char*)param;
-    char* param_copy = strdup(param_str);
+    char* param_copy = strdup((char*)param);
     yuji_dyn_array_push(node->value.fn->params, param_copy);
   });
 
@@ -510,3 +531,9 @@ YUJI_AST_INIT(index_assign, YUJI_AST_INDEX_ASSIGN, {
   node->value.index_assign->index = index;
   node->value.index_assign->value = value;
 }, YujiASTNode* object, YujiASTNode* index, YujiASTNode* value)
+
+YUJI_AST_INIT(module, YUJI_AST_MODULE, {
+  node->value.module = yuji_malloc(sizeof(YujiASTModule));
+  node->value.module->name = strdup(name);
+  node->value.module->exprs = exprs;
+}, const char* name, YujiDynArray* exprs)
