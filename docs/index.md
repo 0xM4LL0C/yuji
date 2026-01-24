@@ -210,6 +210,8 @@ Import modules with use:
 ```yuji
 use "std/io"
 use "std/core"
+
+use "@/some_file.yuji" // import user-defined module
 ```
 
 ## Standard Library
